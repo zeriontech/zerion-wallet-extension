@@ -1,4 +1,4 @@
-import throttle from 'lodash/throttle';
+import { debounce } from 'moderndash';
 import { PersistentStore } from 'src/modules/persistent-store';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
@@ -92,9 +92,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     this.fetchDefaultWalletNameFlags();
   }
 
-  refresh = throttle(() => this.initialize(), this.REFRESH_RATE, {
-    leading: false,
-  });
+  refresh = debounce(() => this.initialize(), this.REFRESH_RATE);
 
   async getPreferences(): Promise<Required<State>> {
     /**

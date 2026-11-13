@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import memoize from 'memoize-one';
+import memoize from 'src/shared/memoizeOne';
 import type { CurrencyConfig } from 'src/modules/currency/currencies';
 import { CURRENCIES, resolveOptions } from 'src/modules/currency/currencies';
 import { minus as typographicMinus } from 'src/shared/typography';
@@ -10,24 +10,28 @@ const PRICE_SIGNIFICANT_DIGITS = 4;
 // after the decimal point (i.e. values smaller than ~0.00000001).
 const SUBSCRIPT_ZERO_THRESHOLD = 8;
 
-const getCurrencyFormatter = memoize((locale, currency, config = {}) => {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    ...config,
-  });
-});
+const getCurrencyFormatter = memoize(
+  (locale: string, currency: string, config: Intl.NumberFormatOptions | null = {}) => {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      ...config,
+    });
+  },
+);
 
-const getSmallPriceCurrencyFormatter = memoize((locale, currency, config = {}) => {
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-    maximumSignificantDigits: PRICE_SIGNIFICANT_DIGITS,
-    maximumFractionDigits: 20,
-    ...config,
-  });
-});
+const getSmallPriceCurrencyFormatter = memoize(
+  (locale: string, currency: string, config: Intl.NumberFormatOptions | null = {}) => {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: 2,
+      maximumSignificantDigits: PRICE_SIGNIFICANT_DIGITS,
+      maximumFractionDigits: 20,
+      ...config,
+    });
+  },
+);
 
 // ~1$ values should be formatted as regular currency values
 const SMALL_VALUE_THRESHOLD = 0.99;

@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Route, Routes, useSearchParams } from 'react-router-dom';
-import { RenderArea } from 'react-area';
-import { isTruthy } from 'is-truthy-ts';
+import { RenderArea } from 'src/shared/react-area';
+import { isTruthy } from 'src/shared/isTruthy';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import { toAddEthereumChainParameter, toNetworkInfo } from 'src/modules/networks/helpers';
 import { invariant } from 'src/shared/invariant';

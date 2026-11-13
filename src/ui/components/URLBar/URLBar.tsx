@@ -1,9 +1,9 @@
 import React, { useEffect, useLayoutEffect, useReducer, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { RenderArea } from 'react-area';
+import { RenderArea } from 'src/shared/react-area';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { Store } from 'store-unit';
-import { useStore } from '@store-unit/react';
+import { Store } from 'src/shared/store/store';
+import { useStore } from 'src/shared/store/useStore';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { getBackOrHome } from 'src/ui/shared/navigation/getBackOrHome';
 import { getDocumentTitle } from 'src/ui/shared/getDocumentTitle';

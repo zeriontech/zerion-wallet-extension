@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import noop from 'lodash/noop';
 import { Link, Route, Routes, useNavigate, useSearchParams } from 'react-router-dom';
 import EcosystemEthereumIcon from 'jsx:src/ui/assets/ecosystem-ethereum.svg';
 import EcosystemSolanaIcon from 'jsx:src/ui/assets/ecosystem-solana.svg';
@@ -489,7 +488,7 @@ function NewWalletGroup() {
   const [values, toggleValueOriginal] = useToggledValues(
     () => new Set<BlockchainType>(FEATURE_SOLANA === 'on' ? ['evm', 'solana'] : ['evm']),
   );
-  const toggleValue = FEATURE_SOLANA === 'on' ? toggleValueOriginal : noop;
+  const toggleValue = FEATURE_SOLANA === 'on' ? toggleValueOriginal : () => {};
   const navigate = useNavigate();
   return (
     <PageColumn>

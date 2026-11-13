@@ -19,7 +19,7 @@ import {
   createTypedData,
   serializePaymasterTx,
 } from 'src/modules/ethereum/account-abstraction/createTypedData';
-import omit from 'lodash/omit';
+import { omit } from 'src/shared/omit';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { deniedByUser, parseLedgerError } from '@zeriontech/hardware-wallet-connection';

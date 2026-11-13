@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import groupBy from 'lodash/groupBy';
+import { group } from 'moderndash';
 import { startOfDate } from 'src/shared/units/startOfDate';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -8,7 +8,7 @@ import { ViewLoading } from 'src/ui/components/ViewLoading';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { isLocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import { usePreferences } from 'src/ui/features/preferences';
-import dayjs from 'dayjs';
+import dayjs from 'src/shared/date';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { LocalActionContentRequest } from 'src/modules/ethereum/transactions/addressAction/creators';
@@ -40,7 +40,7 @@ export function ActionsList({
   const { preferences } = usePreferences();
   const groupedByDate = useMemo(
     () =>
-      groupBy(actions, (item) =>
+      group(actions, (item) =>
         startOfDate(new Date(item.timestamp).getTime() || Date.now()).getTime(),
       ),
     [actions],

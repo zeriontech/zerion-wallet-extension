@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react';
-import { Content } from 'react-area';
+import { Content } from 'src/shared/react-area';
 import { DelayedRender } from 'src/ui/components/DelayedRender';
 import { PortalToRootNode } from 'src/ui/components/PortalToRootNode';
 import { TransactionWarning } from 'src/ui/pages/SendTransaction/TransactionWarnings/TransactionWarning';

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ComboboxProvider, Combobox, TabProvider, useTabContext } from '@ariakit/react';
-import { normalizedContains } from 'normalized-contains';
+import { normalizedContains } from 'src/shared/normalizedContains';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';

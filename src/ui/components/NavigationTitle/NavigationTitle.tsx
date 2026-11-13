@@ -1,5 +1,5 @@
 import React, { useLayoutEffect } from 'react';
-import { Content } from 'react-area';
+import { Content } from 'src/shared/react-area';
 import { useNavigate } from 'react-router-dom';
 import { getDocumentTitle } from 'src/ui/shared/getDocumentTitle';
 import { BackButton } from '../BackButton';

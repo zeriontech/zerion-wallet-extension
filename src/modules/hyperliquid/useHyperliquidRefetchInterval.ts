@@ -1,6 +1,6 @@
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { useEffect, useState } from 'react';
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 
 const latestOpStore = new Store(0);
 

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { normalizedContains } from 'normalized-contains';
+import { normalizedContains } from 'src/shared/normalizedContains';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';
 import { PageBottom } from 'src/ui/components/PageBottom';

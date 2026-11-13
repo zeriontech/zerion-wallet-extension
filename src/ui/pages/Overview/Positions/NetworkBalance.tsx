@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Content } from 'react-area';
-import { useStore } from '@store-unit/react';
-import { isTruthy } from 'is-truthy-ts';
+import { Content } from 'src/shared/react-area';
+import { useStore } from 'src/shared/store/useStore';
+import { isTruthy } from 'src/shared/isTruthy';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { createChain } from 'src/modules/networks/Chain';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';

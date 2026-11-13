@@ -1,14 +1,16 @@
-import memoize from 'memoize-one';
+import memoize from 'src/shared/memoizeOne';
 import type BigNumber from 'bignumber.js';
 import { minus } from 'src/shared/typography';
 import { toNumber } from './toNumber';
 
-const getFormatter = memoize((locale, maximumFractionDigits, minimumFractionDigits = 0) => {
-  return Intl.NumberFormat(locale, {
-    maximumFractionDigits,
-    minimumFractionDigits,
-  });
-});
+const getFormatter = memoize(
+  (locale: string, maximumFractionDigits: number, minimumFractionDigits: number = 0) => {
+    return Intl.NumberFormat(locale, {
+      maximumFractionDigits,
+      minimumFractionDigits,
+    });
+  },
+);
 
 export function formatPercent(
   value: BigNumber.Value,

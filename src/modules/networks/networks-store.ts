@@ -1,4 +1,4 @@
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 import { invariant } from 'src/shared/invariant';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { ZerionApiClient } from 'src/modules/zerion-api/zerion-api-bare';

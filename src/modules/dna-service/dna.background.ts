@@ -1,6 +1,6 @@
 import { WalletOrigin } from 'src/shared/WalletOrigin';
 import ky from 'ky';
-import omit from 'lodash/omit';
+import { omit } from 'src/shared/omit';
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import { createNanoEvents } from 'nanoevents';
 import { version } from 'src/shared/packageVersion';
@@ -79,7 +79,7 @@ export class DnaService {
       currentQueue.shift();
     }
     await BrowserStorage.set(ACTION_QUEUE_KEY, currentQueue);
-    return omit(currentQueue[0], 'timestamp');
+    return omit(currentQueue[0], ['timestamp']);
   }
 
   private async registerAction(action: DnaAction) {

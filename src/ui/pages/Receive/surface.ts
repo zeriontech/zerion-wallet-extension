@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { Theme, themeStore } from 'src/ui/features/appearance';
 import {
   QUEST_BACKGROUND_COLOR,

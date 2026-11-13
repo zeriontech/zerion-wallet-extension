@@ -1,4 +1,4 @@
-import lodashSet from 'lodash/set';
+import { set as lodashSet } from 'moderndash';
 
 export function naiveFormDataToObject<T>(
   formData: FormData,

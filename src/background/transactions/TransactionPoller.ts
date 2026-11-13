@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import memoize from 'lodash/memoize';
+import { memoize } from 'moderndash';
 import { createNanoEvents } from 'nanoevents';
 import { RequestCache } from 'src/modules/request-cache/request-cache';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';

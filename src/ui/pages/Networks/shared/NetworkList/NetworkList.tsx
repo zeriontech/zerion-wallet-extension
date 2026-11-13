@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { Networks } from 'src/modules/networks/Networks';

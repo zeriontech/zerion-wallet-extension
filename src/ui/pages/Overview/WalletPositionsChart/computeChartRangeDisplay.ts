@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import dayjs from 'src/shared/date';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { formatPercent } from 'src/shared/units/formatPercent';
 import type { ChartPoint } from 'src/ui/components/chart/types';

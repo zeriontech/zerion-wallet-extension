@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { localTransactionsStore } from 'src/ui/transactions/transactions-store';
 import { getTransactionObjectStatus } from 'src/modules/ethereum/transactions/getTransactionObjectStatus';
 import type { ActionStatus } from 'src/modules/zerion-api/requests/wallet-get-actions';

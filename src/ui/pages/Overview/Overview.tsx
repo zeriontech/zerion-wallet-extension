@@ -1,10 +1,10 @@
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { useQuery } from '@tanstack/react-query';
 import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
 // import FireIcon from 'jsx:src/ui/assets/fire.svg';
 import React, { useEffect, useRef } from 'react';
-import { RenderArea } from 'react-area';
+import { RenderArea } from 'src/shared/react-area';
 import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';

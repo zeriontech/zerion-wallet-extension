@@ -1,8 +1,8 @@
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { useEffect, useRef } from 'react';
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 import { EventSource, type ErrorEvent } from 'eventsource'; // supports passing custom headers
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { invariant } from 'src/shared/invariant';
 import { parseQuoteErrorDetailsFromText, type QuoteErrorDetails } from './quoteErrorDetails';
 import { QuotesError } from './QuotesError';

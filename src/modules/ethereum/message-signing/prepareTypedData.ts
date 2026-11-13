@@ -1,4 +1,4 @@
-import omit from 'lodash/omit';
+import { omit } from 'src/shared/omit';
 import type { TypedData } from './TypedData';
 
 function isTypedData(data: Partial<TypedData>): data is TypedData {

@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import dayjs from 'src/shared/date';
 import { minus } from 'src/shared/typography';
 import { computeChartRangeDisplay, type WalletChartPoint } from './computeChartRangeDisplay';
 

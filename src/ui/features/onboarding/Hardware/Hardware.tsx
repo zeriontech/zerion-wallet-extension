@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { RenderArea } from 'react-area';
+import { RenderArea } from 'src/shared/react-area';
 import {
   FrameLayout,
   HardwareWalletConnectionStart,

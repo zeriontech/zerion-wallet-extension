@@ -1,5 +1,5 @@
 import { produce } from 'immer';
-import dayjs from 'dayjs';
+import dayjs from 'src/shared/date';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 
 export const TESTING = process.env.NODE_ENV !== 'production';

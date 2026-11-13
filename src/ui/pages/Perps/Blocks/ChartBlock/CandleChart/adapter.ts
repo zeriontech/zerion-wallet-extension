@@ -1,5 +1,5 @@
 import { _adapters, type TimeUnit } from 'chart.js';
-import dayjs, { type ManipulateType, type OpUnitType, type QUnitType } from 'dayjs';
+import dayjs, { type DateUnit } from 'src/shared/date';
 
 const FORMATS = {
   datetime: 'MMM D, YYYY, h:mm:ss a',
@@ -29,19 +29,19 @@ _adapters._date.override({
   format: (timestamp, format) => dayjs(timestamp).format(format),
   add: (timestamp, amount, unit) =>
     dayjs(timestamp)
-      .add(amount, unit as ManipulateType)
+      .add(amount, unit as DateUnit)
       .valueOf(),
-  diff: (max, min, unit) => dayjs(max).diff(dayjs(min), unit as QUnitType),
+  diff: (max, min, unit) => dayjs(max).diff(dayjs(min), unit as DateUnit),
   startOf: (timestamp, unit) => {
     if (unit === 'isoWeek') {
       return dayjs(timestamp).startOf('week').valueOf();
     }
     return dayjs(timestamp)
-      .startOf(unit as OpUnitType)
+      .startOf(unit as DateUnit)
       .valueOf();
   },
   endOf: (timestamp, unit) =>
     dayjs(timestamp)
-      .endOf(unit as OpUnitType)
+      .endOf(unit as DateUnit)
       .valueOf(),
 });
