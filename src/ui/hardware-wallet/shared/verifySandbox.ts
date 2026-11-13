@@ -1,10 +1,10 @@
-import browser from 'webextension-polyfill';
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
+import { PORT_NAMES } from 'src/shared/portNames';
 import type { RPCPort } from 'src/ui/shared/channels.types';
 import type { Wallet } from 'src/shared/types/Wallet';
 
 const walletPort = new PortMessageChannel({
-  name: `${browser.runtime.id}/wallet`,
+  name: PORT_NAMES.wallet,
 }) as RPCPort<Wallet>;
 
 export async function verifySandbox() {

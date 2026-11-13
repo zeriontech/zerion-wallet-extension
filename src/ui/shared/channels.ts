@@ -1,5 +1,5 @@
-import browser from 'webextension-polyfill';
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
+import { PORT_NAMES } from 'src/shared/portNames';
 import type { Wallet } from 'src/shared/types/Wallet';
 import type { AccountPublicRPC } from 'src/shared/types/AccountPublicRPC';
 import { UserRejected } from 'src/shared/errors/errors';
@@ -14,7 +14,7 @@ import { navigateProgrammatically } from './routing/helpers';
 import { emitter } from './events';
 
 export const walletPort = new PortMessageChannel({
-  name: `${browser.runtime.id}/wallet`,
+  name: PORT_NAMES.wallet,
 }) as RPCPort<Wallet>;
 
 type BlockTag = 'latest' | 'earliest' | 'pending';
@@ -23,19 +23,19 @@ interface NodeMethods {
 }
 
 export const httpConnectionPort = new PortMessageChannel({
-  name: `${browser.runtime.id}/http-connection-ui`,
+  name: PORT_NAMES.httpConnectionUi,
 }) as RPCPort<NodeMethods>;
 
 export const accountPublicRPCPort = new PortMessageChannel({
-  name: 'accountPublicRPC',
+  name: PORT_NAMES.accountPublicRPC,
 }) as RPCPort<AccountPublicRPC>;
 
 export const dnaServicePort = new PortMessageChannel({
-  name: 'dnaService',
+  name: PORT_NAMES.dnaService,
 }) as RPCPort<DnaService>;
 
 export const sessionCacheService = new PortMessageChannel({
-  name: 'sessionCacheService',
+  name: PORT_NAMES.sessionCacheService,
 }) as RPCPort<SessionCacheService>;
 
 class WindowPort extends PortMessageChannel {
@@ -69,7 +69,7 @@ class WindowPort extends PortMessageChannel {
   }
 }
 
-export const windowPort = new WindowPort({ name: 'window' });
+export const windowPort = new WindowPort({ name: PORT_NAMES.window });
 
 export function initialize() {
   walletPort.initialize();

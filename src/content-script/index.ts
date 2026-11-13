@@ -1,11 +1,11 @@
 import 'src/shared/polyfills';
-import browser from 'webextension-polyfill';
 import {
   isJsonRpcPayload,
   isJsonRpcRequest,
   isJsonRpcResponse,
 } from '@walletconnect/jsonrpc-utils';
 import { BackgroundScriptUpdateHandler } from 'src/shared/core/BackgroundScriptUpdateHandler';
+import { PORT_NAMES } from 'src/shared/portNames';
 import { PortMessageChannel } from 'src/shared/PortMessageChannel';
 import { initializeInDappNotifications } from './in-dapp-notifications';
 import { setChannelIdInDom } from './walletChannelId.content-script';
@@ -14,7 +14,7 @@ const walletChannelId = setChannelIdInDom();
 const broadcastChannel = new BroadcastChannel(walletChannelId);
 
 const port = new PortMessageChannel({
-  name: `${browser.runtime.id}/ethereum`,
+  name: PORT_NAMES.ethereum,
 });
 port.initialize();
 
@@ -36,7 +36,7 @@ function messageHandler(msg: unknown) {
 port.emitter.on('message', messageHandler);
 
 new BackgroundScriptUpdateHandler({
-  portName: 'content-script/keepAlive',
+  portName: PORT_NAMES.contentScriptKeepAlive,
   performHandshake: false,
   onActivate: () => {
     // content-scripts may hear this event when the background service worker
