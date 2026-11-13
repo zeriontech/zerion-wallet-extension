@@ -1,11 +1,9 @@
-import { useMutation } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { useCurrency } from 'src/modules/currency/useCurrency';
-import { applySimulationPatch } from 'src/ui/features/dev-menu/applySimulationPatch';
-import { devMenuStore } from 'src/ui/features/dev-menu/store';
-import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
+import {
+  useSimulateTransactions,
+  type SimulationResult,
+} from 'src/ui/shared/requests/useSimulateTransactions';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
-import type { SimulationResult } from 'src/ui/pages/SwapForm2/SwapButton';
 
 export type ButtonState = 'idle' | 'simulating';
 
@@ -22,22 +20,9 @@ export function useSendSimulation({
   onSimulationCompleted: (result: SimulationResult, transaction: MultichainTransaction) => void;
   onSign: () => void;
 }) {
-  const { currency } = useCurrency();
-
-  const simulationMutation = useMutation({
-    mutationFn: (txs: MultichainTransaction[]) =>
-      interpretTxBasedOnEligibility({
-        address,
-        transactions: txs,
-        eligibilityQueryData: false,
-        eligibilityQueryStatus: 'success',
-        currency,
-        origin: 'https://app.zerion.io',
-      }),
-    onSettled: (data, _error, txs) => {
-      const patched = applySimulationPatch(data, devMenuStore.getState());
-      onSimulationCompleted(patched ?? null, txs[0]);
-    },
+  const simulationMutation = useSimulateTransactions({
+    address,
+    onSettled: (result, transactions) => onSimulationCompleted(result, transactions[0]),
   });
 
   const state: ButtonState = simulationMutation.isLoading ? 'simulating' : 'idle';

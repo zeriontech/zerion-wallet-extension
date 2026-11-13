@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import cn from 'classnames';
 import { AnimatePresence, motion } from 'motion/react';
-import { useMutation } from '@tanstack/react-query';
 import shieldSolidUrl from 'url:src/ui/assets/shield-solid.svg';
-import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
-import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-signature';
 import type { Quote2 } from 'src/shared/types/Quote';
 import { toMultichainTransaction } from 'src/shared/types/Quote';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
@@ -13,12 +10,12 @@ import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { Button } from 'src/ui/ui-kit/Button';
-import { useCurrency } from 'src/modules/currency/useCurrency';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
-import { interpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
+import {
+  useSimulateTransactions,
+  type SimulationResult,
+} from 'src/ui/shared/requests/useSimulateTransactions';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
-import { applySimulationPatch } from 'src/ui/features/dev-menu/applySimulationPatch';
-import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import { KeyboardShortcut, ShortcutHint } from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
 import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
@@ -27,7 +24,7 @@ import { useSwapButtonOnboardingGate } from '../SwapButtonOnboardingDialog/useSw
 import type { SwapFormState2 } from '../types';
 import * as styles from './SwapButton.module.css';
 
-export type SimulationResult = InterpretResponse | SignatureInterpretResponse | null;
+export type { SimulationResult };
 
 type ButtonState = 'idle' | 'simulating';
 
@@ -167,8 +164,6 @@ function useSimulation({
   onSimulationCompleted: (result: SimulationResult) => void;
   onSign: () => void;
 }) {
-  const { currency } = useCurrency();
-
   const transactions = useMemo<MultichainTransaction[]>(() => {
     if (!quote) return [];
     // Apply the local network-fee override so the simulation reflects what
@@ -184,20 +179,9 @@ function useSimulation({
     return list;
   }, [quote, configuration, gasPrices]);
 
-  const simulationMutation = useMutation({
-    mutationFn: (txs: MultichainTransaction[]) =>
-      interpretTxBasedOnEligibility({
-        address,
-        transactions: txs,
-        eligibilityQueryData: false,
-        eligibilityQueryStatus: 'success',
-        currency,
-        origin: 'https://app.zerion.io',
-      }),
-    onSettled: (data) => {
-      const patched = applySimulationPatch(data, devMenuStore.getState());
-      onSimulationCompleted(patched ?? null);
-    },
+  const simulationMutation = useSimulateTransactions({
+    address,
+    onSettled: (result) => onSimulationCompleted(result),
   });
 
   const state: ButtonState = simulationMutation.isLoading ? 'simulating' : 'idle';

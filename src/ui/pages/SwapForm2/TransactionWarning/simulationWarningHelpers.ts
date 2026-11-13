@@ -1,9 +1,8 @@
 import type {
-  InterpretResponse,
   Warning as SimulationWarning,
   WarningSeverity,
 } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
-import type { SignatureInterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-signature';
+import type { SimulationResult } from 'src/ui/shared/requests/useSimulateTransactions';
 
 export type WarningVariant = 'warning' | 'error';
 
@@ -19,7 +18,7 @@ export interface WarningContent {
   dapp?: { name: string | null; url: string | null };
 }
 
-export type SimulationResult = InterpretResponse | SignatureInterpretResponse | null;
+export type { SimulationResult };
 
 export interface ResolvedTransactionWarning {
   warning: WarningContent | null;
