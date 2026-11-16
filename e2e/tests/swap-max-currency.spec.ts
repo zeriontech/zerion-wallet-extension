@@ -147,7 +147,7 @@ async function setupRoutes({
     });
   });
 
-  await context.route('**/transaction/stream-swap-quotes/v2*', async (route: Route) => {
+  await context.route('**/transaction/stream-swap-quotes/v3*', async (route: Route) => {
     quoteAmounts.push(new URL(route.request().url()).searchParams.get('inputAmount'));
     await route.fulfill({
       status: 200,
