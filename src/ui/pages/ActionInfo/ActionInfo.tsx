@@ -32,7 +32,9 @@ import {
 import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActionStatusByHash';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { ConfidentialMask } from 'src/ui/features/confidential-balances';
+import { useReadyClock } from 'src/ui/features/pending-transactions/useReadyClock';
 import { AccelerateTransaction } from '../History/AccelerateTransaction';
+import { isPendingAction, PendingStatusLine } from '../History/PendingActionItem';
 import { PopoverToast, type PopoverToastHandle } from '../Settings/PopoverToast/PopoverToast';
 import { RateLine } from './RateLine';
 import { LabelLine } from './LabelLine';
@@ -298,6 +300,10 @@ export function ActionInfo() {
   const addressAction = state?.addressAction as AnyAddressAction | undefined;
   const targetObject = actIndex != null ? addressAction?.acts?.at(actIndex) : addressAction;
 
+  const pendingItem = addressAction && isPendingAction(addressAction) ? addressAction : null;
+  const readyClockRows = useMemo(() => (pendingItem ? [pendingItem] : []), [pendingItem]);
+  const nowMs = useReadyClock(readyClockRows);
+
   const actionDate = useMemo(() => {
     return addressAction?.timestamp
       ? dateFormatter.format(new Date(addressAction.timestamp))
@@ -341,6 +347,11 @@ export function ActionInfo() {
             <UIText kind="small/regular" color="var(--neutral-500)">
               {actionDate}
             </UIText>
+            {pendingItem ? (
+              <UIText kind="small/regular" color="var(--neutral-500)">
+                <PendingStatusLine item={pendingItem} nowMs={nowMs} />
+              </UIText>
+            ) : null}
           </VStack>
         }
         documentTitle="Action info"
