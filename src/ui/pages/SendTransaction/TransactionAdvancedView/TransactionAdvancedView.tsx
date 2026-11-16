@@ -31,7 +31,6 @@ import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
-import { RecipientLine } from 'src/ui/components/address-action/RecipientLine';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { OneOf } from 'src/shared/type-utils/OneOf';
@@ -218,16 +217,6 @@ export function TransactionAdvancedView({
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        {labelLine?.kind === 'address' ? (
-          <RecipientLine
-            caption={labelLine.caption}
-            recipientAddress={labelLine.address}
-            recipientName={labelLine.name || null}
-            network={network}
-            showNetworkIcon={true}
-            onCopy={handleLabelCopy}
-          />
-        ) : null}
         {labelLine?.kind === 'application-wallet' ? (
           <ApplicationWalletLine
             caption={labelLine.caption}
@@ -236,9 +225,7 @@ export function TransactionAdvancedView({
             onCopy={handleLabelCopy}
           />
         ) : null}
-        {addressAction &&
-        (labelLine?.kind === 'application-contract' ||
-          (labelLine?.kind === 'address' && addressAction.label?.contract)) ? (
+        {addressAction?.label?.contract ? (
           <ApplicationLine addressAction={addressAction} network={network} />
         ) : null}
         {transaction.evm ? (
