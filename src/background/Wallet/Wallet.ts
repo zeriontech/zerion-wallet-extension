@@ -94,7 +94,7 @@ import type { UiAnalyticsEvent } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
 import { isSessionCredentials } from '../account/Credentials';
 import { lastUsedAddressStore } from '../user-activity';
-import { transactionService } from '../transactions/TransactionService';
+import { swapHashReporter, transactionService } from '../transactions/TransactionService';
 import { searchStore } from '../search/SearchStore';
 import { BrowserStorage } from '../webapis/storage';
 import {
@@ -1898,6 +1898,15 @@ export class Wallet {
       }
     }
     return null;
+  }
+
+  async uiGetReportedSwapOrderId({
+    params: { swapHash },
+    context,
+  }: WalletMethodParams<{ swapHash: string }>): Promise<string | null> {
+    this.verifyInternalOrigin(context);
+    invariant(swapHash, () => new InvalidParams());
+    return swapHashReporter.getReportedOrderId(swapHash);
   }
 
   async clearPendingTransactions({ context }: WalletMethodParams) {
