@@ -1,21 +1,18 @@
 import { animated, useTransition } from '@react-spring/web';
 import React, { useLayoutEffect, useState } from 'react';
-import ArrowLeftTop from 'jsx:src/ui/assets/arrow-left-top.svg';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { ShuffleText } from 'src/ui/components/ShuffleText';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Media } from 'src/ui/ui-kit/Media';
 import { Image } from 'src/ui/ui-kit/MediaFallback';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { Networks } from 'src/modules/networks/Networks';
+import { CopyableAddress } from '../CopyableAddress';
 
 const FadeOutAndIn = ({
   src,
@@ -148,21 +145,66 @@ export function ApplicationLine({
             </UIText>
             {applicationAddress ? (
               <UIText kind="small/regular" color="var(--neutral-500)" title={applicationAddress}>
-                <TextAnchor
-                  // Open URL in a new _window_ so that extension UI stays open and visible
-                  onClick={openInNewWindow}
-                  href={Networks.getExplorerAddressUrl(network, applicationAddress)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <HStack gap={3} justifyContent="center" alignItems="center">
-                    <span>{truncateAddress(applicationAddress, 4)}</span>
-                    <ArrowLeftTop />
-                  </HStack>
-                </TextAnchor>
+                <CopyableAddress address={applicationAddress}>
+                  {truncateAddress(applicationAddress, 4)}
+                </CopyableAddress>
               </UIText>
             ) : null}
           </HStack>
+        }
+      />
+    </Surface>
+  );
+}
+
+export function ApplicationWalletLine({
+  caption,
+  address,
+  network,
+  onCopy,
+}: {
+  caption: string | null;
+  address: string;
+  network: NetworkInfo;
+  onCopy: () => void;
+}) {
+  const checksumAddress = toChecksumAddress(address);
+  const truncatedAddress = truncateAddress(checksumAddress, 4);
+
+  return (
+    <Surface style={{ borderRadius: 8, padding: '10px 12px' }}>
+      <Media
+        style={{ gridAutoColumns: 'minmax(min-content, max-content) auto' }}
+        image={
+          <div style={{ position: 'relative', width: 36, height: 36 }}>
+            <BlockieImg address={checksumAddress} size={36} borderRadius={8} />
+            <div style={{ position: 'absolute', bottom: -2, right: -2 }}>
+              <NetworkIcon
+                size={20}
+                name={network?.name || null}
+                src={network?.iconUrl || ''}
+                style={{
+                  borderRadius: 8,
+                  border: '2px solid var(--surface-background-color)',
+                }}
+              />
+            </div>
+          </div>
+        }
+        vGap={0}
+        text={
+          caption ? (
+            <UIText kind="caption/regular" color="var(--neutral-500)">
+              {caption}
+            </UIText>
+          ) : null
+        }
+        detailText={
+          <UIText kind="body/accent" color="var(--black)" title={checksumAddress}>
+            <CopyableAddress address={checksumAddress} onCopy={onCopy}>
+              {truncatedAddress}
+            </CopyableAddress>
+          </UIText>
         }
       />
     </Surface>

@@ -96,6 +96,10 @@ function trackAppEvents({
     walletPort.request('trackUiEvent', { name: 'bannerClicked', data });
   });
 
+  emitter.on('labelAddressCopied', async (data) => {
+    walletPort.request('trackUiEvent', { name: 'labelAddressCopied', data });
+  });
+
   emitter.on('assetVisibilityChanged', async (data) => {
     walletPort.request('trackUiEvent', { name: 'assetVisibilityChanged', data });
   });

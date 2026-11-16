@@ -14,10 +14,20 @@ import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { useTransformTrigger } from 'src/ui/components/useTransformTrigger';
 import type { ActionLabel } from 'src/modules/zerion-api/requests/wallet-get-actions';
+import { getLabelAddressCopiedParams } from 'src/shared/analytics/shared/labelAddressCopied';
+import { emitter } from 'src/ui/shared/events';
 
 const ICON_SIZE = 20;
 
-function LabelInfo({ label }: { label: ActionLabel }) {
+function LabelInfo({
+  label,
+  chain,
+  actType,
+}: {
+  label: ActionLabel;
+  chain: string | null;
+  actType: string;
+}) {
   const { wallet, contract } = label;
   const address = wallet?.address || contract?.address || '';
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: address });
@@ -41,7 +51,17 @@ function LabelInfo({ label }: { label: ActionLabel }) {
   const handleClick = useCallback(() => {
     handleCopy();
     successCopyTrigger();
-  }, [handleCopy, successCopyTrigger]);
+    const params = getLabelAddressCopiedParams({
+      label,
+      chain,
+      actType,
+      screen: 'history_details',
+      isOwnWallet: Boolean(localWallet),
+    });
+    if (params) {
+      emitter.emit('labelAddressCopied', params);
+    }
+  }, [handleCopy, successCopyTrigger, label, chain, actType, localWallet]);
 
   return (
     <UnstyledButton
@@ -95,7 +115,15 @@ function LabelInfo({ label }: { label: ActionLabel }) {
   );
 }
 
-export function LabelLine({ label }: { label: ActionLabel }) {
+export function LabelLine({
+  label,
+  chain,
+  actType,
+}: {
+  label: ActionLabel;
+  chain: string | null;
+  actType: string;
+}) {
   return (
     <HStack
       gap={24}
@@ -106,7 +134,7 @@ export function LabelLine({ label }: { label: ActionLabel }) {
       {label.displayTitle ? (
         <UIText kind="small/regular">{capitalize(label.displayTitle)}</UIText>
       ) : null}
-      <LabelInfo label={label} />
+      <LabelInfo label={label} chain={chain} actType={actType} />
     </HStack>
   );
 }

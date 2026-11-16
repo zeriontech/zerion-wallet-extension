@@ -392,7 +392,9 @@ export function ActionInfo() {
           }}
         >
           {transaction ? <ExplorerInfo transaction={transaction} /> : null}
-          {label ? <LabelLine label={label} /> : null}
+          {label ? (
+            <LabelLine label={label} chain={transaction?.chain.id ?? null} actType={type.value} />
+          ) : null}
           {'rate' in targetObject && targetObject.rate ? (
             <RateLine rate={targetObject.rate} />
           ) : null}

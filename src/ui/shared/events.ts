@@ -8,6 +8,7 @@ import type {
   PerpsScreenViewedParams,
 } from 'src/shared/types/perps-events';
 import type { NetworkFeeLevelChangedParams } from 'src/shared/types/network-fee-events';
+import type { LabelAddressCopiedParams } from 'src/shared/types/label-events';
 
 type EthersSignMethod = 'sendTransaction' | '_signTypedData' | 'signMessage';
 
@@ -29,6 +30,7 @@ export const emitter = createNanoEvents<{
   buttonClicked: (data: ButtonClickedParams) => void;
   networkFeeLevelChanged: (data: NetworkFeeLevelChangedParams) => void;
   bannerClicked: (data: BannerClickedParams) => void;
+  labelAddressCopied: (data: LabelAddressCopiedParams) => void;
   assetVisibilityChanged: (data: AssetVisibilityChangedParams) => void;
   mnemonicRestorationNeeded: () => void;
   perpsScreenViewed: (data: PerpsScreenViewedParams) => void;

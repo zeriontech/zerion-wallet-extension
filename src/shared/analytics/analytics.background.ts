@@ -29,6 +29,7 @@ import { normalizeAddress } from '../normalizeAddress';
 import { getAddressType } from '../wallet/classifiers';
 import { CONFIDENTIAL_EVENT_NAMES } from '../types/confidential-events';
 import type { NetworkFeeLevelChangedParams } from '../types/network-fee-events';
+import { LABEL_ADDRESS_COPIED_EVENT } from '../types/label-events';
 import { createParams as createBaseParams, sendToMetabase } from './analytics';
 import {
   getProviderForMetabase,
@@ -224,6 +225,14 @@ function trackAppEvents({ account }: { account: Account }) {
       const event_name = 'General: Banner Clicked';
       const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
       mixpanelTrack(event_name, mixpanelParams);
+    }),
+  );
+
+  emitter.on(
+    'labelAddressCopied',
+    gated(async (data) => {
+      const params = createParams({ request_name: 'label_address_copied', ...data });
+      mixpanelTrack(LABEL_ADDRESS_COPIED_EVENT, omit(params, ['request_name', 'wallet_address']));
     }),
   );
 
