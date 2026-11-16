@@ -80,8 +80,8 @@ export function AssetInfo() {
   } = useHiddenFungibleIds();
   const { hide, unhide } = useHiddenFungibleActions();
   const { hasSeenHideTokenHint, markSeen: markHideTokenHintSeen } = useHideTokenHint();
-  const [hideHintVisible, setHideHintVisible] = useState(false);
-  const [hideHintAttempted, setHideHintAttempted] = useState(false);
+  const [hideHintAssetId, setHideHintAssetId] = useState<string | null>(null);
+  const [hideHintDismissedFor, setHideHintDismissedFor] = useState<string | null>(null);
   const isHidden = hiddenIdsAreReady && hiddenFungibleIds.includes(asset_code);
   const isHideHintEligible = shouldShowHideTokenHint({
     fullInfo: assetFullInfo,
@@ -91,17 +91,17 @@ export function AssetInfo() {
     isHidden,
   });
   useEffect(() => {
-    if (!isHideHintEligible || hideHintAttempted) {
+    if (!isHideHintEligible || hideHintDismissedFor === asset_code) {
       return;
     }
-    // The hint is one-time: showing it is what marks it as seen. Local state
-    // keeps it on screen after the optimistic preference write flips the flag,
-    // and stops a failed write from retrying on every render.
-    setHideHintAttempted(true);
-    setHideHintVisible(true);
+    // The hint is one-time: showing it is what marks it as seen. State is keyed
+    // by asset id so the router reusing this component for another asset cannot
+    // show the hint there, and a failed write does not retry on every render.
+    setHideHintAssetId(asset_code);
     markHideTokenHintSeen();
-  }, [isHideHintEligible, hideHintAttempted, markHideTokenHintSeen]);
-  const showHideHint = hideHintVisible && !isHidden;
+  }, [isHideHintEligible, hideHintDismissedFor, asset_code, markHideTokenHintSeen]);
+  const showHideHint =
+    hideHintAssetId === asset_code && hideHintDismissedFor !== asset_code && !isHidden;
   const { data: portfolioData } = useWalletPortfolio(
     {
       addresses: [params.address],
@@ -290,10 +290,10 @@ export function AssetInfo() {
         {showHideHint ? (
           <HideTokenHint
             onHide={() => {
-              setHideHintVisible(false);
+              setHideHintDismissedFor(asset_code);
               hideAsset('hint');
             }}
-            onDismiss={() => setHideHintVisible(false)}
+            onDismiss={() => setHideHintDismissedFor(asset_code)}
           />
         ) : null}
         <AssetTitleAndChart asset={assetFullInfo.fungible} address={params.address} />
