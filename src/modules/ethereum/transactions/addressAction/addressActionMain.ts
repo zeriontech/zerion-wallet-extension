@@ -290,6 +290,14 @@ export function createSendNFTAddressAction({
   };
 }
 
+type TradeActionType = 'trade' | 'deposit' | 'withdraw';
+
+const TRADE_ACTION_LABELS: Record<TradeActionType, string> = {
+  trade: 'Trade',
+  deposit: 'Deposit',
+  withdraw: 'Withdraw',
+};
+
 export function createTradeAddressAction({
   address,
   transaction,
@@ -301,6 +309,7 @@ export function createTradeAddressAction({
   network,
   rate,
   explorerUrl,
+  type = 'trade',
 }: {
   transaction: MultichainTransaction;
   hash: string | null;
@@ -312,7 +321,9 @@ export function createTradeAddressAction({
   network: NetworkInfo;
   rate: Quote2['rate'] | null;
   explorerUrl: string | null;
+  type?: TradeActionType;
 }): LocalAddressAction {
+  const actionType = { value: type, displayValue: TRADE_ACTION_LABELS[type] };
   const content = {
     approvals: null,
     transfers: [
@@ -349,18 +360,12 @@ export function createTradeAddressAction({
         label: null,
         rate,
         status: 'pending',
-        type: {
-          value: 'trade',
-          displayValue: 'Trade',
-        },
+        type: actionType,
         transaction: actionTransaction,
       },
     ],
     status: 'pending',
-    type: {
-      value: 'trade',
-      displayValue: 'Trade',
-    },
+    type: actionType,
     label: null,
     fee: null,
     refund: null,
