@@ -9,7 +9,7 @@ export function CopyableAddress({
   address,
   onCopy,
   children,
-}: React.PropsWithChildren<{ address: string; onCopy: () => void }>) {
+}: React.PropsWithChildren<{ address: string; onCopy?: () => void }>) {
   const { handleCopy, isSuccess } = useCopyToClipboard({ text: address, onSuccess: onCopy });
 
   return (

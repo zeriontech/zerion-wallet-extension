@@ -62,7 +62,6 @@ const CASES = TITLES.flatMap((title) =>
           kind,
           caption: displayTitle ?? null,
           address: WALLET_ADDRESS,
-          copyOnly: true,
         };
       } else if (kind === 'address') {
         expected = {
@@ -70,7 +69,6 @@ const CASES = TITLES.flatMap((title) =>
           caption: displayTitle ?? RECIPIENT_FALLBACK_CAPTION,
           address: WALLET_ADDRESS,
           name: 'alice.eth',
-          copyOnly: true,
         };
       } else if (kind === 'application-contract') {
         expected = { kind };
@@ -102,11 +100,7 @@ describe('getLabelLine', () => {
     ({ expected }) => expected?.kind === 'address' || expected?.kind === 'application-wallet',
   );
   const TRACKABLE_CASES = WALLET_CELLS.flatMap((cell) =>
-    [
-      { trackable: true, copyOnly: false },
-      { trackable: false, copyOnly: true },
-      { trackable: undefined, copyOnly: true },
-    ].map((variant) => ({ ...cell, ...variant })),
+    [true, false, undefined].map((trackable) => ({ ...cell, trackable })),
   );
 
   test('every wallet-kind cell is checked against each trackable value', () => {
@@ -115,17 +109,16 @@ describe('getLabelLine', () => {
   });
 
   test.each(TRACKABLE_CASES)(
-    'title=$title shape=$shape displayTitle=$displayTitle trackable=$trackable → copyOnly=$copyOnly',
-    ({ title, shape, displayTitle, trackable, copyOnly }) => {
+    'title=$title shape=$shape displayTitle=$displayTitle ignores trackable=$trackable',
+    ({ title, shape, displayTitle, trackable, expected }) => {
       const label = makeLabel({ title, shape, displayTitle });
       const { trackable: _, ...untracked } = wallet;
       label.wallet = trackable === undefined ? untracked : { ...untracked, trackable };
-      const line = getLabelLine(label);
-      expect(line && 'copyOnly' in line ? line.copyOnly : 'no wallet line').toBe(copyOnly);
+      expect(getLabelLine(label)).toStrictEqual(expected);
     },
   );
 
-  test('a wallet-shaped application label is a copy-only application-wallet line', () => {
+  test('a wallet-shaped application label is an application-wallet line', () => {
     expect(
       getLabelLine({
         title: 'application',
@@ -137,7 +130,6 @@ describe('getLabelLine', () => {
       kind: 'application-wallet',
       caption: 'Application',
       address: WALLET_ADDRESS,
-      copyOnly: true,
     });
   });
 
@@ -156,7 +148,7 @@ describe('getLabelLine', () => {
     ).toStrictEqual({ kind: 'application-contract' });
   });
 
-  test('the locally built send label is a copy-only "Recipient" address line', () => {
+  test('the locally built send label is a "Recipient" address line', () => {
     const action = createSendTokenAddressAction({
       transaction: {} as MultichainTransaction,
       hash: null,
@@ -172,7 +164,6 @@ describe('getLabelLine', () => {
       caption: 'Recipient',
       address: WALLET_ADDRESS,
       name: null,
-      copyOnly: true,
     });
   });
 });

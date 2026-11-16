@@ -3,12 +3,9 @@ import { BlockieImg } from 'src/ui/components/BlockieImg';
 import { truncateAddress } from 'src/ui/shared/truncateAddress';
 import { Media } from 'src/ui/ui-kit/Media';
 import { Surface } from 'src/ui/ui-kit/Surface';
-import { TextAnchor } from 'src/ui/ui-kit/TextAnchor';
 import { UIText } from 'src/ui/ui-kit/UIText';
-import { openInNewWindow } from 'src/ui/shared/openInNewWindow';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
-import { Networks } from 'src/modules/networks/Networks';
 import { NetworkIcon } from '../../NetworkIcon';
 import { CopyableAddress } from '../CopyableAddress';
 
@@ -18,7 +15,6 @@ export function RecipientLine({
   recipientName,
   network,
   showNetworkIcon,
-  copyOnly,
   onCopy,
 }: {
   caption: string;
@@ -26,7 +22,6 @@ export function RecipientLine({
   recipientName: string | null;
   network: NetworkInfo;
   showNetworkIcon: boolean;
-  copyOnly: boolean;
   onCopy: () => void;
 }) {
   const checksumAddress = useMemo(() => toChecksumAddress(recipientAddress), [recipientAddress]);
@@ -63,21 +58,9 @@ export function RecipientLine({
         }
         detailText={
           <UIText kind="small/regular" color="var(--neutral-500)" title={checksumAddress}>
-            {copyOnly ? (
-              <CopyableAddress address={checksumAddress} onCopy={onCopy}>
-                {displayedAddress}
-              </CopyableAddress>
-            ) : (
-              <TextAnchor
-                // Open URL in a new _window_ so that extension UI stays open and visible
-                onClick={openInNewWindow}
-                href={Networks.getExplorerAddressUrl(network, checksumAddress)}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {displayedAddress}
-              </TextAnchor>
-            )}
+            <CopyableAddress address={checksumAddress} onCopy={onCopy}>
+              {displayedAddress}
+            </CopyableAddress>
           </UIText>
         }
       />

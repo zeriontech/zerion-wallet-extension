@@ -72,7 +72,6 @@ export function AddressActionDetails({
           recipientName={labelLine.name || null}
           showNetworkIcon={!applicationLineVisible}
           network={network}
-          copyOnly={labelLine.copyOnly}
           onCopy={handleLabelCopy}
         />
       ) : null}
@@ -84,7 +83,6 @@ export function AddressActionDetails({
           caption={labelLine.caption}
           address={labelLine.address}
           network={network}
-          copyOnly={labelLine.copyOnly}
           onCopy={handleLabelCopy}
         />
       ) : null}

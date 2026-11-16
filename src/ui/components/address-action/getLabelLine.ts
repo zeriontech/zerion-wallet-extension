@@ -4,8 +4,8 @@ export const RECIPIENT_FALLBACK_CAPTION = 'Recipient';
 
 export type LabelLine =
   | { kind: 'application-contract' }
-  | { kind: 'application-wallet'; caption: string | null; address: string; copyOnly: boolean }
-  | { kind: 'address'; caption: string; address: string; name: string | null; copyOnly: boolean };
+  | { kind: 'application-wallet'; caption: string | null; address: string }
+  | { kind: 'address'; caption: string; address: string; name: string | null };
 
 export function getLabelLine(label: ActionLabel | null | undefined): LabelLine | null {
   if (!label) {
@@ -16,7 +16,6 @@ export function getLabelLine(label: ActionLabel | null | undefined): LabelLine |
   if (!wallet) {
     return contract ? { kind: 'application-contract' } : null;
   }
-  const copyOnly = wallet.trackable !== true;
   switch (title) {
     case 'application':
       return contract
@@ -25,7 +24,6 @@ export function getLabelLine(label: ActionLabel | null | undefined): LabelLine |
             kind: 'application-wallet',
             caption: label.displayTitle ?? null,
             address: wallet.address,
-            copyOnly,
           };
     default:
       return {
@@ -33,7 +31,6 @@ export function getLabelLine(label: ActionLabel | null | undefined): LabelLine |
         caption: label.displayTitle ?? RECIPIENT_FALLBACK_CAPTION,
         address: wallet.address,
         name: wallet.name ?? null,
-        copyOnly,
       };
   }
 }

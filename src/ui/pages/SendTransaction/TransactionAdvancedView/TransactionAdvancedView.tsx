@@ -225,7 +225,6 @@ export function TransactionAdvancedView({
             recipientName={labelLine.name || null}
             network={network}
             showNetworkIcon={true}
-            copyOnly={labelLine.copyOnly}
             onCopy={handleLabelCopy}
           />
         ) : null}
@@ -234,7 +233,6 @@ export function TransactionAdvancedView({
             caption={labelLine.caption}
             address={labelLine.address}
             network={network}
-            copyOnly={labelLine.copyOnly}
             onCopy={handleLabelCopy}
           />
         ) : null}
