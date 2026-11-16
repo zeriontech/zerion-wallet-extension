@@ -121,6 +121,7 @@ describe('simulateSwapQuote', () => {
       simulationResult: result,
       inputNetwork: null,
       outputNetwork: null,
+      priceImpactNeedsConfirmation: false,
     });
     expect(resolved.warning?.title).toBe('Approve warning');
   });

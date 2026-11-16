@@ -1,4 +1,4 @@
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { deniedByUser, parseLedgerError } from '@zeriontech/hardware-wallet-connection';
 import { isDeviceAccount } from 'src/shared/types/validators';
 import { getAddressType } from 'src/shared/wallet/classifiers';
