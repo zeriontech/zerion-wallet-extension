@@ -28,15 +28,15 @@ export function createFakePermits(address: string): Permit[] {
             { name: 'chainId', type: 'uint256' },
             { name: 'verifyingContract', type: 'address' },
           ],
-          DecryptionPermit: [
+          UserDecryptRequestVerification: [
             { name: 'holder', type: 'address' },
-            { name: 'contracts', type: 'address[]' },
+            { name: 'contractAddresses', type: 'address[]' },
             { name: 'expiresAt', type: 'uint256' },
           ],
         },
-        primaryType: 'DecryptionPermit',
+        primaryType: 'UserDecryptRequestVerification',
         domain: {
-          name: 'Zerion Confidential Balances (dev)',
+          name: 'Decryption',
           version: '1',
           chainId,
           verifyingContract: contract,
@@ -44,7 +44,7 @@ export function createFakePermits(address: string): Permit[] {
         },
         message: {
           holder: address,
-          contracts: [contract],
+          contractAddresses: [contract],
           expiresAt: Math.floor(Date.parse(expireAt) / 1000),
         },
       },

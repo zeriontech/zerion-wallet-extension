@@ -4,6 +4,7 @@ import { toStoredPermit } from 'src/shared/confidential-balances/permits';
 import type { StoredPermit } from 'src/shared/types/ConfidentialPermit';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { prepareTypedDataForSigning } from 'src/modules/ethereum/message-signing/prepareTypedDataForSigning';
+import { validatePermitPayload } from './permitPayload';
 
 /** Produces one EIP-712 signature; software (background) or Ledger (device) */
 export type PermitSigner = (typedData: TypedData) => Promise<string>;
@@ -22,9 +23,10 @@ export class PermitSigningError extends Error {
 
 /**
  * Signs Permits one after another with the given signer and returns the
- * Signed Permits in the same order. Stores nothing: a failure at any index
- * rejects with a `PermitSigningError` and nothing signed so far survives —
- * one Reveal is all-or-nothing, for the silent and the Ledger flow alike.
+ * Signed Permits in the same order. Every payload is validated before the
+ * first signature, and a failure at any index rejects with a
+ * `PermitSigningError`: nothing signed survives — one Reveal is
+ * all-or-nothing, for the silent and the Ledger flow alike.
  *
  * `onStep(index)` fires right before permit `index` is handed to the signer,
  * `onSigned(index, permit)` right after it came back.
@@ -41,6 +43,14 @@ export async function signPermitBatch(
     onSigned?: (index: number, permit: Permit) => void;
   } = {},
 ): Promise<StoredPermit[]> {
+  permits.forEach((permit, index) => {
+    try {
+      validatePermitPayload(permit);
+    } catch (error) {
+      throw new PermitSigningError(index, error);
+    }
+  });
+
   const stored: StoredPermit[] = [];
   const normalizedAddress = normalizeAddress(address);
   for (const [index, permit] of permits.entries()) {
