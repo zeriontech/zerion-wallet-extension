@@ -4,6 +4,12 @@ import type { Quote2 } from './Quote';
 
 type ClientScope = string | 'Swap' | 'Bridge' | 'Send' | 'Zerion DNA' | 'External Dapp';
 
+/** Tells the background which `transactionSent` hash to report to execute-order */
+export type OrderReport = {
+  quoteId: string;
+  role: 'approve' | 'swap' | 'step';
+};
+
 export type TransactionContextParams = {
   chain: string; // Cannot use type {Chain} because it's not serializable and this object is being sent between Ports
   feeValueCommon: string | null;
@@ -32,6 +38,7 @@ export type TransactionContextParams = {
    *     TODO
    */
   method?: 'signTransaction' | 'signAndSendTransaction' | 'signAllTransactions';
+  orderReport?: OrderReport;
 } & (
   | { quote?: undefined; outputChain?: undefined }
   | {
