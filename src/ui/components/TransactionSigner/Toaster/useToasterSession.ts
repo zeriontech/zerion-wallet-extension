@@ -228,10 +228,13 @@ export function useToasterSession(): ToasterSession {
     function handleStepEnd(
       queueId: string,
       stepIndex: number,
-      kind: 'success' | 'failed' | 'dismissed',
+      kind: 'success' | 'failed' | 'dismissed' | 'placed',
     ) {
       const isLast = isLastStepInQueue(queueId, stepIndex);
-      if (isLast) {
+      if (isLast && kind === 'placed') {
+        // The Order settles outside the queue: keep the in-progress verb, then dismiss.
+        scheduleDismiss(TERMINAL_HOLD_MS);
+      } else if (isLast) {
         // Session ends. Display terminal state and schedule dismiss.
         if (kind === 'dismissed') {
           // Silent: just dismiss without success/fail badge.
@@ -281,8 +284,12 @@ export function useToasterSession(): ToasterSession {
           setStepHash(queueId, event.txHash);
           break;
         }
+        case 'step-order-placed': {
+          break;
+        }
         case 'step-success': {
-          handleStepEnd(queueId, event.index, 'success');
+          const isOrderStep = 'order' in event.result;
+          handleStepEnd(queueId, event.index, isOrderStep ? 'placed' : 'success');
           break;
         }
         case 'step-error': {

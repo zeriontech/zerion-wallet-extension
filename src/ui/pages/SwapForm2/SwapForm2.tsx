@@ -24,11 +24,14 @@ import type { MultichainTransaction } from 'src/shared/types/MultichainTransacti
 import { isExecutableQuote, isIntentQuote, toMultichainTransaction } from 'src/shared/types/Quote';
 import { toIncomingTransaction } from 'src/shared/types/Quote';
 import { canSignIntent } from 'src/shared/wallet/canSignIntent';
+import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
+import { buildExpectedIntentSigning } from 'src/ui/shared/forms/trading/intentTypedData';
 import { getAddressType } from 'src/shared/wallet/classifiers';
 import { equal } from 'src/modules/fast-deep-equal';
 import {
   signUntilFirstBroadcast,
   QueueAbortError,
+  QuoteExpiredError,
   type SignStep,
   type ToasterView,
 } from 'src/ui/components/TransactionSigner';
@@ -222,7 +225,12 @@ function SwapFormComponent({
     useErrorBoundary: true,
   });
 
-  const allowIntents = canSignIntent(wallet ?? null, getAddressType(address));
+  const { data: walletGroups } = useWalletGroups();
+  const allowIntents = canSignIntent({
+    walletGroups,
+    from: address,
+    ecosystem: getAddressType(address),
+  });
 
   const { quote, quotesQuery, setUserQuoteId, resolvedInputAmount } = useSwapQuote({
     address,
@@ -406,10 +414,7 @@ function SwapFormComponent({
       invariant(formState.inputAmount, 'inputAmount must be set');
       invariant(resolvedInputAmount, 'resolvedInputAmount must be set');
       invariant(isExecutableQuote(quote), 'Quote must be executable');
-      invariant(
-        !isIntentQuote(quote) && quote.transactionSwap,
-        'Intent quotes are not supported yet (WLT-3106)',
-      );
+      const intentQuote = isIntentQuote(quote);
 
       const inputNetwork = networks.getByNetworkId(createChain(formState.inputChain));
       invariant(inputNetwork, 'inputNetwork must be defined');
@@ -515,7 +520,10 @@ function SwapFormComponent({
             addressAction: interpretationAction ?? fallbackApproveAction,
             warningWasShown: Boolean(showPriceImpactCallout),
             outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
-            orderReport: quote.quoteId ? { quoteId: quote.quoteId, role: 'approve' } : undefined,
+            orderReport:
+              quote.quoteId && !intentQuote
+                ? { quoteId: quote.quoteId, role: 'approve' }
+                : undefined,
           },
           toaster: {
             ...(isDeviceAccount(wallet) || formState.inputChain === NetworkId.Ethereum
@@ -528,12 +536,13 @@ function SwapFormComponent({
         });
       }
 
-      const swapTx = configuredQuote.transactionSwap;
-      invariant(swapTx, 'Configured quote must have a swap transaction');
+      const swapTx = intentQuote ? null : configuredQuote.transactionSwap;
+      invariant(intentQuote || swapTx, 'Configured quote must have a swap transaction');
+      const swapMultichain = swapTx ? toMultichainTransaction(swapTx) : null;
       const fallbackSwapAction = isCrossChain
         ? createBridgeAddressAction({
             address,
-            transaction: toMultichainTransaction(swapTx),
+            transaction: swapMultichain,
             hash: null,
             explorerUrl: null,
             spendFungible: inputPosition.fungible,
@@ -546,7 +555,7 @@ function SwapFormComponent({
           })
         : createTradeAddressAction({
             address,
-            transaction: toMultichainTransaction(swapTx),
+            transaction: swapMultichain,
             hash: null,
             explorerUrl: null,
             spendFungible: inputPosition.fungible,
@@ -568,32 +577,53 @@ function SwapFormComponent({
               }) ?? 'trade',
           });
 
-      const swapMultichain = toMultichainTransaction(swapTx);
-      // Swap is step 0 only when there's no approve; honor userNonce there.
-      // When swap follows approve, it's step 1+ — strip and let prepareNonce
-      // resolve, since prior step's nonce isn't known until broadcast.
-      const swapIsFirstStep = !quote.transactionApprove;
-      steps.push({
-        kind: 'send',
-        params: {
-          transaction:
-            swapIsFirstStep && userNonce != null
-              ? withNonce(swapMultichain, userNonce)
-              : withoutNonce(swapMultichain),
-          chain: formState.inputChain,
-          initiator: INTERNAL_ORIGIN,
-          clientScope: isCrossChain ? 'Bridge' : 'Swap',
-          actionType: 'Trade',
-          feeValueCommon: quote.networkFee?.amount?.quantity || '0',
-          addressAction: interpretationAction ?? fallbackSwapAction,
-          quote,
-          outputChain: formState.outputChain,
-          warningWasShown: Boolean(showPriceImpactCallout),
-          outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
-          orderReport: quote.quoteId ? { quoteId: quote.quoteId, role: 'swap' } : undefined,
-        },
-        toaster: swapToasterView,
-      });
+      const swapContext = {
+        chain: formState.inputChain,
+        initiator: INTERNAL_ORIGIN,
+        clientScope: isCrossChain ? 'Bridge' : 'Swap',
+        actionType: 'Trade',
+        feeValueCommon: quote.networkFee?.amount?.quantity || '0',
+        addressAction: interpretationAction ?? fallbackSwapAction,
+        quote,
+        outputChain: formState.outputChain,
+        warningWasShown: Boolean(showPriceImpactCallout),
+        outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
+      } as const;
+
+      if (swapMultichain) {
+        // Swap is step 0 only when there's no approve; honor userNonce there.
+        // When swap follows approve, it's step 1+ — strip and let prepareNonce
+        // resolve, since prior step's nonce isn't known until broadcast.
+        const swapIsFirstStep = !quote.transactionApprove;
+        steps.push({
+          kind: 'send',
+          params: {
+            ...swapContext,
+            transaction:
+              swapIsFirstStep && userNonce != null
+                ? withNonce(swapMultichain, userNonce)
+                : withoutNonce(swapMultichain),
+            orderReport: quote.quoteId ? { quoteId: quote.quoteId, role: 'swap' } : undefined,
+          },
+          toaster: swapToasterView,
+        });
+      } else {
+        steps.push({
+          kind: 'order',
+          params: {
+            ...swapContext,
+            expected: quote.intentSwap?.evm
+              ? buildExpectedIntentSigning({
+                  inputAmount: resolvedInputAmount,
+                  inputNetwork,
+                  inputFungible: inputPosition.fungible,
+                  nowSeconds: Math.floor(Date.now() / 1000),
+                })
+              : null,
+          },
+          toaster: swapToasterView,
+        });
+      }
 
       await signUntilFirstBroadcast(
         steps,
@@ -608,6 +638,9 @@ function SwapFormComponent({
     },
     onError: (error) => {
       if (error instanceof QueueAbortError) return;
+      if (error instanceof QuoteExpiredError) {
+        quotesQuery.refetch();
+      }
       // eslint-disable-next-line no-console
       console.error('SwapForm2 sign failed', error);
     },

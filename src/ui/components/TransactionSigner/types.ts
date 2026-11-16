@@ -3,6 +3,8 @@ import type { TransactionContextParams } from 'src/shared/types/SignatureContext
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
+import type { Quote2 } from 'src/shared/types/Quote';
+import type { ExpectedIntentSigning } from 'src/ui/shared/forms/trading/intentTypedData';
 
 export type SendTxParams = TransactionContextParams & {
   transaction: MultichainTransaction;
@@ -11,6 +13,19 @@ export type SendTxParams = TransactionContextParams & {
 export type SignAllTransactionsParams = TransactionContextParams & {
   transaction: { solana: StringBase64[] };
 };
+
+/** An Intent Swap step: validate, sign the permit and the intent of `quote`, place the Order */
+export type OrderStepParams = TransactionContextParams & {
+  quote: Quote2;
+  outputChain: string | null;
+  /** Null for Solana intents, which carry no typed data */
+  expected: ExpectedIntentSigning | null;
+};
+
+export type OrderStepResult = { order: { orderId: string } };
+
+/** A broadcast transaction or a placed Order */
+export type StepResult = SignTransactionResult | OrderStepResult;
 
 type ToasterAsset = { symbol: string; iconUrl: string | null };
 type ToasterChain = { iconUrl: string | null };
@@ -53,7 +68,8 @@ export type SignStep =
       kind: 'signAll';
       params: SignAllTransactionsParams;
       toaster?: ToasterView;
-    };
+    }
+  | { kind: 'order'; params: OrderStepParams; toaster?: ToasterView };
 
 export type QueueUiOptions = {
   holdToSign: boolean | null;
@@ -65,9 +81,10 @@ export type QueueEvent =
   | { type: 'step-start'; index: number }
   | { type: 'step-signing'; index: number }
   | { type: 'step-pending'; index: number; txHash: string }
-  | { type: 'step-success'; index: number; result: SignTransactionResult }
+  | { type: 'step-order-placed'; index: number; orderId: string }
+  | { type: 'step-success'; index: number; result: StepResult }
   | { type: 'step-error'; index: number; error: Error }
-  | { type: 'queue-done'; results: SignTransactionResult[] }
+  | { type: 'queue-done'; results: StepResult[] }
   | {
       type: 'queue-aborted';
       reason: 'user-dismissed' | 'error';
@@ -83,7 +100,7 @@ export type SignTransactionsOptions = QueueUiOptions & {
 export type QueueRunStatus =
   | { state: 'pending' }
   | { state: 'running'; currentStep: number }
-  | { state: 'done'; results: SignTransactionResult[] }
+  | { state: 'done'; results: StepResult[] }
   | { state: 'error'; failedAt: number; error: Error }
   | { state: 'aborted'; abortedAt: number };
 

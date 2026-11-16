@@ -1,14 +1,15 @@
 import React, { useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useMutation } from '@tanstack/react-query';
 import type { Quote2 } from 'src/shared/types/Quote';
-import { isExecutableQuote, toMultichainTransaction } from 'src/shared/types/Quote';
+import { isExecutableQuote, isIntentQuote, toMultichainTransaction } from 'src/shared/types/Quote';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
-import {
-  useSimulateTransactions,
-  type SimulationResult,
-} from 'src/ui/shared/requests/useSimulateTransactions';
+import { useCurrency } from 'src/modules/currency/useCurrency';
+import { getPreferences } from 'src/ui/features/preferences/usePreferences';
+import { applySimulationPatch } from 'src/ui/features/dev-menu/applySimulationPatch';
+import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
 import { applyTransactionConfiguration } from '../applyTransactionConfiguration';
@@ -19,6 +20,7 @@ import {
   RegularSignButton,
   type ButtonState,
 } from 'src/ui/components/HoldToSignButton';
+import { simulateSwapQuote, type SimulationResult } from './simulateSwapQuote';
 
 export type { SimulationResult };
 
@@ -129,6 +131,8 @@ function useSimulation({
   onSimulationCompleted: (result: SimulationResult) => void;
   onSign: () => void;
 }) {
+  const { currency } = useCurrency();
+
   const transactions = useMemo<MultichainTransaction[]>(() => {
     if (!quote) return [];
     // Apply the local network-fee override so the simulation reflects what
@@ -138,15 +142,29 @@ function useSimulation({
     if (configuredQuote.transactionApprove) {
       list.push(toMultichainTransaction(configuredQuote.transactionApprove));
     }
-    if (configuredQuote.transactionSwap) {
+    if (configuredQuote.transactionSwap && !isIntentQuote(configuredQuote)) {
       list.push(toMultichainTransaction(configuredQuote.transactionSwap));
     }
     return list;
   }, [quote, configuration, gasPrices]);
 
-  const simulationMutation = useSimulateTransactions({
-    address,
-    onSettled: (result) => onSimulationCompleted(result),
+  const simulationMutation = useMutation({
+    mutationFn: async ({ txs, quote }: { txs: MultichainTransaction[]; quote: Quote2 }) => {
+      const preferences = await getPreferences();
+      return simulateSwapQuote({
+        address,
+        chain: formState.inputChain,
+        quote,
+        transactions: txs,
+        currency,
+        origin: 'https://app.zerion.io',
+        source: preferences?.testnetMode?.on ? 'testnet' : 'mainnet',
+      });
+    },
+    onSettled: (data) => {
+      const patched = applySimulationPatch(data, devMenuStore.getState());
+      onSimulationCompleted(patched ?? null);
+    },
   });
 
   const state: ButtonState = simulationMutation.isLoading ? 'simulating' : 'idle';
@@ -156,8 +174,9 @@ function useSimulation({
       onSign();
       return;
     }
-    if (!quote || transactions.length === 0) return;
-    simulationMutation.mutate(transactions);
+    if (!quote) return;
+    if (transactions.length === 0 && !isIntentQuote(quote)) return;
+    simulationMutation.mutate({ txs: transactions, quote });
   }, [simulated, onSign, quote, transactions, simulationMutation]);
 
   const label = resolveLabel({
