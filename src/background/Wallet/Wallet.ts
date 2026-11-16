@@ -95,6 +95,7 @@ import {
   classifySolanaBroadcastError,
 } from 'src/shared/analytics/transactionFailure';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
+import type { IntentMultichain } from 'src/shared/types/Quote';
 import { emitUiAnalyticsEvent, emitter } from '../events';
 import type { UiAnalyticsEvent } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -109,6 +110,7 @@ import {
   writeSessionPermits,
 } from './helpers/confidentialPermitsSession';
 import { toEthersWallet } from './helpers/toEthersWallet';
+import { signSwapIntentPayload } from './helpers/signSwapIntentPayload';
 import { maskWallet, maskWalletGroup, maskWalletGroups } from './helpers/mask';
 import type { PendingWallet, WalletRecord } from './model/types';
 import type { MaskedBareWallet } from './model/BareWallet';
@@ -1643,6 +1645,19 @@ export class Wallet {
       },
     });
     return signature;
+  }
+
+  /** Signs a swap Intent with the current software wallet without emitting signing analytics; readonly and device accounts have no key and throw */
+  async signSwapIntent({
+    params: { intent },
+    context,
+  }: WalletMethodParams<{ intent: IntentMultichain }>): Promise<string> {
+    this.verifyInternalOrigin(context);
+    this.ensureRecord(this.record);
+    return signSwapIntentPayload(intent, {
+      getEvmSigner: () => this.getOfflineSigner(),
+      getSolanaKeypair: () => this.getKeypairByAddress(this.ensureCurrentAddress()),
+    });
   }
 
   async registerPersonalSign({
