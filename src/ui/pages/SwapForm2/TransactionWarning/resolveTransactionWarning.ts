@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import type { Quote2 } from 'src/shared/types/Quote';
+import { isIntentQuote } from 'src/shared/types/Quote';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { SwapFormState2 } from '../types';
@@ -254,12 +255,14 @@ export function resolveTransactionWarning({
     Boolean(formState.inputChain) &&
     Boolean(formState.outputChain) &&
     formState.inputChain !== formState.outputChain;
+  // simulate-signature may return no interpreted action for a valid intent; that alone is not "unverified".
+  const intentQuote = quote != null && isIntentQuote(quote);
   let unverifiedFromSimGaps = false;
   if (simulationResult != null && formState.outputFungibleId) {
     const out = readSimulatedOutput(simulationResult, formState.outputFungibleId);
     // No action / no transfers / no matching transfer / multiple matches.
     if (!out.inspectable) {
-      unverifiedFromSimGaps = true;
+      unverifiedFromSimGaps = !intentQuote;
     } else if (out.matchCount === 0) {
       // Cross-chain swaps land the output on the destination chain, so the
       // source-chain simulation legitimately has no matching incoming transfer.

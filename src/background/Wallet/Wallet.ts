@@ -90,6 +90,7 @@ import { createApprovalTransaction } from 'src/modules/ethereum/transactions/app
 import { parseError } from 'src/shared/errors/parse-error/parseError';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
 import type { IntentMultichain } from 'src/shared/types/Quote';
+import type { OrderPlacedReport } from 'src/shared/types/OrderPlaced';
 import { emitUiAnalyticsEvent, emitter } from '../events';
 import type { UiAnalyticsEvent } from '../events';
 import type { Credentials, SessionCredentials } from '../account/Credentials';
@@ -1774,6 +1775,17 @@ export class Wallet {
       id: createChain(params.inputChain),
     });
     emitter.emit('quoteError', params, mode === 'default' ? 'mainnet' : 'testnet');
+  }
+
+  async uiReportOrderPlaced({
+    context,
+    params: { context: txContext, ...order },
+  }: WalletMethodParams<OrderPlacedReport>) {
+    this.verifyInternalOrigin(context);
+    const { mode } = await this.assertNetworkMode({
+      id: createChain(txContext.chain),
+    });
+    emitter.emit('orderPlaced', order, { mode, ...txContext });
   }
 
   async blockOriginWithWarning({ params: { origin } }: WalletMethodParams<{ origin: string }>) {

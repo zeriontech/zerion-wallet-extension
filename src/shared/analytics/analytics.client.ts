@@ -45,6 +45,20 @@ function trackAppEvents({
     sendToMetabase('client_error', params);
   });
 
+  emitter.on('executeOrderFailed', async ({ status, body }) => {
+    const preferences = await fetchGlobalPreferences();
+    if (!preferences.analyticsEnabled) {
+      return;
+    }
+    const params = createParams({
+      request_name: 'client_error',
+      type: 'execute_order',
+      message: `status ${status ?? 'none'}: ${body}`,
+      ...(await createWalletProperties()),
+    });
+    sendToMetabase('client_error', params);
+  });
+
   emitter.on('error', async (error) => {
     const preferences = await fetchGlobalPreferences();
     if (!preferences.analyticsEnabled) {

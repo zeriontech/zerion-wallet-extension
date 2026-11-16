@@ -24,6 +24,7 @@ import { productionVersion } from '../packageVersion';
 import { onIdle } from '../onIdle';
 import type { TransactionContextParams } from '../types/SignatureContextParams';
 import type { SignTransactionResult } from '../types/SignTransactionResult';
+import type { OrderPlaced } from '../types/OrderPlaced';
 import { invariant } from '../invariant';
 import { normalizeAddress } from '../normalizeAddress';
 import { getAddressType } from '../wallet/classifiers';
@@ -333,11 +334,12 @@ function trackAppEvents({ account }: { account: Account }) {
     result: SignTransactionResult;
   };
   type TransactionFailedContext = { status: 'failed'; errorMessage: string };
+  type OrderPlacedContext = { status: 'placed'; order: OrderPlaced };
 
   const trackTransactionSign = async (
     props: {
       context: { mode: 'default' | 'testnet' } & TransactionContextParams;
-    } & (TransactionSentContext | TransactionFailedContext),
+    } & (TransactionSentContext | TransactionFailedContext | OrderPlacedContext),
   ) => {
     const { context, status } = props;
     const {
@@ -383,13 +385,14 @@ function trackAppEvents({ account }: { account: Account }) {
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
       warning_was_shown: warningWasShown,
       output_amount_color: outputAmountColor,
-      transaction_success: status === 'success',
+      transaction_success: status !== 'failed',
       backend_error_message: quote?.error?.message || null,
       // Effective slippage applied to the quote (manual or auto), in percent.
       slippage: quote?.finalSlippage ?? null,
       // Value computed by the autoslippage engine; present only in Auto mode.
       autoslippage: quote?.autoSlippage ?? null,
       action_type: actionType ?? null,
+      execution_type: status === 'placed' ? 'intent' : 'transaction',
       ...omitNullParams(addressActionAnalytics),
     });
 
@@ -401,6 +404,14 @@ function trackAppEvents({ account }: { account: Account }) {
         gas: props.result.evm ? props.result.evm.gasLimit.toString() : null,
         /** Current requirement by analytics: send solana signatures as `hash` */
         hash: props.result.evm?.hash ?? ensureSolanaResult(props.result).signature,
+        ecosystem: toEcosystemProperty(getAddressType(address)),
+      };
+    } else if (status === 'placed') {
+      const address = props.order.address;
+      statusParams = {
+        wallet_address: address,
+        order_id: props.order.orderId,
+        quote_id: props.order.quoteId,
         ecosystem: toEcosystemProperty(getAddressType(address)),
       };
     } else {
@@ -423,6 +434,13 @@ function trackAppEvents({ account }: { account: Account }) {
     'transactionSent',
     gated(async (result, context) => {
       trackTransactionSign({ status: 'success', result, context });
+    }),
+  );
+
+  emitter.on(
+    'orderPlaced',
+    gated(async (order, context) => {
+      trackTransactionSign({ status: 'placed', order, context });
     }),
   );
 
