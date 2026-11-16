@@ -108,6 +108,7 @@ export function useReceiverAddressItems() {
     addressBookItems,
     walletItems,
     watchlistItems,
+    savedNamesMap,
     isLoading,
   };
 }

@@ -77,6 +77,11 @@ const TESTS = [
   ],
   ['onboarding.spec.ts', 'Onboarding › User can import an existing wallet using private key', 3.1],
   ['overview.spec.ts', 'Overview › Matches snapshot', 11.2],
+  [
+    'recipient-picker.spec.ts',
+    'Recipient picker › shows the Address Book name for a searched address',
+    6.0,
+  ],
   ['settings.spec.ts', 'Settings › Matches snapshot', 3.3],
   ['settings.spec.ts', 'Settings › User can lock and unlock wallet', 3.8],
 
