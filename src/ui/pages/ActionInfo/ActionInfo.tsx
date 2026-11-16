@@ -33,7 +33,9 @@ import { useActionStatusByHash } from 'src/ui/shared/forms/SuccessState/useActio
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { ConfidentialMask } from 'src/ui/features/confidential-balances';
 import { useReadyClock } from 'src/ui/features/pending-transactions/useReadyClock';
+import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { AccelerateTransaction } from '../History/AccelerateTransaction';
+import { PendingActionButtons } from '../History/PendingActionButtons';
 import { isPendingAction, PendingStatusLine } from '../History/PendingActionItem';
 import { PopoverToast, type PopoverToastHandle } from '../Settings/PopoverToast/PopoverToast';
 import { RateLine } from './RateLine';
@@ -393,6 +395,17 @@ export function ActionInfo() {
         </VStack>
         {isLocalAddressAction(addressAction) && isPending && !actIndex ? (
           <AccelerateTransaction addressAction={addressAction} onSuccess={() => navigate(-1)} />
+        ) : null}
+        {pendingItem && actIndex == null ? (
+          <PendingActionButtons
+            item={pendingItem}
+            nowMs={nowMs}
+            placement="actionInfo"
+            onSettled={() => {
+              queryClient.invalidateQueries(['walletGetActions']);
+              navigate(-1);
+            }}
+          />
         ) : null}
         <VStack
           gap={20}
