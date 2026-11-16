@@ -25,6 +25,7 @@ const TESTS = [
   ['connect-ledger.spec.ts', 'Connect Ledger › Matches snapshot', 3.4],
   ['forgot-password.spec.ts', 'Forgot Password › Matches snapshot', 3.3],
   ['get-started.spec.ts', 'Get Started › Onboarded with private key › Matches snapshot', 3.2],
+  ['hidden-assets.spec.ts', 'Hides and unhides a token from the asset page', 4.0],
   ['hidden-assets.spec.ts', 'Hidden Assets persists, lists and unhides a token', 4.0],
   [
     'get-started.spec.ts',
