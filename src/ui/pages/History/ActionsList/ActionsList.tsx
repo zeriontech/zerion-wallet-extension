@@ -15,6 +15,7 @@ import dayjs from 'dayjs';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import type { LocalActionContentRequest } from 'src/modules/ethereum/transactions/addressAction/creators';
+import type { PendingAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import {
   getEntryKey,
   type PendingListEntry,
@@ -58,6 +59,7 @@ export function ActionsList({
   actions,
   pendingEntries,
   nowMs,
+  renderPendingActions,
   contentRequests,
   hasMore,
   isLoading,
@@ -68,6 +70,7 @@ export function ActionsList({
   actions: AnyAddressAction[];
   pendingEntries: PendingListEntry<LocalAddressAction>[];
   nowMs: number;
+  renderPendingActions?: (item: PendingAction) => React.ReactNode;
   contentRequests?: Map<string, LocalActionContentRequest>;
   hasMore: boolean;
   isLoading: boolean;
@@ -117,7 +120,13 @@ export function ActionsList({
                 entry.kind === 'remote'
                   ? {
                       key: getEntryKey(entry),
-                      component: <PendingActionItem item={entry.item} nowMs={nowMs} />,
+                      component: (
+                        <PendingActionItem
+                          item={entry.item}
+                          nowMs={nowMs}
+                          actions={renderPendingActions?.(entry.item)}
+                        />
+                      ),
                     }
                   : toListItem(entry.action, contentRequests, testnetMode),
               )}
