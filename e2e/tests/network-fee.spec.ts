@@ -3,7 +3,7 @@ import type { Locator, Page, Route } from '@playwright/test';
 import { testWallets } from 'e2e/fixtures/constants';
 import { createExtensionTest } from './test';
 
-const test = createExtensionTest({ headless: true });
+const test = createExtensionTest();
 
 const PRESET_NAME = {
   Fast: /^Fast\b/,

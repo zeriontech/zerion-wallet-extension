@@ -92,8 +92,8 @@ const TESTS = [
   ['settings.spec.ts', 'Settings › Matches snapshot', 3.3],
   ['settings.spec.ts', 'Settings › User can lock and unlock wallet', 3.8],
 
-  // Dapp suite. These only run when DAPP_URL is set; CI points then at the
-  // hosted zerion-test-dapp deployment.
+  // Dapp suite. These run against the hosted zerion-test-dapp deployment by
+  // default; DAPP_URL overrides it for a local dapp.
   [
     'connection.spec.ts',
     'Connection › EIP-6963 discovery exposes Zerion and connection returns the account',

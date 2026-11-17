@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 import { createExtensionTest } from './test';
 
-const test = createExtensionTest({ headless: true });
+const test = createExtensionTest();
 
 const SHOTS = process.env.CONFIDENTIAL_QA_SHOTS;
 async function shot(page: Page, name: string) {

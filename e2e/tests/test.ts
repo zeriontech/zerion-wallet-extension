@@ -5,6 +5,7 @@ import type { TestWallet } from 'e2e/fixtures/types';
 import { onboardExistingWallet } from 'e2e/fixtures/pages/onboarding';
 import { testWallets } from 'e2e/fixtures/constants';
 import { SeedType } from 'src/shared/SeedType';
+import { isCI } from 'e2e/playwright-shared';
 
 // E2E has its own build: API traffic is routed through the local proxy and no
 // CI secret is compiled into the extension. See scripts/build-e2e.js.
@@ -18,7 +19,6 @@ if (!fs.existsSync(path.join(extensionPath, 'manifest.json'))) {
 }
 
 interface Config {
-  headless?: boolean;
   devtools?: boolean;
 
   password?: string;
@@ -137,8 +137,11 @@ interface Fixtures {
   onboardingWallet: TestWallet;
 }
 
-// Allows quick toggling between headless/headed mode in dev env
-const RUN_HEADED_IN_DEV = true;
+// Local runs are headless: a headed Chromium window steals focus from whatever
+// the developer (or an agent) is doing, and the extension works in Chromium's
+// new headless mode. Set E2E_HEADED=1 to watch a run or use the debugger.
+// CI keeps running headed under xvfb.
+const isHeaded = isCI || process.env.E2E_HEADED === '1';
 
 // The proxy needs the bypass secret; the browser must never see it. Chromium
 // inherits the test worker's environment, so strip both aliases before launch.
@@ -153,10 +156,7 @@ export function createExtensionTest(testConfig?: Config) {
   return baseTest.extend<TestContext & Fixtures & Options>({
     // eslint-disable-next-line no-empty-pattern
     context: async ({}, use) => {
-      // Determine headless mode:
-      // - in CI: always run headed
-      // - in dev: use RUN_HEADED_IN_DEV value unless overridden by testConfig
-      const headless = !process.env.CI && (testConfig?.headless ?? !RUN_HEADED_IN_DEV);
+      const headless = !isHeaded;
       const context = await chromium.launchPersistentContext('', {
         headless,
         devtools: Boolean(testConfig?.devtools),

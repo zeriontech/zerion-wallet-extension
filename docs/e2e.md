@@ -1,77 +1,84 @@
-# Dapp end-to-end tests
+# End-to-end tests
 
-The dapp suite drives the built extension from the real [zerion-test-dapp](https://github.com/janek26/zerion-test-dapp): EIP-6963 discovery, connection approval, chain changes, message/typed-data signing, and transaction approval. It launches a fresh persistent Chromium profile per test through `createExtensionTest`, so tests do not share wallet state.
+One Playwright suite covers both the extension UI (onboarding, balances, network fees, settings, hardware-wallet connect) and the real [zerion-test-dapp](https://github.com/janek26/zerion-test-dapp) (EIP-6963 discovery, connection approval, chain changes, message/typed-data signing, transaction approval). The dapp tests run against the hosted deployment by default; set `DAPP_URL` to use a local dapp. There is no separate dapp config or runner. Every test launches a fresh persistent Chromium profile through `createExtensionTest`, so tests do not share wallet state.
 
 ## Run locally
 
 Prerequisites:
 
 - Node >= 22.12 (CI uses Node 24).
-- A reachable test dapp. Use the hosted deployment
-  `https://zeriontech.github.io/zerion-test-dapp/`, or start your own checkout
-  of `zerion-test-dapp` outside this repository.
 - Extension dependencies installed (`npm ci`).
-- `ZERION_API_DEVELOPMENT_KEY` in `.env` if ZPI is behind the Cloudflare
-  challenge. The suite starts `e2e/proxy.mjs`, which adds the bypass header
-  outside Chromium; the secret is never compiled into the extension or written
-  to a trace.
-
-`DAPP_URL` is required to run the dapp tests; when it is unset they are
-reported as skipped and the normal extension suite still runs. The suite never
-checks out, installs, or starts the test dapp; the URL is the only contract.
+- `ZERION_API_DEVELOPMENT_KEY` in `.env`. The e2e build routes API traffic
+  through `e2e/proxy.mjs`, which answers ZPI's Cloudflare challenge with the
+  key; the secret never enters Chromium, a trace, or the build output. The
+  `npm run test:e2e*` preflight copies `.env` from the main checkout into the
+  current worktree when the worktree has none, and only reports whether the key
+  is present. If it cannot find the key it stops and asks for it; set
+  `E2E_ALLOW_NO_TOKEN=1` to run without the proxy (approval windows may hang on
+  loading states).
+- A reachable test dapp. The suite uses the hosted deployment
+  `https://zeriontech.github.io/zerion-test-dapp/` by default; set `DAPP_URL`
+  to point it at a local checkout outside this repository instead.
 
 ```shell
-# Run the whole e2e suite (extension + dapp) against the hosted dapp.
-DAPP_URL=https://zeriontech.github.io/zerion-test-dapp/ npm run test:e2e
+# Whole suite: extension + dapp (hosted test dapp).
+npm run test:e2e
 
-# Or only the dapp-focused config.
-DAPP_URL=https://zeriontech.github.io/zerion-test-dapp/ npm run test:e2e:dapp
-
-# Or a dapp you started yourself (must be http://localhost or HTTPS).
-DAPP_URL=http://localhost:9011 npm run test:e2e:dapp
+# Local dapp you started yourself (must be http://localhost or HTTPS).
+DAPP_URL=http://localhost:9011 npm run test:e2e
 ```
 
-`npm run test:e2e` without `DAPP_URL` runs the extension tests and marks the
-dapp tests skipped, so local extension work does not need a dapp.
+The preflight builds `dist-e2e` when it is missing or older than `src/`,
+`package.json`, the build scripts, `vite.config.ts`, or `.env`. Set
+`E2E_SKIP_BUILD=1` to reuse the existing build.
+
+Single test or group:
+
+```shell
+npm run test:e2e -- e2e/tests/login.spec.ts
+npm run test:e2e -- e2e/dapp/signatures.spec.ts --grep "personal_sign"
+npm run test:e2e -- --grep "Login"
+```
 
 Useful variants:
 
 ```shell
-# Forward Playwright flags.
-DAPP_URL=https://zeriontech.github.io/zerion-test-dapp/ \
-  npm run test:e2e:dapp -- --grep "personal_sign" --headed
+# Watch the run (takes over the screen).
+npm run test:e2e:headed -- e2e/tests/login.spec.ts
 
-# Run Playwright directly against any reachable dapp.
-DAPP_URL=http://localhost:9011 npx playwright test \
-  --config playwright.dapp.config.ts
+# Keep going after the first failure (local runs stop there by default).
+E2E_MAX_FAILURES=0 npm run test:e2e
 
-# Force a fresh build or reuse the existing one.
-npm run build:e2e && E2E_SKIP_BUILD=1 npm run test:e2e:dapp
+# Refresh snapshots.
+npm run test:e2e:update -- e2e/tests/login.spec.ts
 ```
 
-Without `CI` the harness runs headed, like the existing extension tests. CI
-runs the suite under `xvfb-run`; the shared harness uses headless mode there. `npm run test:e2e:dapp` builds `dist-e2e`
-(not `dist/`) because that is the E2E-only build with pinned feature flags and
-an optional local-proxy API URL. It compares the manifest mtime with `src/`,
-`package.json`, and the build config; set `E2E_SKIP_BUILD=1` to disable the
-check.
+Locally the harness runs Chromium in new headless mode, so no browser window
+opens and focus stays with whatever the developer or agent is doing. Set
+`E2E_HEADED=1` to watch a run or use the debugger. CI runs the suite headed
+under `xvfb-run`.
 
 ### Configuration
 
-| Variable         | Default    | Purpose                                                                                                                                                                                                                        |
-| ---------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `DAPP_URL`       | unset      | The only dapp input. Unset means dapp tests are skipped. Must be `http://localhost`, `http://0.0.0.0`, or HTTPS because that is where the extension content script injects. `http://127.0.0.1` is rejected with a clear error. |
-| `E2E_PROXY_PORT` | `4789`     | Local proxy port used when a ZPI bypass secret is configured.                                                                                                                                                                  |
-| `E2E_USE_PROXY`  | unset      | Set to `1` to build against the proxy even without a secret (CI uses it so the build never sees the secret).                                                                                                                   |
-| `E2E_DIST`       | `dist-e2e` | Extension build directory used by the harness.                                                                                                                                                                                 |
-| `E2E_SKIP_BUILD` | unset      | Set to `1` to skip the staleness check in `npm run test:e2e:dapp`.                                                                                                                                                             |
+| Variable                     | Default    | Purpose                                                                                                                                                                                                                                                          |
+| ---------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DAPP_URL`                   | hosted     | Overrides the test dapp URL. Defaults to `https://zeriontech.github.io/zerion-test-dapp/`. Must be `http://localhost`, `http://0.0.0.0`, or HTTPS because that is where the extension content script injects. `http://127.0.0.1` is rejected with a clear error. |
+| `ZERION_API_DEVELOPMENT_KEY` | unset      | ZPI bypass secret, read from `.env` by the preflight and the proxy. `CF_ZPI_DEV_BYPASS_SECRET` is accepted as an alias.                                                                                                                                          |
+| `E2E_ENV_SOURCE`             | unset      | `.env` to copy the token from instead of the main worktree's `.env`.                                                                                                                                                                                             |
+| `E2E_ALLOW_NO_TOKEN`         | unset      | Set to `1` to run without the token; tests then talk to ZPI directly and may hit Cloudflare.                                                                                                                                                                     |
+| `E2E_PROXY_PORT`             | `4789`     | Local proxy port used when a ZPI bypass secret is configured.                                                                                                                                                                                                    |
+| `E2E_USE_PROXY`              | unset      | Set to `1` to build against the proxy even without a secret (CI uses it so the build never sees the secret).                                                                                                                                                     |
+| `E2E_DIST`                   | `dist-e2e` | Extension build directory used by the harness.                                                                                                                                                                                                                   |
+| `E2E_HEADED`                 | unset      | Set to `1` to launch a visible (headed) Chromium for debugging. Local runs are headless by default.                                                                                                                                                              |
+| `E2E_MAX_FAILURES`           | `1`        | Local stop-after-first-failure threshold. `0` runs every test; CI always runs to completion.                                                                                                                                                                     |
+| `E2E_SKIP_BUILD`             | unset      | Set to `1` to skip the staleness check and reuse the existing `dist-e2e`.                                                                                                                                                                                        |
 
 ### Hosted dapp
 
-The suite runs unchanged against the hosted deployment:
+The default deployment is:
 
 ```shell
-DAPP_URL=https://zeriontech.github.io/zerion-test-dapp/ npm run test:e2e:dapp
+npm run test:e2e
 ```
 
 The URL must be HTTPS (the content script does not inject on non-local HTTP).
@@ -84,13 +91,13 @@ allowlisted.
 
 ## CI
 
-The dapp tests are part of the normal `e2e` job in
-`.github/workflows/ci.yml`. There is no separate dapp workflow:
+The suite runs as the normal `e2e` job in `.github/workflows/_quality.yml`;
+there is no separate dapp workflow or config:
 
 - The e2e matrix has five shards. `scripts/e2e-shards.mjs` assigns all 22
   extension tests and all 13 dapp tests to exactly one shard.
-- `DAPP_URL=https://zeriontech.github.io/zerion-test-dapp/` is set for every
-  shard; there is no test dapp checkout, install, or dev-server step.
+- The dapp tests use the hosted test dapp default; there is no test dapp
+  checkout, install, or dev-server step.
 - Builds `dist-e2e` with `E2E_USE_PROXY=1`; the bypass secret is only in the
   proxy and test steps, never the build.
 - Runs `xvfb-run npx playwright test --grep ... --workers=2`, uploads
