@@ -6,10 +6,11 @@ import type { SignStep, SignTransactionsOptions } from './types';
 /**
  * Enqueues `steps` and settles when the calling form may be reused.
  *
- * Resolves when step 0 has been broadcast. Rejects if step 0 fails or the
- * queue is aborted before that; a failure of step 0 is unwrapped to its
- * cause. Whatever happens after the first broadcast (later steps, on-chain
- * failure) is reported by the toaster, not by this promise.
+ * Resolves when step 0 has been broadcast or its Order has been placed.
+ * Rejects if step 0 fails or the queue is aborted before that; a failure of
+ * step 0 is unwrapped to its cause. Whatever happens after that (later steps,
+ * on-chain failure, Order settlement) is reported by the toaster, not by this
+ * promise.
  *
  * With `resolveWhenQueuedBehind`, it also resolves at once when another queue
  * is already ahead of this one, so the form is not blocked while it waits in
@@ -31,7 +32,10 @@ export function signUntilFirstBroadcast(
     const { promise: queuePromise } = signTransactions(steps, {
       ...options,
       onEvent: (event) => {
-        if (event.type === 'step-pending' && event.index === 0) {
+        if (
+          (event.type === 'step-pending' || event.type === 'step-order-placed') &&
+          event.index === 0
+        ) {
           settle(resolve);
         } else if (event.type === 'step-error' && event.index === 0) {
           settle(() => reject(event.error));
