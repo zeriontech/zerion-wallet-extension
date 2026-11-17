@@ -89,6 +89,11 @@ import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
+import {
+  classifyEvmBroadcastError,
+  classifySignError,
+  classifySolanaBroadcastError,
+} from 'src/shared/analytics/transactionFailure';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
 import { emitUiAnalyticsEvent, emitter } from '../events';
 import type { UiAnalyticsEvent } from '../events';
@@ -1293,7 +1298,16 @@ export class Wallet {
         const ethersError = getEthersError(error);
         const parsedError = parseError(ethersError);
         const errorMessage = parsedError.display || parsedError.message;
-        emitter.emit('transactionFailed', errorMessage, { mode, ...txContext });
+        emitter.emit(
+          'transactionFailed',
+          {
+            message: errorMessage,
+            stage: 'broadcast',
+            address: transaction.from ?? currentAddress,
+            ...classifyEvmBroadcastError(error),
+          },
+          { mode, ...txContext },
+        );
         throw ethersError;
       }
     }
@@ -1335,11 +1349,27 @@ export class Wallet {
     invariant(txBase64, () => new InvalidParams());
     const transaction = solFromBase64(txBase64);
 
-    const keypair = this.getKeypairByAddress(currentAddress);
-    const result = SolanaSigning.signTransaction(transaction, keypair);
     const { mode } = await this.assertNetworkMode({
       id: createChain('solana'),
     }); // MUST assert even if result is not used
+    const keypair = this.getKeypairByAddress(currentAddress);
+    let result: SolSignTransactionResult;
+    try {
+      result = SolanaSigning.signTransaction(transaction, keypair);
+    } catch (error) {
+      const parsedError = parseError(getError(error));
+      emitter.emit(
+        'transactionFailed',
+        {
+          message: parsedError.display || parsedError.message,
+          stage: 'sign',
+          address: currentAddress,
+          ...classifySignError(error),
+        },
+        { mode, ...transactionContextParams },
+      );
+      throw error;
+    }
     if (!silent) {
       emitter.emit('transactionSent', { solana: result }, { mode, ...transactionContextParams });
     }
@@ -1366,7 +1396,27 @@ export class Wallet {
     const transactions = txsBase64.map((tx) => solFromBase64(tx));
     // TODO: infer signer address from transaction instead
     const keypair = this.getKeypairByAddress(currentAddress);
-    const results = SolanaSigning.signAllTransactions(transactions, keypair);
+    let results: SolSignTransactionResult[];
+    try {
+      results = SolanaSigning.signAllTransactions(transactions, keypair);
+    } catch (error) {
+      const failureContextParams = { ...transactionContextParams };
+      if (transactions.length > 1) {
+        failureContextParams.addressAction = null;
+      }
+      const parsedError = parseError(getError(error));
+      emitter.emit(
+        'transactionFailed',
+        {
+          message: parsedError.display || parsedError.message,
+          stage: 'sign',
+          address: currentAddress,
+          ...classifySignError(error),
+        },
+        { mode, ...failureContextParams },
+      );
+      throw error;
+    }
 
     results.forEach((result) => {
       const contextParamsCopy = { ...transactionContextParams };
@@ -1415,7 +1465,16 @@ export class Wallet {
     } catch (error) {
       const parsedError = parseError(getError(error));
       const errorMessage = parsedError.display || parsedError.message;
-      emitter.emit('transactionFailed', errorMessage, { mode, ...txContext });
+      emitter.emit(
+        'transactionFailed',
+        {
+          message: errorMessage,
+          stage: 'broadcast',
+          address: publicKey,
+          ...classifySolanaBroadcastError(error),
+        },
+        { mode, ...txContext },
+      );
       throw error;
     }
   }
@@ -1532,7 +1591,16 @@ export class Wallet {
       const ethersError = getEthersError(error);
       const parsedError = parseError(ethersError);
       const errorMessage = parsedError.display || parsedError.message;
-      emitter.emit('transactionFailed', errorMessage, { mode, ...txContext });
+      emitter.emit(
+        'transactionFailed',
+        {
+          message: errorMessage,
+          stage: 'broadcast',
+          address: this.readCurrentAddress(),
+          ...classifyEvmBroadcastError(error),
+        },
+        { mode, ...txContext },
+      );
       throw ethersError;
     }
   }
