@@ -29,6 +29,7 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { PageBottom } from 'src/ui/components/PageBottom';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
 import { RecipientLine } from 'src/ui/components/address-action/RecipientLine';
@@ -193,6 +194,19 @@ export function TransactionAdvancedView({
 
   const labelLine = getLabelLine(addressAction?.label);
 
+  const rawAddresses = useMemo(() => {
+    if (!transaction.evm) {
+      return [];
+    }
+    const { from, to } = transaction.evm;
+    return [from, to]
+      .filter((value): value is string => Boolean(value))
+      .map((value) => normalizeAddress(value));
+  }, [transaction]);
+
+  const showLabelAddressLine =
+    labelLine?.kind === 'address' && !rawAddresses.includes(normalizeAddress(labelLine.address));
+
   const handleLabelCopy = useCallback(() => {
     if (!addressAction?.label) {
       return;
@@ -218,7 +232,7 @@ export function TransactionAdvancedView({
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
-        {labelLine?.kind === 'address' ? (
+        {showLabelAddressLine && labelLine?.kind === 'address' ? (
           <RecipientLine
             caption={labelLine.caption}
             recipientAddress={labelLine.address}
@@ -236,9 +250,7 @@ export function TransactionAdvancedView({
             onCopy={handleLabelCopy}
           />
         ) : null}
-        {addressAction &&
-        (labelLine?.kind === 'application-contract' ||
-          (labelLine?.kind === 'address' && addressAction.label?.contract)) ? (
+        {addressAction?.label?.contract ? (
           <ApplicationLine addressAction={addressAction} network={network} />
         ) : null}
         {transaction.evm ? (
