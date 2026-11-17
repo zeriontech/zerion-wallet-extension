@@ -46,6 +46,7 @@ import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { invariant } from 'src/shared/invariant';
 import { getEthersError } from 'src/shared/errors/getEthersError';
+import { getError } from 'src/shared/errors/getError';
 import type { DappSecurityStatus } from 'src/modules/phishing-defence/phishing-defence-service';
 import { phishingDefenceService } from 'src/modules/phishing-defence/phishing-defence-service';
 import { isMnemonicContainer, isReadonlyContainer } from 'src/shared/types/validators';
@@ -88,6 +89,11 @@ import type { AtLeastOneOf } from 'src/shared/type-utils/OneOf';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { createApprovalTransaction } from 'src/modules/ethereum/transactions/appovals';
 import { parseError } from 'src/shared/errors/parse-error/parseError';
+import {
+  classifyEvmBroadcastError,
+  classifySignError,
+  classifySolanaBroadcastError,
+} from 'src/shared/analytics/transactionFailure';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
 import { emitUiAnalyticsEvent, emitter } from '../events';
 import type { UiAnalyticsEvent } from '../events';
@@ -1292,7 +1298,16 @@ export class Wallet {
         const ethersError = getEthersError(error);
         const parsedError = parseError(ethersError);
         const errorMessage = parsedError.display || parsedError.message;
-        emitter.emit('transactionFailed', errorMessage, { mode, ...txContext });
+        emitter.emit(
+          'transactionFailed',
+          {
+            message: errorMessage,
+            stage: 'broadcast',
+            address: transaction.from ?? currentAddress,
+            ...classifyEvmBroadcastError(error),
+          },
+          { mode, ...txContext },
+        );
         throw ethersError;
       }
     }
@@ -1334,14 +1349,29 @@ export class Wallet {
     invariant(txBase64, () => new InvalidParams());
     const transaction = solFromBase64(txBase64);
 
-    const keypair = this.getKeypairByAddress(currentAddress);
-    const result = SolanaSigning.signTransaction(transaction, keypair);
     const { mode } = await this.assertNetworkMode({
       id: createChain('solana'),
     }); // MUST assert even if result is not used
+    const keypair = this.getKeypairByAddress(currentAddress);
+    let result: SolSignTransactionResult;
+    try {
+      result = SolanaSigning.signTransaction(transaction, keypair);
+    } catch (error) {
+      const parsedError = parseError(getError(error));
+      emitter.emit(
+        'transactionFailed',
+        {
+          message: parsedError.display || parsedError.message,
+          stage: 'sign',
+          address: currentAddress,
+          ...classifySignError(error),
+        },
+        { mode, ...transactionContextParams },
+      );
+      throw error;
+    }
     if (!silent) {
       emitter.emit('transactionSent', { solana: result }, { mode, ...transactionContextParams });
-      // TODO: process Solana Txs errors and emit 'transactionFailed' event
     }
     return result;
   }
@@ -1366,7 +1396,27 @@ export class Wallet {
     const transactions = txsBase64.map((tx) => solFromBase64(tx));
     // TODO: infer signer address from transaction instead
     const keypair = this.getKeypairByAddress(currentAddress);
-    const results = SolanaSigning.signAllTransactions(transactions, keypair);
+    let results: SolSignTransactionResult[];
+    try {
+      results = SolanaSigning.signAllTransactions(transactions, keypair);
+    } catch (error) {
+      const failureContextParams = { ...transactionContextParams };
+      if (transactions.length > 1) {
+        failureContextParams.addressAction = null;
+      }
+      const parsedError = parseError(getError(error));
+      emitter.emit(
+        'transactionFailed',
+        {
+          message: parsedError.display || parsedError.message,
+          stage: 'sign',
+          address: currentAddress,
+          ...classifySignError(error),
+        },
+        { mode, ...failureContextParams },
+      );
+      throw error;
+    }
 
     results.forEach((result) => {
       const contextParamsCopy = { ...transactionContextParams };
@@ -1381,10 +1431,52 @@ export class Wallet {
         contextParamsCopy.addressAction = null;
       }
       emitter.emit('transactionSent', { solana: result }, { mode, ...contextParamsCopy });
-      // TODO: process Solana Txs errors and emit 'transactionFailed' event
     });
 
     return results;
+  }
+
+  /** Sends an already signed Solana transaction to the network and reports the outcome */
+  private async broadcastSolanaTransaction({
+    signed,
+    publicKey,
+    txContext,
+    context,
+  }: {
+    signed: StringBase64;
+    publicKey: string;
+    txContext: TransactionContextParams;
+    context: Partial<ChannelContext | PrivateChannelContext> | undefined;
+  }): Promise<SolSignTransactionResult> {
+    this.verifyInternalOrigin(context);
+    const { mode } = await this.assertNetworkMode({
+      id: createChain('solana'),
+    });
+    const networksStore = getNetworksStore(Model.getPreferences(this.record));
+    const network = await networksStore.fetchNetworkById('solana');
+    const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
+    const connection = new Connection(rpcUrl, 'confirmed');
+    const transaction = solFromBase64(signed);
+    try {
+      const signature = await connection.sendRawTransaction(transaction.serialize());
+      const result = { signature, publicKey, tx: solToBase64(transaction) };
+      emitter.emit('transactionSent', { solana: result }, { mode, ...txContext });
+      return result;
+    } catch (error) {
+      const parsedError = parseError(getError(error));
+      const errorMessage = parsedError.display || parsedError.message;
+      emitter.emit(
+        'transactionFailed',
+        {
+          message: errorMessage,
+          stage: 'broadcast',
+          address: publicKey,
+          ...classifySolanaBroadcastError(error),
+        },
+        { mode, ...txContext },
+      );
+      throw error;
+    }
   }
 
   async solana_signAndSendTransaction({
@@ -1402,21 +1494,12 @@ export class Wallet {
       params: { ...params, silent: true },
       context,
     });
-    const { mode } = await this.assertNetworkMode({
-      id: createChain('solana'),
-    }); // MUST assert even if result is not used
-    const networksStore = getNetworksStore(Model.getPreferences(this.record));
-    const network = await networksStore.fetchNetworkById('solana');
-    const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
-    const connection = new Connection(rpcUrl, 'confirmed');
-
-    const transaction = solFromBase64(signed);
-
-    const signature = await connection.sendRawTransaction(transaction.serialize());
-    const result = { signature, publicKey, tx: solToBase64(transaction) };
-    emitter.emit('transactionSent', { solana: result }, { mode, ...params.params });
-    // TODO: process Solana Txs errors and emit 'transactionFailed' event
-    return result;
+    return this.broadcastSolanaTransaction({
+      signed,
+      publicKey,
+      txContext: params.params,
+      context,
+    });
   }
 
   async solana_sendTransaction({
@@ -1431,21 +1514,12 @@ export class Wallet {
     this.ensureStringOrigin(context);
     this.ensureRecord(this.record);
     const { signed, publicKey } = params;
-    const { mode } = await this.assertNetworkMode({
-      id: createChain('solana'),
-    }); // MUST assert even if result is not used
-    const networksStore = getNetworksStore(Model.getPreferences(this.record));
-    const network = await networksStore.fetchNetworkById('solana');
-    const rpcUrl = Networks.getNetworkRpcUrlInternal(network);
-    const connection = new Connection(rpcUrl, 'confirmed');
-
-    const transaction = solFromBase64(signed);
-
-    const signature = await connection.sendRawTransaction(transaction.serialize());
-    const result = { signature, publicKey, tx: solToBase64(transaction) };
-    emitter.emit('transactionSent', { solana: result }, { mode, ...params.params });
-    // TODO: process Solana Txs errors and emit 'transactionFailed' event
-    return result;
+    return this.broadcastSolanaTransaction({
+      signed,
+      publicKey,
+      txContext: params.params,
+      context,
+    });
   }
 
   async solana_signMessageWithAddress({
@@ -1517,7 +1591,16 @@ export class Wallet {
       const ethersError = getEthersError(error);
       const parsedError = parseError(ethersError);
       const errorMessage = parsedError.display || parsedError.message;
-      emitter.emit('transactionFailed', errorMessage, { mode, ...txContext });
+      emitter.emit(
+        'transactionFailed',
+        {
+          message: errorMessage,
+          stage: 'broadcast',
+          address: this.readCurrentAddress(),
+          ...classifyEvmBroadcastError(error),
+        },
+        { mode, ...txContext },
+      );
       throw ethersError;
     }
   }
