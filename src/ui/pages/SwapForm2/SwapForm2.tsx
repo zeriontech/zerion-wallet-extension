@@ -21,8 +21,10 @@ import { isReadonlyAccount, isDeviceAccount } from 'src/shared/types/validators'
 import { isNumeric } from 'src/shared/isNumeric';
 import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
-import { toMultichainTransaction } from 'src/shared/types/Quote';
+import { isExecutableQuote, isIntentQuote, toMultichainTransaction } from 'src/shared/types/Quote';
 import { toIncomingTransaction } from 'src/shared/types/Quote';
+import { canSignIntent } from 'src/shared/wallet/canSignIntent';
+import { getAddressType } from 'src/shared/wallet/classifiers';
 import { equal } from 'src/modules/fast-deep-equal';
 import {
   signUntilFirstBroadcast,
@@ -211,6 +213,14 @@ function SwapFormComponent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [outputEcosystem, isCrossEcosystem]);
 
+  const { data: wallet } = useQuery({
+    queryKey: ['wallet/uiGetCurrentWallet'],
+    queryFn: () => walletPort.request('uiGetCurrentWallet'),
+    useErrorBoundary: true,
+  });
+
+  const allowIntents = canSignIntent(wallet ?? null, getAddressType(address));
+
   const { quote, quotesQuery, setUserQuoteId, resolvedInputAmount } = useSwapQuote({
     address,
     formState,
@@ -218,6 +228,7 @@ function SwapFormComponent({
     outputPosition,
     isCrossEcosystem,
     outputEcosystem,
+    allowIntents,
   });
 
   // Single shared gas-prices fetch for the input chain. Powers the local fee
@@ -340,12 +351,6 @@ function SwapFormComponent({
     setPreferences({ crossChainSwapOnboardingShown: true });
   });
 
-  const { data: wallet } = useQuery({
-    queryKey: ['wallet/uiGetCurrentWallet'],
-    queryFn: () => walletPort.request('uiGetCurrentWallet'),
-    useErrorBoundary: true,
-  });
-
   const { data: inputFungibleUsdInfo } = useAssetListFungibles({
     fungibleIds: [formState.inputFungibleId],
     currency: 'usd',
@@ -393,7 +398,11 @@ function SwapFormComponent({
       invariant(outputPosition, 'outputPosition must be defined');
       invariant(formState.inputAmount, 'inputAmount must be set');
       invariant(resolvedInputAmount, 'resolvedInputAmount must be set');
-      invariant(quote.transactionSwap, 'Quote must have a swap transaction');
+      invariant(isExecutableQuote(quote), 'Quote must be executable');
+      invariant(
+        !isIntentQuote(quote) && quote.transactionSwap,
+        'Intent quotes are not supported yet (WLT-3106)',
+      );
 
       const inputNetwork = networks.getByNetworkId(createChain(formState.inputChain));
       invariant(inputNetwork, 'inputNetwork must be defined');
