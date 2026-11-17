@@ -24,6 +24,12 @@ const TESTS = [
   ['confidential-balances.spec.ts', 'confidential balances: panel → reveal → unmasked', 7.9],
   ['connect-ledger.spec.ts', 'Connect Ledger › Matches snapshot', 3.4],
   ['forgot-password.spec.ts', 'Forgot Password › Matches snapshot', 3.3],
+  ['forgot-password.spec.ts', 'Forgot Password › Erasing all data requires typing ERASE', 3.4],
+  [
+    'forgot-password.spec.ts',
+    'Forgot Password › Closing and reopening the dialog clears the confirmation',
+    3.6,
+  ],
   ['get-started.spec.ts', 'Get Started › Onboarded with private key › Matches snapshot', 3.2],
   ['hidden-assets.spec.ts', 'Hides and unhides a token from the asset page', 4.0],
   ['hidden-assets.spec.ts', 'Hidden Assets persists, lists and unhides a token', 4.0],
