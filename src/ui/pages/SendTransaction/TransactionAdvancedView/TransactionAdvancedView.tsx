@@ -29,8 +29,10 @@ import type { AnyAddressAction } from 'src/modules/ethereum/transactions/address
 import { DialogButtonValue } from 'src/ui/ui-kit/ModalDialogs/DialogTitle';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { PageBottom } from 'src/ui/components/PageBottom';
+import { normalizeAddress } from 'src/shared/normalizeAddress';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
+import { RecipientLine } from 'src/ui/components/address-action/RecipientLine';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import type { OneOf } from 'src/shared/type-utils/OneOf';
@@ -192,6 +194,19 @@ export function TransactionAdvancedView({
 
   const labelLine = getLabelLine(addressAction?.label);
 
+  const rawAddresses = useMemo(() => {
+    if (!transaction.evm) {
+      return [];
+    }
+    const { from, to } = transaction.evm;
+    return [from, to]
+      .filter((value): value is string => Boolean(value))
+      .map((value) => normalizeAddress(value));
+  }, [transaction]);
+
+  const showLabelAddressLine =
+    labelLine?.kind === 'address' && !rawAddresses.includes(normalizeAddress(labelLine.address));
+
   const handleLabelCopy = useCallback(() => {
     if (!addressAction?.label) {
       return;
@@ -217,6 +232,16 @@ export function TransactionAdvancedView({
           ['--surface-background-color' as string]: 'var(--neutral-100)',
         }}
       >
+        {showLabelAddressLine && labelLine?.kind === 'address' ? (
+          <RecipientLine
+            caption={labelLine.caption}
+            recipientAddress={labelLine.address}
+            recipientName={labelLine.name || null}
+            network={network}
+            showNetworkIcon={true}
+            onCopy={handleLabelCopy}
+          />
+        ) : null}
         {labelLine?.kind === 'application-wallet' ? (
           <ApplicationWalletLine
             caption={labelLine.caption}
