@@ -2,6 +2,7 @@ import { decrypt, encrypt } from 'src/modules/crypto';
 import type { Draft } from 'immer';
 import { createDraft, finishDraft, produce } from 'immer';
 import { nanoid } from 'nanoid';
+import { sort } from 'moderndash';
 import { toChecksumAddress } from 'src/modules/ethereum/toChecksumAddress';
 import type { Chain } from 'src/modules/networks/Chain';
 import { createChain } from 'src/modules/networks/Chain';
@@ -117,7 +118,9 @@ export function toPlainObject(record: WalletRecord) {
  * `ContainerType`), so the copy that can sign wins.
  */
 function groupsInLookupOrder(record: WalletRecord) {
-  return sortBy(record.walletManager.groups, (group) => getContainerType(group.walletContainer));
+  return sort(record.walletManager.groups, {
+    by: (group) => getContainerType(group.walletContainer),
+  });
 }
 
 function validateName(name: string, { minLength = 1 }: { minLength?: number } = {}) {

@@ -32,5 +32,5 @@ Security patches kept within existing majors: `nanoid` 6, `uuid` 11,
 React Router 7 fixes its advisory but changed navigation/Suspense timing enough
 to break the onboarding-backup e2e flow, so patched v6 is retained.
 
-Result: direct dependencies 63 → 45, `npm audit` high/critical 20/0 → 0/0,
+Result: direct dependencies 63 → 46, `npm audit` high/critical 20/0 → 0/0,
 and the Chrome bundle 13.41 MB → 13.25 MB.

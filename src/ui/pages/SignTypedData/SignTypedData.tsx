@@ -51,7 +51,6 @@ import {
   InterpretationSecurityCheck,
   SecurityStatusBackground,
 } from 'src/ui/shared/security-check';
-import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { getError } from 'src/shared/errors/getErrorBase';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';

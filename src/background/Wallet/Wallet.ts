@@ -7,10 +7,7 @@ import { createNanoEvents } from 'nanoevents';
 import { nanoid } from 'nanoid';
 import { omit } from 'src/shared/omit';
 import { isTruthy } from 'src/shared/isTruthy';
-import type {
-  NotificationWindow,
-  NotificationWindowProps,
-} from 'src/background/NotificationWindow/NotificationWindow';
+import type { NotificationWindow } from 'src/background/NotificationWindow/NotificationWindow';
 import type { ChannelContext, PrivateChannelContext } from 'src/shared/types/ChannelContext';
 import {
   InvalidParams,
