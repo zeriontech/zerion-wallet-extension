@@ -175,6 +175,11 @@ export interface Quote2 {
   networkFee: null | {
     /** @description Whether the network fee is free */
     free: boolean;
+    /**
+     * @description Expected gas units the fee is priced on (WLT-2743).
+     * Summed across every transaction the fee covers.
+     */
+    gas_used?: number | null;
     /** @description Fee amount (can be expected fee or max fee) */
     amount: Amount | null;
     fungible: null | Fungible;

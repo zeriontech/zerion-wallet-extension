@@ -238,7 +238,7 @@ async function runQueue(queue: QueueRecord): Promise<void> {
     // stale (e.g. hardware-wallet confirmation took >1min), re-estimate
     // gasLimit before sending. Mutate in place so later iterations see the
     // updated step.
-    if (isStepStale(queue.enqueuedAt)) {
+    if (isStepStale(steps[index], queue.enqueuedAt)) {
       steps[index] = await refreshStaleGasForStep(steps[index]);
     }
 

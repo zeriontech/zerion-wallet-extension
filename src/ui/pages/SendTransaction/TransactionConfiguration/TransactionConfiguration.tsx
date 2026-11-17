@@ -99,22 +99,26 @@ function NetworkFeeLine({
   transaction,
   chain,
   onFeeValueCommonReady,
+  onFeeValueFiatReady,
   configuration,
   onConfigurationChange,
   paymasterPossible,
   paymasterEligible,
   keepPreviousData = false,
   interpretation,
+  expectedGas,
 }: {
   transaction: IncomingTransactionWithFrom;
   chain: Chain;
   onFeeValueCommonReady: null | ((value: string) => void);
+  onFeeValueFiatReady?: (value: number | null) => void;
   configuration: CustomConfiguration;
   onConfigurationChange: null | ((value: CustomConfiguration) => void);
   paymasterPossible: boolean;
   paymasterEligible: boolean;
   keepPreviousData?: boolean;
   interpretation?: InterpretResponse | null;
+  expectedGas?: number | null;
 }) {
   const { data: chainGasPrices = null } = useGasPrices(chain, {
     suspense: true,
@@ -127,6 +131,7 @@ function NetworkFeeLine({
     networkFeeConfiguration: configuration.networkFee,
     keepPreviousData,
     chainGasPrices,
+    expectedGas,
   });
 
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -173,6 +178,8 @@ function NetworkFeeLine({
             : null
         }
         interpretation={interpretation}
+        expectedGas={expectedGas}
+        onFeeValueFiatReady={onFeeValueFiatReady}
       />
     </>
   );
@@ -189,6 +196,7 @@ export function TransactionConfiguration({
   from,
   chain,
   onFeeValueCommonReady,
+  onFeeValueFiatReady,
   configuration,
   onConfigurationChange,
   paymasterEligible,
@@ -198,11 +206,13 @@ export function TransactionConfiguration({
   interpretation,
   interactiveNetworkFee,
   networkFee,
+  expectedGas,
 }: {
   transaction: IncomingTransaction;
   from: string;
   chain: Chain;
   onFeeValueCommonReady: null | ((value: string) => void);
+  onFeeValueFiatReady?: (value: number | null) => void;
   configuration: CustomConfiguration;
   onConfigurationChange: null | ((value: CustomConfiguration) => void);
   paymasterEligible: boolean;
@@ -212,6 +222,7 @@ export function TransactionConfiguration({
   interpretation?: InterpretResponse | null;
   interactiveNetworkFee: boolean;
   networkFee?: NetworkFeeType | null;
+  expectedGas?: number | null;
 }) {
   const { preferences } = usePreferences();
   const transactionWithFrom = useMemo(
@@ -265,6 +276,8 @@ export function TransactionConfiguration({
               paymasterPossible={paymasterPossible}
               paymasterEligible={paymasterEligible}
               interpretation={interpretation}
+              expectedGas={expectedGas}
+              onFeeValueFiatReady={onFeeValueFiatReady}
             />
           ) : networkFee ? (
             <NetworkFeeLineInfo networkFee={networkFee} />

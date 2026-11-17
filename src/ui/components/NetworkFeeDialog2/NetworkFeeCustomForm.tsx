@@ -14,7 +14,11 @@ import { FLOAT_INPUT_PATTERN, INT_INPUT_PATTERN } from 'src/ui/shared/forms/inpu
 import { apostrophe } from 'src/shared/typography';
 import { formDataToGasConfiguration } from 'src/ui/pages/SendTransaction/NetworkFee/NetworkFeeDialog';
 import { getEffectiveGasPrice } from './getEffectiveGasPrice';
-import { getCustomFeeRatio, type NetworkFeeQuote } from './getNetworkFeeForSpeed';
+import {
+  getCustomExpectedFeeRatio,
+  getCustomMaxFeeRatio,
+  type NetworkFeeQuote,
+} from './getNetworkFeeForSpeed';
 import { formatNetworkFee } from './formatNetworkFee';
 
 const EIP1559_FALLBACK = {
@@ -140,6 +144,7 @@ export function NetworkFeeCustomForm({
   fallbackFiatValue = null,
   fallbackSymbol = null,
   currency = null,
+  nativeDecimals = null,
   onSubmit,
 }: {
   isEip1559: boolean;
@@ -158,6 +163,8 @@ export function NetworkFeeCustomForm({
   fallbackFiatValue?: number | null;
   fallbackSymbol?: string | null;
   currency?: string | null;
+  /** Native-asset decimals, used to derive expected gas when `gas_used` is absent. */
+  nativeDecimals?: number | null;
   onSubmit: (value: NetworkFeeConfiguration) => void;
 }) {
   // Quote-derived defaults (above the hardcoded fallbacks). The Reset button
@@ -230,9 +237,9 @@ export function NetworkFeeCustomForm({
     gasLimitNum != null &&
     gasLimitNum * 1.1 < recommendedGasLimitNum;
 
-  // Expected fee: effective price (capped by maxFee for 1559) × gas limit.
-  // Max fee (1559 only): maxFee × gas limit. Both scale from the quote's
-  // bundled networkFee.amount via getCustomFeeRatio. `null` when not computable.
+  // Expected fee: effective price × expected gas (the limit is not part of the
+  // expected cost). Max fee (1559 only): maxFee × gas limit. Both scale from the
+  // quote's bundled networkFee.amount. `null` when not computable.
   let expectedFee: string | null = null;
   let maxFeeDisplay: string | null = null;
   if (quote) {
@@ -243,21 +250,21 @@ export function NetworkFeeCustomForm({
         { maxFee: maxFeeWei, maxPriorityFee: priorityWei },
         baseFee,
       );
-      expectedFee = formatNetworkFee(
-        quote,
-        getCustomFeeRatio(quote, effective, gasLimitNum, baseFee),
-        { fallbackFiatValue, fallbackSymbol, currency },
-      );
+      expectedFee = formatNetworkFee(quote, getCustomExpectedFeeRatio(quote, effective, baseFee), {
+        fallbackFiatValue,
+        fallbackSymbol,
+        currency,
+      });
       maxFeeDisplay = formatNetworkFee(
         quote,
-        getCustomFeeRatio(quote, maxFeeWei, gasLimitNum, baseFee),
+        getCustomMaxFeeRatio(quote, maxFeeWei, gasLimitNum, baseFee, nativeDecimals),
         { fallbackFiatValue, fallbackSymbol, currency },
       );
     } else {
       const gasPriceWei = gweiInputToWei(values.classicGasPrice);
       expectedFee = formatNetworkFee(
         quote,
-        getCustomFeeRatio(quote, gasPriceWei, gasLimitNum, baseFee),
+        getCustomExpectedFeeRatio(quote, gasPriceWei, baseFee),
         { fallbackFiatValue, fallbackSymbol, currency },
       );
     }

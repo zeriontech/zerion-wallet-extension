@@ -1246,10 +1246,12 @@ export class Wallet {
     const txWithFee =
       initiator === INTERNAL_ORIGIN
         ? prepared
-        : await prepareGasAndNetworkFee(prepared, networks, {
-            source: mode === 'testnet' ? 'testnet' : 'mainnet',
-            apiClient: ZerionAPI,
-          });
+        : (
+            await prepareGasAndNetworkFee(prepared, networks, {
+              source: mode === 'testnet' ? 'testnet' : 'mainnet',
+              apiClient: ZerionAPI,
+            })
+          ).transaction;
     const transaction = await prepareNonce(txWithFee, network);
 
     const paymasterEligible = Boolean(transaction.customData?.paymasterParams);

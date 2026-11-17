@@ -83,12 +83,14 @@ function useFeeEstimation(
     transaction,
     networkFeeConfiguration,
     chainGasPrices,
+    expectedGas,
   }: {
     chain: Chain;
     transaction: IncomingTransaction;
     /** gas price derived from configuration takes precedence over gas price from transaction */
     networkFeeConfiguration: NetworkFeeConfiguration | null;
     chainGasPrices: ChainGasPrice | null;
+    expectedGas?: number | null;
   },
   { keepPreviousData = false } = {},
 ) {
@@ -100,7 +102,15 @@ function useFeeEstimation(
   return useQuery({
     keepPreviousData,
     suspense: !keepPreviousData,
-    queryKey: ['feeEstimation', chain, transaction, networkFeeConfiguration, chainGasPrices, gas],
+    queryKey: [
+      'feeEstimation',
+      chain,
+      transaction,
+      networkFeeConfiguration,
+      chainGasPrices,
+      gas,
+      expectedGas,
+    ],
     queryFn: async () => {
       const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);
       const gasPriceFromConfiguration = getGasPriceFromConfiguration({
@@ -115,6 +125,7 @@ function useFeeEstimation(
         transaction,
         address: transaction.from || null,
         gas: Number(gas),
+        expectedGas,
         gasPrices: chainGasPrices || null,
         gasPrice,
       });
@@ -210,6 +221,7 @@ export function useTransactionFee({
   onFeeValueCommonReady,
   networkFeeConfiguration,
   chainGasPrices,
+  expectedGas,
   keepPreviousData = false,
 }: {
   address: string;
@@ -217,11 +229,12 @@ export function useTransactionFee({
   chain: Chain;
   onFeeValueCommonReady: null | ((value: string) => void);
   networkFeeConfiguration: NetworkFeeConfiguration | null;
+  expectedGas?: number | null;
   keepPreviousData?: boolean;
   chainGasPrices: ChainGasPrice | null;
 }) {
   const feeEstimationQuery = useFeeEstimation(
-    { chain, transaction, networkFeeConfiguration, chainGasPrices },
+    { chain, transaction, networkFeeConfiguration, chainGasPrices, expectedGas },
     { keepPreviousData },
   );
 

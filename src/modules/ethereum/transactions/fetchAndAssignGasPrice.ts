@@ -19,7 +19,7 @@ function add10Percent(value: number) {
   return Math.round(value * 1.1); // result must be an integer
 }
 
-export async function estimateGasForNetwork<T extends IncomingTransaction>(
+async function requestGasEstimate<T extends IncomingTransaction>(
   transaction: T,
   network: NetworkInfo,
 ) {
@@ -59,7 +59,26 @@ export async function estimateGasForNetwork<T extends IncomingTransaction>(
     });
     gasEstimation = result;
   }
-  return add10Percent(parseInt(gasEstimation));
+  return parseInt(gasEstimation);
+}
+
+/**
+ * Raw gas estimate plus the buffered execution limit. The fee the user sees is
+ * priced on the raw expected units; the transaction keeps the buffered limit.
+ */
+export async function estimateGasDetailed<T extends IncomingTransaction>(
+  transaction: T,
+  network: NetworkInfo,
+) {
+  const expectedGas = await requestGasEstimate(transaction, network);
+  return { gas: add10Percent(expectedGas), expectedGas };
+}
+
+export async function estimateGasForNetwork<T extends IncomingTransaction>(
+  transaction: T,
+  network: NetworkInfo,
+) {
+  return (await estimateGasDetailed(transaction, network)).gas;
 }
 
 export async function estimateGas(transaction: IncomingTransaction, networks: Networks) {
@@ -93,13 +112,14 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
   networks: Networks,
   { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient },
 ) {
-  const [gas, networkFeeInfo] = await Promise.all([
+  const network = wrappedGetNetworkById(networks, resolveChainId(transaction));
+  const [gasInfo, networkFeeInfo] = await Promise.all([
     hasGasEstimation(transaction)
       ? Promise.race([
-          estimateGas(transaction, networks).catch(() => null),
+          estimateGasDetailed(transaction, network).catch(() => null),
           new Promise<null>((resolve) => setTimeout(resolve, 2000)),
         ])
-      : estimateGas(transaction, networks),
+      : estimateGasDetailed(transaction, network),
     hasNetworkFee(transaction)
       ? null
       : fetchGasPriceForTransaction(transaction, networks, {
@@ -107,13 +127,15 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
           apiClient,
         }),
   ]);
-  return produce(transaction, (draft) => {
-    if (gas && (getGas(transaction) == null || gas > Number(getGas(transaction)))) {
+  const expectedGas = gasInfo?.expectedGas ?? null;
+  const transactionWithFee = produce(transaction, (draft) => {
+    if (gasInfo && (getGas(transaction) == null || gasInfo.gas > Number(getGas(transaction)))) {
       delete draft.gas;
-      draft.gasLimit = gas;
+      draft.gasLimit = gasInfo.gas;
     }
     if (networkFeeInfo) {
       assignGasPrice(draft, networkFeeInfo.fast);
     }
   });
+  return { transaction: transactionWithFee, expectedGas };
 }

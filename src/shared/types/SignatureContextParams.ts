@@ -1,4 +1,5 @@
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
+import type { NetworkFeeSpeed } from './TransactionConfiguration';
 import type { SwapFormState } from './SwapFormState';
 import type { Quote2 } from './Quote';
 
@@ -7,6 +8,21 @@ type ClientScope = string | 'Swap' | 'Bridge' | 'Send' | 'Zerion DNA' | 'Externa
 export type TransactionContextParams = {
   chain: string; // Cannot use type {Chain} because it's not serializable and this object is being sent between Ports
   feeValueCommon: string | null;
+  /** Selected network-fee speed, for `signed_transaction` analytics. */
+  feeSpeed?: NetworkFeeSpeed | null;
+  /** Effective gas price of the selected speed, in wei. */
+  feeGasPriceWei?: number | null;
+  /** The network fee the user saw at the selected speed, in USD. */
+  networkFeeUsd?: number | null;
+  /** Gas-service provenance of the selected speed (WLT-2742). */
+  feeBlock?: number | null;
+  feeSource?: string | null;
+  feeFormulaVersion?: string | null;
+  /**
+   * When the applied gas-price snapshot was fetched. Internal to the signer's
+   * stale-gas refresh; never reported as analytics.
+   */
+  feeUpdatedAt?: number | null;
   initiator: string;
   clientScope: ClientScope | null;
   addressAction: AnyAddressAction | null;

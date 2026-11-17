@@ -61,7 +61,7 @@ const PRESET_FAST: CustomConfiguration = {
 };
 
 describe('applyTransactionConfiguration', () => {
-  test('swap price change scales the approve per-field (maxFee and priority ratios are independent)', () => {
+  test('swap price change scales the approve by one effective-price ratio', () => {
     const swapEvm = makeEvm({
       gas: hex(256),
       maxFee: hex(200),
@@ -93,11 +93,11 @@ describe('applyTransactionConfiguration', () => {
     // No custom gas limit → swap gas unchanged.
     expect(Number(result.transactionSwap?.evm?.gas)).toBe(256);
 
-    // Approve mirrors each swap field's ratio:
-    //   maxFee:   300 * (400/200) = 600
-    //   priority: 20  * (110/10)  = 220
+    // Approve mirrors the swap's effective-price ratio (200/100 = 2):
+    //   maxFee:   300 * 2 = 600
+    //   priority: 20  * 2 = 40
     expect(Number(result.transactionApprove?.evm?.maxFee)).toBe(600);
-    expect(Number(result.transactionApprove?.evm?.maxPriorityFee)).toBe(220);
+    expect(Number(result.transactionApprove?.evm?.maxPriorityFee)).toBe(40);
     // gasLimitRatio === 1 (no custom limit) → approve gas unchanged.
     expect(Number(result.transactionApprove?.evm?.gas)).toBe(128);
 
@@ -105,7 +105,7 @@ describe('applyTransactionConfiguration', () => {
     expect(result.networkFee).toEqual(quote.networkFee);
   });
 
-  test('legacy approve with 1559 swap: no gasPrice ratio on the swap → approve gasPrice unchanged', () => {
+  test('legacy approve follows the swap effective-price ratio', () => {
     const swapEvm = makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) });
     const approveEvm = makeEvm({
       type: '0x0',
@@ -124,13 +124,13 @@ describe('applyTransactionConfiguration', () => {
     });
 
     const result = applyTransactionConfiguration(quote, PRESET_FAST, gasPrices);
-    // Swap carries no gasPrice field, so there's no gasPrice ratio to apply.
-    expect(Number(result.transactionApprove?.evm?.gasPrice)).toBe(50);
+    // Swap effective price 100 → 200 (ratio 2); approve follows it.
+    expect(Number(result.transactionApprove?.evm?.gasPrice)).toBe(100);
   });
 
-  test('approve maxFee follows the swap maxFee ratio, not an effective-price ratio', () => {
-    // The approve's own maxFee magnitude is irrelevant — it scales purely by the
-    // swap's maxFee old→new ratio, regardless of how much headroom it has.
+  test('approve maxFee follows the swap effective-price ratio', () => {
+    // The approve's own maxFee magnitude is irrelevant — it scales by the swap's
+    // effective price change (100 → 95), regardless of its headroom.
     const swapEvm = makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) });
     const approveEvm = makeEvm({
       gas: hex(128),
@@ -141,7 +141,7 @@ describe('applyTransactionConfiguration', () => {
       transactionSwap: { evm: swapEvm, solana: null },
       transactionApprove: { evm: approveEvm, solana: null },
     });
-    // Swap halves: maxFee 200 → 100 (ratio 0.5), priority 10 → 5 (ratio 0.5).
+    // Swap effective price: min(200, 90 + 10) = 100 → min(100, 90 + 5) = 95.
     const gasPrices = makeGasPrices({
       maxFee: 100,
       priorityFee: 5,
@@ -150,8 +150,32 @@ describe('applyTransactionConfiguration', () => {
 
     const result = applyTransactionConfiguration(quote, PRESET_FAST, gasPrices);
 
-    expect(Number(result.transactionApprove?.evm?.maxFee)).toBe(500);
-    expect(Number(result.transactionApprove?.evm?.maxPriorityFee)).toBe(10);
+    expect(Number(result.transactionApprove?.evm?.maxFee)).toBe(950);
+    expect(Number(result.transactionApprove?.evm?.maxPriorityFee)).toBe(19);
+  });
+
+  test('one ratio keeps the approve tip at or below its max fee', () => {
+    const swapEvm = makeEvm({ maxFee: hex(1000), maxPriorityFee: hex(10) });
+    const approveEvm = makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) });
+    const quote = makeQuote({
+      transactionSwap: { evm: swapEvm, solana: null },
+      transactionApprove: { evm: approveEvm, solana: null },
+    });
+    // Old effective min(1000, 100) = 100; new effective min(100, 190) = 100.
+    // The old per-field ratios (0.1 maxFee, 10 priority) would have produced
+    // approve tip 100 > maxFee 20.
+    const gasPrices = makeGasPrices({
+      maxFee: 100,
+      priorityFee: 100,
+      baseFee: 90,
+    });
+
+    const result = applyTransactionConfiguration(quote, PRESET_FAST, gasPrices);
+    const maxFee = Number(result.transactionApprove?.evm?.maxFee);
+    const tip = Number(result.transactionApprove?.evm?.maxPriorityFee);
+    expect(tip).toBeLessThanOrEqual(maxFee);
+    expect(maxFee).toBe(200);
+    expect(tip).toBe(10);
   });
 
   test('custom gas limit scales the approve gas (gasLimitRatio)', () => {

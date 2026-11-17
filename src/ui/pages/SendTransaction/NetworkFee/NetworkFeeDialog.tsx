@@ -127,12 +127,14 @@ function CustomNetworkFeeForm({
   chainGasPrices,
   onSubmit,
   transaction,
+  expectedGas,
 }: {
   chain: Chain;
   value: NetworkFeeConfiguration;
   chainGasPrices: ChainGasPrice;
   onSubmit(value: NetworkFeeConfiguration): void;
   transaction: IncomingTransaction;
+  expectedGas?: number | null;
 }) {
   const {
     eip1559: maybeEIP1559,
@@ -170,6 +172,7 @@ function CustomNetworkFeeForm({
   const maxFee = configuration.custom1559GasPrice?.maxFee ?? defaultMaxFee;
 
   const gasLimit = configuration.gasLimit ?? defaultGasLimit;
+  const displayGas = expectedGas != null && expectedGas > 0 ? expectedGas : gasLimit;
   const showLowGasLimitWarning = gasEstimation != null && Number(gasLimit) * 1.1 < gasEstimation;
 
   const { expectedFeeFiat, maxFeeFiat, baseFeeFiat } = useMemo(() => {
@@ -186,15 +189,15 @@ function CustomNetworkFeeForm({
     return {
       expectedFeeFiat: getFiatValue(
         estimateFee({
-          gas: gasLimit,
+          gas: displayGas,
           baseFee: eip1559?.baseFee || 0,
           eip1559: { maxFee, priorityFee },
         }),
       ),
       maxFeeFiat: getFiatValue(new BigNumber(maxFee).times(gasLimit)),
-      baseFeeFiat: getFiatValue(new BigNumber(baseFee).times(gasLimit)),
+      baseFeeFiat: getFiatValue(new BigNumber(baseFee).times(displayGas)),
     };
-  }, [nativeAsset, gasLimit, chain, priorityFee, maxFee, eip1559?.baseFee, baseFee]);
+  }, [nativeAsset, gasLimit, displayGas, chain, priorityFee, maxFee, eip1559?.baseFee, baseFee]);
 
   return (
     <form
@@ -411,6 +414,7 @@ function NetworkFeeButton({
   onClick,
   chainGasPrices,
   transaction,
+  expectedGas,
 }: {
   networkFeeConfiguration: NetworkFeeConfiguration;
   option: NetworkFeeSpeed;
@@ -418,6 +422,7 @@ function NetworkFeeButton({
   onClick(): void;
   chainGasPrices?: ChainGasPrice | null;
   transaction: IncomingTransactionWithFrom;
+  expectedGas?: number | null;
 }) {
   const { currency } = useCurrency();
   const { networks } = useNetworks();
@@ -434,6 +439,7 @@ function NetworkFeeButton({
     transaction,
     networkFeeConfiguration: speedConfiguration,
     chainGasPrices: chainGasPrices ?? null,
+    expectedGas,
     onFeeValueCommonReady: null,
   });
   const {
@@ -519,10 +525,20 @@ export const NetworkFeeDialog = React.forwardRef<
     transaction: IncomingTransactionWithFrom;
     chainGasPrices: ChainGasPrice | null;
     customViewOnly?: boolean;
+    expectedGas?: number | null;
   }
 >(
   (
-    { onSubmit, onDismiss, value, chain, transaction, chainGasPrices, customViewOnly = false },
+    {
+      onSubmit,
+      onDismiss,
+      value,
+      chain,
+      transaction,
+      chainGasPrices,
+      customViewOnly = false,
+      expectedGas,
+    },
     ref,
   ) => {
     const [view, setView] = useState<'custom' | 'default'>(customViewOnly ? 'custom' : 'default');
@@ -574,6 +590,7 @@ export const NetworkFeeDialog = React.forwardRef<
                         }}
                         chain={chain}
                         transaction={transaction}
+                        expectedGas={expectedGas}
                       />
                     ),
                   };
@@ -646,6 +663,7 @@ export const NetworkFeeDialog = React.forwardRef<
                 }}
                 transaction={transaction}
                 chainGasPrices={chainGasPrices}
+                expectedGas={expectedGas}
               />
             ) : (
               <CircleSpinner />

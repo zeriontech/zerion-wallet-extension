@@ -22,6 +22,15 @@ import { getError } from '../errors/getError';
 import { runtimeStore } from '../core/runtime-store';
 import { productionVersion } from '../packageVersion';
 import { onIdle } from '../onIdle';
+import { wait } from '../wait';
+import { createChain } from 'src/modules/networks/Chain';
+import { NetworkId } from 'src/modules/networks/NetworkId';
+import type { NetworkFeeSpeed } from '../types/TransactionConfiguration';
+import {
+  getFeeProvenance,
+  type FeeProvenance,
+} from 'src/modules/ethereum/transactions/gasPrices/provenance';
+import { getSignedTransactionFeeParams } from './shared/signedTransactionFee';
 import type { TransactionContextParams } from '../types/SignatureContextParams';
 import type { SignTransactionResult } from '../types/SignTransactionResult';
 import { invariant } from '../invariant';
@@ -46,6 +55,44 @@ import { whenAnalyticsEnabled } from './shared/whenAnalyticsEnabled';
 
 const toEcosystemProperty = (value: 'evm' | 'solana') =>
   value === 'evm' ? 'EVM' : value === 'solana' ? 'Solana' : value;
+
+/** Cap on the optional gas-price lookup; analytics never waits longer. */
+const FEE_PROVENANCE_TIMEOUT_MS = 5000;
+
+/**
+ * Gas-service provenance for the fee the user was shown. Failsafe by design:
+ * one Ethereum-only cached lookup, bounded by the timeout, and any failure
+ * degrades to null fields instead of delaying or blocking the event.
+ */
+async function resolveFeeProvenance({
+  chain,
+  speed,
+  provided,
+}: {
+  chain: string;
+  speed: NetworkFeeSpeed;
+  provided: FeeProvenance | null;
+}): Promise<FeeProvenance | null> {
+  if (provided) {
+    return provided;
+  }
+  if (chain !== NetworkId.Ethereum) {
+    return null;
+  }
+  try {
+    const response = await Promise.race([
+      backgroundQueryClient.fetchQuery({
+        queryKey: ['analyticsGasPrices', chain],
+        queryFn: () => ZerionAPI.getGasPrices({ chain: createChain(chain) }),
+        staleTime: 10000,
+      }),
+      wait(FEE_PROVENANCE_TIMEOUT_MS, null),
+    ]);
+    return getFeeProvenance(response?.data ?? null, speed);
+  } catch {
+    return null;
+  }
+}
 
 function queryWalletProvider(account: Account, address: string) {
   const apiLayer = account.getCurrentWallet();
@@ -385,8 +432,6 @@ function trackAppEvents({ account }: { account: Account }) {
       client_scope: clientScope ?? initiatorName,
       dapp_domain: isInternalOrigin ? null : origin,
       chain,
-      gas_price: null, // TODO for general case - this is partially covered in addressActionAnalytics
-      network_fee: null, // TODO for general case - this is partially covered in addressActionAnalytics
       network_fee_value: feeValueCommon,
       contract_type: quote ? (quote.contractMetadata.name ?? null) : null,
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
@@ -401,6 +446,29 @@ function trackAppEvents({ account }: { account: Account }) {
       action_type: actionType ?? null,
       ...omitNullParams(addressActionAnalytics),
     });
+
+    const feeSpeed = context.feeSpeed ?? 'fast';
+    const providedProvenance: FeeProvenance | null =
+      context.feeBlock != null || context.feeSource != null || context.feeFormulaVersion != null
+        ? {
+            block: context.feeBlock ?? null,
+            source: context.feeSource ?? null,
+            formulaVersion: context.feeFormulaVersion ?? null,
+          }
+        : null;
+    const provenance = await resolveFeeProvenance({
+      chain,
+      speed: feeSpeed,
+      provided: providedProvenance,
+    });
+    const signedEvm = status === 'success' ? (props.result.evm ?? null) : null;
+    const feeParams = getSignedTransactionFeeParams({
+      chain,
+      context,
+      signedEvm,
+      provenance,
+    });
+    const actionParams = omitNullParams(addressActionAnalytics);
 
     let statusParams;
     if (status === 'success') {
@@ -418,6 +486,9 @@ function trackAppEvents({ account }: { account: Account }) {
 
     const params = {
       ...commonParams,
+      ...feeParams,
+      network_fee: context.networkFeeUsd ?? actionParams.network_fee ?? null,
+      gas_price: context.feeGasPriceWei ?? actionParams.gas_price ?? null,
       ...statusParams,
     };
 

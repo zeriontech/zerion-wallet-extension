@@ -7,6 +7,7 @@ import type {
 import type { Quote2 } from 'src/shared/types/Quote';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { gweiToWei, weiToGweiStr } from 'src/shared/units/formatGasPrice';
+import { commonToBase } from 'src/shared/units/convert';
 import { getEffectiveGasPrice } from './getEffectiveGasPrice';
 import type { CustomFormDefaults } from './NetworkFeeCustomForm';
 
@@ -15,7 +16,10 @@ import type { CustomFormDefaults } from './NetworkFeeCustomForm';
  * SwapForm2 (a real `Quote2`) and SendForm2 (a synthesized `sendQuote`) satisfy
  * this, so the fee dialog/helpers serve both forms with no special-casing.
  */
-export type NetworkFeeQuote = Pick<Quote2, 'networkFee' | 'transactionSwap'>;
+export type NetworkFeeQuote = Pick<Quote2, 'networkFee' | 'transactionSwap'> & {
+  /** Optional: a swap quote's approval, used to detect multi-tx fee scopes. */
+  transactionApprove?: Quote2['transactionApprove'];
+};
 
 const toNum = (hex: string | null | undefined) =>
   hex == null || hex === '' ? null : Number(new BigNumber(hex));
@@ -146,30 +150,123 @@ export function getCustomFormDefaults(quote: NetworkFeeQuote | null): CustomForm
 }
 
 /**
- * The full multiplier to apply to the quote's `networkFee.amount` for a custom
- * configuration: combines the effective-gas-price ratio with the gas-limit
- * ratio (the quote bundles `gasPrice × gasLimit` into the fee). `gasLimit` is in
- * decimal units; pass `null` to keep the swap tx's own gas limit (ratio 1).
+ * The multiplier for the custom **Expected Fee**. The backend prices
+ * `networkFee.amount` on expected gas (WLT-2743), so the gas limit is not part
+ * of the expected cost — only the effective gas price changes.
  */
-export function getCustomFeeRatio(
+export function getCustomExpectedFeeRatio(
   quote: NetworkFeeQuote | null,
   effectiveGasPrice: number | null,
-  gasLimit: number | null,
   baseFee: number | null,
 ): number {
-  const priceRatio = getNetworkFeeRatio(quote, effectiveGasPrice, baseFee);
-  const originalGasLimit = getSwapOriginalGasLimit(quote);
-  const limitRatio =
-    gasLimit != null && originalGasLimit != null && originalGasLimit > 0
-      ? gasLimit / originalGasLimit
-      : 1;
-  return priceRatio * limitRatio;
+  return getNetworkFeeRatio(quote, effectiveGasPrice, baseFee);
+}
+
+type NetworkFeeWithGas = { gas_used?: number | null; gasUsed?: number | null };
+
+function getGasUsed(quote: NetworkFeeQuote | null): number | null {
+  // Accept the camelCase variant defensively: WLT-2743 calls the public field
+  // `gas_used`, but the exact ZPI wire spelling is still unverified.
+  const value = (quote?.networkFee as (NetworkFeeWithGas & object) | null)?.gas_used;
+  const camel = (quote?.networkFee as (NetworkFeeWithGas & object) | null)?.gasUsed;
+  const gas = value ?? camel;
+  return typeof gas === 'number' && gas > 0 ? gas : null;
 }
 
 /**
- * The display multiplier for a complete network-fee configuration. Presets use
- * `gasPrices[speed]`; Custom combines its gas prices with its gas limit, so the
- * fee row, the picker row and the custom form all show the same amount.
+ * Gas units the backend priced the fee on: `gas_used` when present, otherwise
+ * the fee amount converted back through the quote transaction's effective
+ * price. `null` when neither input is usable.
+ */
+export function getExpectedGasForQuote(
+  quote: NetworkFeeQuote | null,
+  baseFee: number | null,
+  decimals: number | null,
+): number | null {
+  const gasUsed = getGasUsed(quote);
+  if (gasUsed != null) {
+    return gasUsed;
+  }
+  const quantity = quote?.networkFee?.amount?.quantity;
+  const price = getSwapOriginalEffectiveGasPrice(quote, baseFee);
+  if (!quantity || decimals == null || !price || price <= 0) {
+    return null;
+  }
+  const gas = commonToBase(quantity, decimals).dividedBy(price);
+  return gas.isFinite() && gas.gt(0) ? gas.toNumber() : null;
+}
+
+/**
+ * The multiplier for the custom **Max Fee**: `maxFeePerGas × gasLimit`,
+ * relative to the quote's expected cost. The gas-limit denominator is the
+ * expected gas for a single-tx quote. For an approval + swap quote `gas_used`
+ * is the sum across both transactions and cannot describe the swap-only limit,
+ * so fall back to the swap tx's own gas limit (previous behaviour).
+ */
+export function getCustomMaxFeeRatio(
+  quote: NetworkFeeQuote | null,
+  maxFeePerGas: number | null,
+  gasLimit: number | null,
+  baseFee: number | null,
+  decimals: number | null,
+): number {
+  const priceRatio = getNetworkFeeRatio(quote, maxFeePerGas, baseFee);
+  const expectedGas = getExpectedGasForQuote(quote, baseFee, decimals);
+  const hasApprove = Boolean(quote?.transactionApprove?.evm);
+  const denominator =
+    !hasApprove && expectedGas != null && expectedGas > 0
+      ? expectedGas
+      : getSwapOriginalGasLimit(quote);
+  const limitRatio =
+    gasLimit != null && denominator != null && denominator > 0 ? gasLimit / denominator : 1;
+  return priceRatio * limitRatio;
+}
+
+export type ScalableNetworkFee = {
+  free: boolean;
+  amount: {
+    quantity: string;
+    value: number | null;
+    usdValue: number | null;
+    [key: string]: unknown;
+  } | null;
+};
+
+/**
+ * Scales a backend network fee to the selected speed. `null`/`1` leaves the
+ * fee untouched, so callers degrade to the value the backend sent instead of a
+ * guess.
+ */
+export function scaleNetworkFee<T extends ScalableNetworkFee>(
+  networkFee: T,
+  ratio: number | null,
+): T {
+  if (
+    networkFee.free ||
+    ratio == null ||
+    !Number.isFinite(ratio) ||
+    ratio <= 0 ||
+    ratio === 1 ||
+    !networkFee.amount
+  ) {
+    return networkFee;
+  }
+  const { amount } = networkFee;
+  return {
+    ...networkFee,
+    amount: {
+      ...amount,
+      quantity: new BigNumber(amount.quantity).times(ratio).toFixed(),
+      value: amount.value == null ? amount.value : amount.value * ratio,
+      usdValue: amount.usdValue == null ? amount.usdValue : amount.usdValue * ratio,
+    },
+  };
+}
+
+/**
+ * The display multiplier for a complete network-fee configuration's expected
+ * fee. Presets use `gasPrices[speed]`; Custom uses its gas prices. The custom
+ * gas limit is priced separately as the Max Fee.
  */
 export function getNetworkFeeRatioForConfiguration(
   quote: NetworkFeeQuote | null,
@@ -179,16 +276,7 @@ export function getNetworkFeeRatioForConfiguration(
 ): number {
   if (networkFee.speed === 'custom') {
     const effective = getConfigurationEffectiveGasPrice(networkFee, gasPrices, baseFee);
-    const gasLimit =
-      networkFee.gasLimit != null && networkFee.gasLimit !== ''
-        ? Number(networkFee.gasLimit)
-        : null;
-    return getCustomFeeRatio(
-      quote,
-      effective,
-      gasLimit != null && Number.isFinite(gasLimit) ? gasLimit : null,
-      baseFee,
-    );
+    return getCustomExpectedFeeRatio(quote, effective, baseFee);
   }
   const effective = getPresetEffectiveGasPrice(networkFee.speed, gasPrices, baseFee);
   return getNetworkFeeRatio(quote, effective, baseFee);
@@ -200,14 +288,6 @@ const gweiStringToWei = (value: string | null | undefined) => {
   }
   const num = Number(value);
   return Number.isFinite(num) ? gweiToWei(num) : null;
-};
-
-const decimalStringToNumber = (value: string | null | undefined) => {
-  if (!value) {
-    return null;
-  }
-  const num = Number(value);
-  return Number.isFinite(num) ? num : null;
 };
 
 /**
@@ -224,7 +304,6 @@ export function getCustomFeeRatioFromDefaults(
   if (!quote || !defaults) {
     return null;
   }
-  const gasLimit = decimalStringToNumber(defaults.gasLimit);
   if (isEip1559) {
     const effective = getEffectiveGasPrice(
       {
@@ -236,11 +315,11 @@ export function getCustomFeeRatioFromDefaults(
     if (effective == null) {
       return null;
     }
-    return getCustomFeeRatio(quote, effective, gasLimit, baseFee);
+    return getCustomExpectedFeeRatio(quote, effective, baseFee);
   }
   const gasPrice = gweiStringToWei(defaults.baseFee);
   if (gasPrice == null) {
     return null;
   }
-  return getCustomFeeRatio(quote, gasPrice, gasLimit, baseFee);
+  return getCustomExpectedFeeRatio(quote, gasPrice, baseFee);
 }

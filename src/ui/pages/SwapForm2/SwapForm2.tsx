@@ -69,6 +69,13 @@ import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { calculatePriceImpactFromPositions } from './shared/price-impact';
 import { applyTransactionConfiguration } from './applyTransactionConfiguration';
+import {
+  getBaseFee,
+  getConfigurationEffectiveGasPrice,
+  getNetworkFeeRatioForConfiguration,
+  scaleNetworkFee,
+} from 'src/ui/components/NetworkFeeDialog2/getNetworkFeeForSpeed';
+import { getFeeProvenance } from 'src/modules/ethereum/transactions/gasPrices/provenance';
 import { useSwapQuote } from './useSwapQuote';
 import { useFormState } from './useFormState';
 import { useFormPositions } from './useFormPositions';
@@ -227,7 +234,7 @@ function SwapFormComponent({
     () => (formState.inputChain ? createChain(formState.inputChain) : null),
     [formState.inputChain],
   );
-  const { data: gasPrices } = useGasPrices(inputChainForGas, {
+  const { data: gasPrices, dataUpdatedAt: gasPricesUpdatedAt } = useGasPrices(inputChainForGas, {
     refetchInterval: 20000,
     keepPreviousData: true,
   });
@@ -410,6 +417,25 @@ function SwapFormComponent({
         configuration,
         gasPrices ?? null,
       );
+      const baseFee = getBaseFee(gasPrices ?? null);
+      const feeRatio = getNetworkFeeRatioForConfiguration(
+        quote,
+        configuration.networkFee,
+        gasPrices ?? null,
+        baseFee,
+      );
+      const displayedNetworkFee = quote.networkFee
+        ? scaleNetworkFee(quote.networkFee, feeRatio)
+        : null;
+      const feeValueCommon = displayedNetworkFee?.amount?.quantity ?? null;
+      const networkFeeUsd = displayedNetworkFee?.amount?.usdValue ?? null;
+      const feeGasPriceWei = getConfigurationEffectiveGasPrice(
+        configuration.networkFee,
+        gasPrices ?? null,
+        baseFee,
+      );
+      const feeSpeed = configuration.networkFee.speed;
+      const feeProvenance = getFeeProvenance(gasPrices ?? null, feeSpeed);
 
       // Quote-derived EVM txs come back with a backend-assigned nonce that's
       // stale once another queue is in flight. Strip it from every step so
@@ -495,7 +521,14 @@ function SwapFormComponent({
             initiator: INTERNAL_ORIGIN,
             clientScope: 'Swap',
             actionType: 'Approve',
-            feeValueCommon: quote.networkFee?.amount?.quantity || '0',
+            feeValueCommon,
+            feeSpeed,
+            feeGasPriceWei,
+            networkFeeUsd,
+            feeBlock: feeProvenance?.block ?? null,
+            feeSource: feeProvenance?.source ?? null,
+            feeFormulaVersion: feeProvenance?.formulaVersion ?? null,
+            feeUpdatedAt: gasPricesUpdatedAt,
             addressAction: interpretationAction ?? fallbackApproveAction,
             warningWasShown: Boolean(showPriceImpactCallout),
             outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
@@ -556,7 +589,14 @@ function SwapFormComponent({
           initiator: INTERNAL_ORIGIN,
           clientScope: isCrossChain ? 'Bridge' : 'Swap',
           actionType: 'Trade',
-          feeValueCommon: quote.networkFee?.amount?.quantity || '0',
+          feeValueCommon,
+          feeSpeed,
+          feeGasPriceWei,
+          networkFeeUsd,
+          feeBlock: feeProvenance?.block ?? null,
+          feeSource: feeProvenance?.source ?? null,
+          feeFormulaVersion: feeProvenance?.formulaVersion ?? null,
+          feeUpdatedAt: gasPricesUpdatedAt,
           addressAction: interpretationAction ?? fallbackSwapAction,
           quote,
           outputChain: formState.outputChain,

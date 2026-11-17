@@ -24,6 +24,14 @@ import { toMultichainTransaction } from 'src/shared/types/Quote';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { applyConfiguration } from 'src/ui/pages/SendTransaction/TransactionConfiguration/applyConfiguration';
 import {
+  getBaseFee,
+  getConfigurationEffectiveGasPrice,
+  getNetworkFeeRatioForConfiguration,
+  getSwapOriginalEffectiveGasPrice,
+  scaleNetworkFee,
+} from 'src/ui/components/NetworkFeeDialog2/getNetworkFeeForSpeed';
+import { getFeeProvenance } from 'src/modules/ethereum/transactions/gasPrices/provenance';
+import {
   CLEARED_NETWORK_FEE_OVERRIDES,
   fromConfiguration,
   toConfiguration,
@@ -97,6 +105,7 @@ import { ReceiverAddressSelector } from './ReceiverAddressSelector';
 import { SendDetails } from './SendDetails';
 import { SendButton } from './SendButton';
 import { resolveSendTransactionWarning } from './TransactionWarning';
+import { useNetworkFeeFiatValue } from './shared/useNetworkFeeFiatValue';
 import { SendFormSkeleton } from './SendFormSkeleton';
 import * as styles from './SendForm2.module.css';
 
@@ -296,10 +305,44 @@ function SendFormComponent({
     () => (formState.inputChain ? createChain(formState.inputChain) : null),
     [formState.inputChain],
   );
-  const { data: gasPrices } = useGasPrices(inputChainForGas, {
+  const { data: gasPrices, dataUpdatedAt: gasPricesUpdatedAt } = useGasPrices(inputChainForGas, {
     refetchInterval: 20000,
     keepPreviousData: true,
   });
+
+  // User gas overrides are applied to the backend transaction at sign time only
+  // when the user actually customized the fee; otherwise the backend-priced
+  // transaction is signed untouched. The displayed fee follows the same rule.
+  const hasNetworkFeeOverride = Boolean(
+    formState.maxFee ||
+    formState.maxPriorityFee ||
+    formState.gasPrice ||
+    formState.gasLimit ||
+    formState.networkFeeSpeed ||
+    configuration.networkFee.speed !== 'fast',
+  );
+  const baseFee = getBaseFee(gasPrices ?? null);
+  const displayFeeRatio = getNetworkFeeRatioForConfiguration(
+    sendQuote,
+    configuration.networkFee,
+    gasPrices ?? null,
+    baseFee,
+  );
+  const displayedNetworkFee = sendQuote?.networkFee
+    ? hasNetworkFeeOverride
+      ? scaleNetworkFee(sendQuote.networkFee, displayFeeRatio)
+      : sendQuote.networkFee
+    : null;
+  const displayedFee = useNetworkFeeFiatValue({
+    networkFee: displayedNetworkFee,
+    network: sendNetwork,
+    currency,
+  });
+  const feeGasPriceWei = hasNetworkFeeOverride
+    ? getConfigurationEffectiveGasPrice(configuration.networkFee, gasPrices ?? null, baseFee)
+    : getSwapOriginalEffectiveGasPrice(sendQuote, baseFee);
+  const feeProvenance = getFeeProvenance(gasPrices ?? null, configuration.networkFee.speed);
+  const networkFeeUsd = displayedNetworkFee?.amount?.usdValue ?? displayedFee.feeFiatValue ?? null;
 
   // The client transaction we simulate and sign. `sendQuote.transactionSwap`
   // holds the backend `TransactionEVM`; convert it once to the client shape and
@@ -318,19 +361,12 @@ function SendFormComponent({
     // overridden a fee field. With everything default, the backend tx already
     // carries the right gas, so applying would just re-derive it (and would
     // pin gas to a possibly-stale `gasPrices` snapshot).
-    const hasNetworkFeeOverride =
-      formState.maxFee ||
-      formState.maxPriorityFee ||
-      formState.gasPrice ||
-      formState.gasLimit ||
-      formState.networkFeeSpeed ||
-      configuration.networkFee.speed !== 'fast';
     if (!hasNetworkFeeOverride) {
       return { evm: clientTx.evm };
     }
     const configured = applyConfiguration(clientTx.evm, configuration, gasPrices ?? null);
     return { evm: configured };
-  }, [sendQuote, formState, configuration, gasPrices]);
+  }, [sendQuote, hasNetworkFeeOverride, configuration, gasPrices]);
 
   const clientTransactionRef = useRef(clientTransaction);
   clientTransactionRef.current = clientTransaction;
@@ -419,7 +455,7 @@ function SendFormComponent({
             })()
         : clientTransaction;
 
-      const feeValueCommon = sendQuote?.networkFee?.amount?.quantity ?? null;
+      const feeValueCommon = displayedNetworkFee?.amount?.quantity ?? null;
 
       const inputUsdPrice = inputFungibleUsdInfo?.data?.at(0)?.meta.price ?? null;
       const tokenPrice = position.fungible.meta.price;
@@ -491,6 +527,13 @@ function SendFormComponent({
             initiator: INTERNAL_ORIGIN,
             clientScope: 'Send',
             feeValueCommon,
+            feeSpeed: configuration.networkFee.speed,
+            feeGasPriceWei,
+            networkFeeUsd,
+            feeBlock: feeProvenance?.block ?? null,
+            feeSource: feeProvenance?.source ?? null,
+            feeFormulaVersion: feeProvenance?.formulaVersion ?? null,
+            feeUpdatedAt: gasPricesUpdatedAt,
             addressAction: interpretationAction ?? fallbackAddressAction,
             warningWasShown: Boolean(resolved.warning),
             outputAmountColor: 'grey',
@@ -665,6 +708,8 @@ function SendFormComponent({
               inputChain={formState.inputChain}
               networks={networks}
               sendQuote={sendQuote}
+              displayedNetworkFee={displayedNetworkFee}
+              hasNetworkFeeOverride={hasNetworkFeeOverride}
               network={sendNetwork}
               evmTx={evmTx}
               address={address}

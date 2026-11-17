@@ -1,5 +1,6 @@
+import BigNumber from 'bignumber.js';
 import { isTruthy } from 'is-truthy-ts';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { NetworkFeeConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -20,7 +21,7 @@ import type { TransactionFee } from '../TransactionConfiguration/useTransactionF
 import { NetworkFeeDialog } from './NetworkFeeDialog';
 import { getNetworkFeeDisplayValue } from './getNetworkFeeDisplayValue';
 
-function getFeeTypeTitle(type: Exclude<keyof ChainGasPrice['fast'], 'eta'> | undefined) {
+function getFeeTypeTitle(type: 'eip1559' | 'classic' | 'optimistic' | undefined) {
   if (!type) {
     return undefined;
   }
@@ -43,6 +44,8 @@ export function NetworkFee({
   renderDisplayValue,
   displayValueEnd,
   interpretation,
+  expectedGas,
+  onFeeValueFiatReady,
 }: {
   transaction: IncomingTransactionWithFrom;
   transactionFee: TransactionFee;
@@ -59,6 +62,10 @@ export function NetworkFee({
    * Used to display more accurate Network Fee for Fast speed
    */
   interpretation?: InterpretResponse | null;
+  /** Expected gas units the displayed fee is priced on (WLT-2743). */
+  expectedGas?: number | null;
+  /** The expected fee in fiat that the user sees, for analytics. */
+  onFeeValueFiatReady?: (value: number | null) => void;
 }) {
   const { networks } = useNetworks();
   const { currency } = useCurrency();
@@ -66,6 +73,7 @@ export function NetworkFee({
   const { time, feeEstimation, feeEstimationQuery, costs, costsQuery } = transactionFee;
   const {
     feeValueCommon: expectedFeeValueCommon,
+    feeValueFiat: expectedFeeValueFiat,
     maxFeeValueCommon,
     relevantFeeValueFiat: feeValueFiat,
     relevantFeeValueCommon: feeValueCommon,
@@ -78,13 +86,16 @@ export function NetworkFee({
 
   const disabled = isLoading || !onChange;
 
-  const showInterpretationFee =
-    !totalValueExceedsBalance &&
-    networkFeeConfiguration.speed === 'fast' &&
-    interpretation?.data.action?.fee;
+  const showInterpretationFee = !totalValueExceedsBalance && interpretation?.data.action?.fee;
   const interpretationFee = showInterpretationFee
     ? interpretation?.data.action?.fee?.amount.value
     : undefined;
+
+  useEffect(() => {
+    const expectedFeeFiat =
+      expectedFeeValueFiat == null ? null : new BigNumber(expectedFeeValueFiat).toNumber();
+    onFeeValueFiatReady?.(interpretationFee ?? expectedFeeFiat ?? null);
+  }, [interpretationFee, expectedFeeValueFiat, onFeeValueFiatReady]);
 
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
   const feeValueFormatted = interpretationFee
@@ -138,6 +149,7 @@ export function NetworkFee({
           chainGasPrices={chainGasPrices}
           transaction={transaction}
           customViewOnly={customViewOnly}
+          expectedGas={expectedGas}
         />
       ) : null}
       <HStack gap={8} justifyContent="space-between">
