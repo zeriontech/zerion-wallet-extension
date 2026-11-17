@@ -7,29 +7,31 @@ import {
   getSigningStepState,
   signPermitBatch,
 } from './signPermitBatch';
+import { UntrustedPermitPayloadError } from './permitPayload';
 
 const ADDRESS = '0xAbC0000000000000000000000000000000000001';
 
-function createPermit(chain: string, chainId: number): Permit {
+function createPermit(chain: string, chainId: number, contractAddress?: string): Permit {
+  const issued = contractAddress ?? `0x${String(chainId).padStart(40, '0')}`;
   return {
     chain,
-    contracts: [`0x${chainId}`],
+    contracts: [issued],
     expireAt: '2099-01-01T00:00:00Z',
     eip712: {
       domain: {
-        name: 'Zama',
+        name: 'Decryption',
         version: '1',
         chainId: String(chainId),
         verifyingContract: '0x0000000000000000000000000000000000000002',
         salt: null,
       },
       types: {
-        Permit: [{ name: 'publicKey', type: 'bytes' }],
+        UserDecryptRequestVerification: [{ name: 'contractAddresses', type: 'address[]' }],
       },
-      primaryType: 'Permit',
-      message: { publicKey: '0x01' },
+      primaryType: 'UserDecryptRequestVerification',
+      message: { contractAddresses: [issued] },
     },
-  } as unknown as Permit;
+  };
 }
 
 const permits = [
@@ -82,6 +84,58 @@ describe('signPermitBatch', () => {
   it('returns an empty batch for no permits without calling the signer', async () => {
     const sign = vi.fn<PermitSigner>();
     await expect(signPermitBatch(ADDRESS, [], sign)).resolves.toEqual([]);
+    expect(sign).not.toHaveBeenCalled();
+  });
+
+  it('matches issued and requested contracts case-insensitively', async () => {
+    const permit = createPermit('ethereum', 1, '0xAbC0000000000000000000000000000000000003');
+    permit.eip712.message.contractAddresses = ['0xabc0000000000000000000000000000000000003'];
+    const sign = vi.fn<PermitSigner>(async () => 'sig');
+
+    await expect(signPermitBatch(ADDRESS, [permit], sign)).resolves.toHaveLength(1);
+  });
+
+  it('refuses any payload that is not a Zama decryption request', async () => {
+    const wrongPrimaryType = createPermit('ethereum', 1);
+    wrongPrimaryType.eip712.primaryType = 'Permit';
+    const wrongDomain = createPermit('base', 8453);
+    wrongDomain.eip712.domain.name = 'Zama';
+    const sign = vi.fn<PermitSigner>();
+
+    for (const permit of [wrongPrimaryType, wrongDomain]) {
+      const promise = signPermitBatch(ADDRESS, [permit], sign);
+      await expect(promise).rejects.toBeInstanceOf(PermitSigningError);
+      await promise.catch((error: PermitSigningError) => {
+        expect(error.index).toBe(0);
+        expect(error.cause).toBeInstanceOf(UntrustedPermitPayloadError);
+      });
+    }
+    expect(sign).not.toHaveBeenCalled();
+  });
+
+  it('refuses a contract outside the issued set before signing anything', async () => {
+    const valid = createPermit('ethereum', 1);
+    const other = createPermit('base', 8453);
+    other.eip712.message.contractAddresses = ['0x9999999999999999999999999999999999999999'];
+    const sign = vi.fn<PermitSigner>();
+
+    const promise = signPermitBatch(ADDRESS, [valid, other], sign);
+    await expect(promise).rejects.toBeInstanceOf(PermitSigningError);
+    await promise.catch((error: PermitSigningError) => {
+      expect(error.index).toBe(1);
+      expect(error.cause).toBeInstanceOf(UntrustedPermitPayloadError);
+    });
+    expect(sign).not.toHaveBeenCalled();
+  });
+
+  it('refuses an address list that is not all strings', async () => {
+    const permit = createPermit('ethereum', 1);
+    permit.eip712.message.contractAddresses = [null];
+    const sign = vi.fn<PermitSigner>();
+
+    await expect(signPermitBatch(ADDRESS, [permit], sign)).rejects.toBeInstanceOf(
+      PermitSigningError,
+    );
     expect(sign).not.toHaveBeenCalled();
   });
 });
