@@ -61,7 +61,9 @@ export async function estimateNetworkFee({
   if (!gasPrice) {
     return null;
   }
-  const gasUnits = expectedGas != null && expectedGas > 0 ? expectedGas : Number(gas);
+  const gasLimit = Number(gas);
+  const gasUnits =
+    expectedGas != null && expectedGas > 0 ? Math.min(expectedGas, gasLimit) : gasLimit;
   const { eip1559, classic } = gasPrice;
   if (eip1559 && gasPrices?.fast.eip1559) {
     const estimatedFee = estimateFee({

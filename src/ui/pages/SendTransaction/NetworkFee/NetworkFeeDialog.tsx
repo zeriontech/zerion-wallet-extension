@@ -172,7 +172,8 @@ function CustomNetworkFeeForm({
   const maxFee = configuration.custom1559GasPrice?.maxFee ?? defaultMaxFee;
 
   const gasLimit = configuration.gasLimit ?? defaultGasLimit;
-  const displayGas = expectedGas != null && expectedGas > 0 ? expectedGas : gasLimit;
+  const displayGas =
+    expectedGas != null && expectedGas > 0 ? Math.min(expectedGas, Number(gasLimit)) : gasLimit;
   const showLowGasLimitWarning = gasEstimation != null && Number(gasLimit) * 1.1 < gasEstimation;
 
   const { expectedFeeFiat, maxFeeFiat, baseFeeFiat } = useMemo(() => {
@@ -440,6 +441,7 @@ function NetworkFeeButton({
     networkFeeConfiguration: speedConfiguration,
     chainGasPrices: chainGasPrices ?? null,
     expectedGas,
+    preserveTransactionMaxFee: true,
     onFeeValueCommonReady: null,
   });
   const {

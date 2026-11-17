@@ -107,10 +107,6 @@ vi.doMock('src/modules/networks/networks-store.client', () => ({
     throw new Error('not used by software EVM steps');
   },
 }));
-vi.doMock('./refreshStaleGas', () => ({
-  isStepStale: () => false,
-  refreshStaleGasForStep: async (step: SignStep) => step,
-}));
 
 const { appendQueue, getQueue, getQueues } = await import('./store');
 const { runQueue } = await import('./runQueue');

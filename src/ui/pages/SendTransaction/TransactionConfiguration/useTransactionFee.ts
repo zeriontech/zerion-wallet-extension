@@ -17,7 +17,7 @@ import { getNetworkFeeEstimation } from 'src/modules/ethereum/transactions/gasPr
 import { formatSeconds } from 'src/shared/units/formatSeconds';
 import { getDecimals } from 'src/modules/networks/asset';
 import { getBaseAssetDecimals } from 'src/modules/networks/NetworkInfo';
-import { baseToCommon, commonToBase } from 'src/shared/units/convert';
+import { baseToCommon, commonToBase, normalizeNumberValue } from 'src/shared/units/convert';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import type { Networks } from 'src/modules/networks/Networks';
 
@@ -77,6 +77,29 @@ function getGasFromConfiguration(
   }
 }
 
+/**
+ * A dapp can ask for a higher max fee than Zerion's selected speed. Keep it:
+ * the expected fee still uses min(maxFee, base + tip), while the max-fee line
+ * and the balance reserve use the higher cap.
+ */
+function withPreservedMaxFee(
+  gasPrice: GasPriceObject | null,
+  transactionMaxFee: string | number | null | undefined,
+) {
+  if (!gasPrice?.eip1559 || transactionMaxFee == null) {
+    return gasPrice;
+  }
+  const dappMax = new BigNumber(normalizeNumberValue(transactionMaxFee));
+  const zerionMax = new BigNumber(gasPrice.eip1559.maxFee);
+  if (!dappMax.gt(zerionMax)) {
+    return gasPrice;
+  }
+  return {
+    ...gasPrice,
+    eip1559: { ...gasPrice.eip1559, maxFee: dappMax.toNumber() },
+  };
+}
+
 function useFeeEstimation(
   {
     chain,
@@ -84,6 +107,7 @@ function useFeeEstimation(
     networkFeeConfiguration,
     chainGasPrices,
     expectedGas,
+    preserveTransactionMaxFee = false,
   }: {
     chain: Chain;
     transaction: IncomingTransaction;
@@ -91,6 +115,8 @@ function useFeeEstimation(
     networkFeeConfiguration: NetworkFeeConfiguration | null;
     chainGasPrices: ChainGasPrice | null;
     expectedGas?: number | null;
+    /** Preserve a dapp's higher max fee; ignored for Custom fees. */
+    preserveTransactionMaxFee?: boolean;
   },
   { keepPreviousData = false } = {},
 ) {
@@ -110,6 +136,7 @@ function useFeeEstimation(
       chainGasPrices,
       gas,
       expectedGas,
+      preserveTransactionMaxFee,
     ],
     queryFn: async () => {
       const gasPriceFromTransaction = getGasPriceFromTransaction(transaction);
@@ -121,15 +148,19 @@ function useFeeEstimation(
         gasPriceFromConfiguration ||
         gasPriceFromTransaction ||
         (chainGasPrices ? chainGasPrices.fast : null);
+      const effectiveGasPrice =
+        preserveTransactionMaxFee && networkFeeConfiguration?.speed !== 'custom'
+          ? withPreservedMaxFee(gasPrice, transaction.maxFeePerGas)
+          : gasPrice;
       const feeEstimation = await getNetworkFeeEstimation({
         transaction,
         address: transaction.from || null,
         gas: Number(gas),
         expectedGas,
         gasPrices: chainGasPrices || null,
-        gasPrice,
+        gasPrice: effectiveGasPrice,
       });
-      return { feeEstimation, gasPrice };
+      return { feeEstimation, gasPrice: effectiveGasPrice };
     },
     retry: 0,
   });
@@ -222,6 +253,7 @@ export function useTransactionFee({
   networkFeeConfiguration,
   chainGasPrices,
   expectedGas,
+  preserveTransactionMaxFee = false,
   keepPreviousData = false,
 }: {
   address: string;
@@ -230,11 +262,20 @@ export function useTransactionFee({
   onFeeValueCommonReady: null | ((value: string) => void);
   networkFeeConfiguration: NetworkFeeConfiguration | null;
   expectedGas?: number | null;
+  /** Preserve a dapp's higher max fee; ignored for Custom fees. */
+  preserveTransactionMaxFee?: boolean;
   keepPreviousData?: boolean;
   chainGasPrices: ChainGasPrice | null;
 }) {
   const feeEstimationQuery = useFeeEstimation(
-    { chain, transaction, networkFeeConfiguration, chainGasPrices, expectedGas },
+    {
+      chain,
+      transaction,
+      networkFeeConfiguration,
+      chainGasPrices,
+      expectedGas,
+      preserveTransactionMaxFee,
+    },
     { keepPreviousData },
   );
 
