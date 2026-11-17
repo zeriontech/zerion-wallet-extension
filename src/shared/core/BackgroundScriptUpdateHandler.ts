@@ -1,5 +1,6 @@
 import browser from 'webextension-polyfill';
 import { rejectAfterDelay } from '../rejectAfterDelay';
+import { PORT_NAMES } from 'src/shared/portNames';
 
 function getRandomInteger() {
   return window.crypto.getRandomValues(new Uint32Array(1))[0];
@@ -39,7 +40,7 @@ export class BackgroundScriptUpdateHandler {
     onActivate,
     onDisconnect,
     onFailedHandshake,
-    portName = 'handshake',
+    portName = PORT_NAMES.handshake,
     performHandshake = true,
   }: {
     onActivate: () => void;

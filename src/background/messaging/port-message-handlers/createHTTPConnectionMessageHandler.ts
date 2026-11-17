@@ -1,4 +1,3 @@
-import browser from 'webextension-polyfill';
 import {
   formatJsonRpcError,
   isJsonRpcPayload,
@@ -9,6 +8,7 @@ import { isRpcRequestWithContext, requestWithContextToRpcRequest } from 'src/sha
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { invariant } from 'src/shared/invariant';
 import { isWhitelistedForZerionRpc } from 'src/shared/dapps/zerion-rpc-whitelist';
+import { PORT_NAMES } from 'src/shared/portNames';
 import { getPortContext } from '../getPortContext';
 import { HttpConnection } from '../HttpConnection';
 import type { PortMessageHandler } from '../PortRegistry';
@@ -16,7 +16,7 @@ import type { PortMessageHandler } from '../PortRegistry';
 export function createHttpConnectionMessageHandler(getWallet: () => Wallet): PortMessageHandler {
   return function httpConnectionMessageHandler(port, msg) {
     const context = getPortContext(port);
-    if (port.name === `${browser.runtime.id}/ethereum`) {
+    if (port.name === PORT_NAMES.ethereum) {
       if (isJsonRpcPayload(msg) && isJsonRpcRequest(msg) && Boolean(msg.method)) {
         const wallet = getWallet();
         wallet.publicEthereumController
@@ -36,7 +36,7 @@ export function createHttpConnectionMessageHandler(getWallet: () => Wallet): Por
           });
         return true;
       }
-    } else if (port.name === `${browser.runtime.id}/http-connection-ui`) {
+    } else if (port.name === PORT_NAMES.httpConnectionUi) {
       if (isRpcRequestWithContext(msg)) {
         const {
           params: { context: requestContext },
