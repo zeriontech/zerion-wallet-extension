@@ -39,9 +39,14 @@ import {
 } from '../Wallet/model/ethers-v5-types';
 import type { PollingTx } from './TransactionPoller';
 import { TransactionsPoller } from './TransactionPoller';
+import { SwapHashReporter } from './SwapHashReporter';
 import { createSeedTransactions, DEV_SEED_INITIATOR } from './devSeedLocalTransactions';
 
 const ONE_DAY_IN_MINUTES = 1 * 60 * 24;
+
+export const swapHashReporter = new SwapHashReporter((payload) =>
+  ZerionAPI.transactionExecuteOrder(payload),
+);
 
 class TransactionsStore extends PersistentStore<StoredTransactions> {
   upsertTransaction(value: TransactionObject) {
@@ -282,6 +287,8 @@ export class TransactionService {
   }
 
   addListeners() {
+    swapHashReporter.addListeners();
+
     emitter.on('transactionSent', (result, { initiator, addressAction }) => {
       const newItem = TransactionService.toTransactionObject(result, {
         initiator,
