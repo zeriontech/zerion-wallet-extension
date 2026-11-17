@@ -179,7 +179,7 @@ export interface Quote2 {
      * @description Expected gas units the fee is priced on (WLT-2743).
      * Summed across every transaction the fee covers.
      */
-    gas_used?: number | null;
+    gasUsed?: number | null;
     /** @description Fee amount (can be expected fee or max fee) */
     amount: Amount | null;
     fungible: null | Fungible;

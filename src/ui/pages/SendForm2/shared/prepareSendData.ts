@@ -262,7 +262,7 @@ export async function prepareSendData(
       const feeBase = new BigNumber(String(feeEstimation.estimatedFee));
       networkFee = {
         free: false,
-        gas_used: expectedGas,
+        gasUsed: expectedGas,
         amount: {
           quantity: baseToCommon(feeBase, baseAssetDecimals).toFixed(),
           value: null,
