@@ -1,9 +1,17 @@
 import { ethers } from 'ethers';
-import { isValidMnemonic as isValidMnemonicV5 } from '@ethersproject/hdnode';
 import { isSolanaPrivateKey } from 'src/modules/solana/shared';
 
+/**
+ * Recovery phrases are split on plain spaces only. Any other whitespace would
+ * make a phrase that looks right derive keys from a different seed, so it is
+ * refused rather than normalised.
+ */
+export function hasOnlySpaceSeparators(phrase: string) {
+  return !/[^\S ]/.test(phrase);
+}
+
 export function isValidMnemonic(phrase: string) {
-  return isValidMnemonicV5(phrase);
+  return hasOnlySpaceSeparators(phrase) && ethers.Mnemonic.isValidMnemonic(phrase);
 }
 
 export function isValidPrivateKey(rawInput: string) {

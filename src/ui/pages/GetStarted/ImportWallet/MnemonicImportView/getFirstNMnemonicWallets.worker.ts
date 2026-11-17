@@ -1,11 +1,11 @@
 import 'src/shared/polyfills';
-import { HDNode } from '@ethersproject/hdnode';
 import { Keypair } from '@solana/web3.js';
 import * as bip39 from 'bip39';
 import { derivePath } from 'ed25519-hd-key';
 import type { BareWallet, MaskedBareWallet } from 'src/shared/types/BareWallet';
 import type { DerivationPathType } from 'src/shared/wallet/derivation-paths';
-import { getAccountPathEthereum, getAccountPath } from 'src/shared/wallet/derivation-paths';
+import { getAccountPath } from 'src/shared/wallet/derivation-paths';
+import { deriveEthereumWallets } from 'src/shared/wallet/deriveEthereumWallets';
 import type { LocallyEncoded } from 'src/shared/wallet/encode-locally';
 import { decodeMasked, encodeForMasking } from 'src/shared/wallet/encode-locally';
 import { fromSolanaKeypair } from 'src/modules/solana/keypairs';
@@ -23,7 +23,7 @@ export interface Params {
 
 export type Result = MaskedBareWallet[];
 
-function locallyMaskWallet(wallet: BareWallet | HDNode) {
+function locallyMaskWallet(wallet: BareWallet) {
   return {
     mnemonic: wallet.mnemonic
       ? { ...wallet.mnemonic, phrase: encodeForMasking(wallet.mnemonic.phrase) }
@@ -34,26 +34,9 @@ function locallyMaskWallet(wallet: BareWallet | HDNode) {
   };
 }
 
-function fromHDNode(hdNode: HDNode): MaskedBareWallet {
-  if (!hdNode.mnemonic) {
-    throw new Error('Expected an HDNode with a mnemonic');
-  }
-  return locallyMaskWallet(hdNode);
-}
-
 /** Ethereum keypairs */
 function getFirstNMnemonicWalletsEcdsa({ phrase, n }: Omit<Params, 'curve'>) {
-  const result: Result = [];
-  // NOTE:
-  // ethers.utils.HDNode is _much_ faster at generating wallets
-  // than ethers.Wallet
-  const hd = HDNode.fromMnemonic(decodeMasked(phrase));
-  for (let i = 0; i < n; i++) {
-    const path = getAccountPathEthereum(i);
-    const wallet = hd.derivePath(path);
-    result.push(fromHDNode(wallet));
-  }
-  return result;
+  return deriveEthereumWallets(decodeMasked(phrase), n).map(locallyMaskWallet);
 }
 
 /** Solana keypairs */
