@@ -218,6 +218,10 @@ function resolveFormStateWarning({
  *   2. simulation status === 'failed'
  *   3. Output mismatch (diff > max(1%, quote.finalSlippage), either direction)
  *   4. Existing form-state warnings (insufficient balance, no providers, etc.)
+ *   5. Price impact (no card here; <PriceImpactWarning /> renders it)
+ *
+ * Price impact is known before simulation. It never replaces a card from
+ * 1–4; it only supplies the danger title when none of 1–3 applies and blocks auto-sign.
  *
  * `unverified` is true whenever the simulation didn't return enough data to
  * inspect — Gray severity, missing action/transfers, no matching output
@@ -232,6 +236,7 @@ export function resolveTransactionWarning({
   simulationResult,
   inputNetwork,
   outputNetwork,
+  priceImpactNeedsConfirmation,
 }: {
   quote: Quote2 | null;
   quotesQuery: QuotesData<Quote2>;
@@ -239,6 +244,11 @@ export function resolveTransactionWarning({
   simulationResult: SimulationResult;
   inputNetwork: NetworkInfo | null | undefined;
   outputNetwork: NetworkInfo | null | undefined;
+  /**
+   * Price impact that the user must explicitly accept: input price unknown,
+   * impact not computable, or a medium/high loss. Known before simulation.
+   */
+  priceImpactNeedsConfirmation: boolean;
 }): ResolvedTransactionWarning {
   const warnings = readSimulationWarnings(simulationResult);
   const status = readSimulationStatus(simulationResult);
@@ -351,9 +361,9 @@ export function resolveTransactionWarning({
     warning: formStateWarning,
     unverified,
     // Form-state warnings don't block auto-sign — the button is already
-    // disabled by quote.error / missing quote / etc. Unverified does block,
-    // matching today's behavior.
-    blocksAutoSign: unverified,
-    dangerTitle: null,
+    // disabled by quote.error / missing quote / etc. Unverified and price
+    // impact do: the user confirms after seeing the simulation outcome.
+    blocksAutoSign: unverified || priceImpactNeedsConfirmation,
+    dangerTitle: priceImpactNeedsConfirmation ? 'Proceed Anyway' : null,
   };
 }

@@ -281,6 +281,9 @@ function SwapFormComponent({
     priceImpact?.kind === 'loss' &&
     (priceImpact.level === 'medium' || priceImpact.level === 'high');
 
+  const priceImpactNeedsConfirmation =
+    inputPriceUnknown || priceImpact?.kind === 'n/a' || showPriceImpactWarning;
+
   const isCrossChain = formState.inputChain !== formState.outputChain;
 
   const hasZeroInputBalance =
@@ -611,8 +614,17 @@ function SwapFormComponent({
         simulationResult,
         inputNetwork: inputNetworkConfig,
         outputNetwork: outputNetworkConfig,
+        priceImpactNeedsConfirmation,
       }),
-    [quote, quotesQuery, formState, simulationResult, inputNetworkConfig, outputNetworkConfig],
+    [
+      quote,
+      quotesQuery,
+      formState,
+      simulationResult,
+      inputNetworkConfig,
+      outputNetworkConfig,
+      priceImpactNeedsConfirmation,
+    ],
   );
 
   const isUnverified = resolved.unverified;
@@ -628,6 +640,7 @@ function SwapFormComponent({
       simulationResult: result,
       inputNetwork: inputNetworkConfig,
       outputNetwork: outputNetworkConfig,
+      priceImpactNeedsConfirmation,
     });
     if (fresh.blocksAutoSign) {
       setHasSimulated(true);
@@ -776,12 +789,7 @@ function SwapFormComponent({
             onSimulationCompleted={handleSimulationCompleted}
             onSign={() => handleSignTransaction(simulationResult)}
             onCancel={handleCancel}
-            dangerTitle={
-              resolved.dangerTitle ??
-              (inputPriceUnknown || priceImpact?.kind === 'n/a' || showPriceImpactWarning
-                ? 'Proceed Anyway'
-                : undefined)
-            }
+            dangerTitle={resolved.dangerTitle ?? undefined}
           />
         )}
         <PageBottom />
