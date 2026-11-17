@@ -101,7 +101,8 @@ import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getError } from 'get-error';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { baseToCommon, commonToBase } from 'src/shared/units/convert';
+import { baseToCommon, commonToBase, normalizeNumberValue } from 'src/shared/units/convert';
+import BigNumber from 'bignumber.js';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import { getDecimals } from 'src/modules/networks/asset';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
@@ -175,7 +176,22 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
     tx = { ...tx, nonce };
   }
 
+  const dappMaxFee = transaction.maxFeePerGas;
   tx = applyConfiguration(tx, configuration, chainGasPrices);
+
+  // Keep a dapp's own higher max fee. Zerion's preset still supplies the tip;
+  // a Custom fee is used exactly as the user entered it (iOS WLT-2744).
+  if (
+    configuration.networkFee.speed !== 'custom' &&
+    dappMaxFee != null &&
+    tx.maxFeePerGas != null
+  ) {
+    const dappMax = new BigNumber(normalizeNumberValue(dappMaxFee));
+    const zerionMax = new BigNumber(normalizeNumberValue(tx.maxFeePerGas));
+    if (dappMax.gt(zerionMax)) {
+      tx.maxFeePerGas = valueToHex(dappMax.toFixed());
+    }
+  }
 
   return tx as PartiallyRequired<T, 'chainId' | 'from'>;
 }
@@ -441,7 +457,6 @@ function TransactionDefaultView({
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={paymasterPossible}
                     paymasterWaiting={paymasterWaiting}
-                    interpretation={interpretation}
                     interactiveNetworkFee={true}
                     expectedGas={expectedGas}
                   />

@@ -447,7 +447,7 @@ function trackAppEvents({ account }: { account: Account }) {
       ...omitNullParams(addressActionAnalytics),
     });
 
-    const feeSpeed = context.feeSpeed ?? 'fast';
+    const feeSpeed = context.feeSpeed;
     const providedProvenance: FeeProvenance | null =
       context.feeBlock != null || context.feeSource != null || context.feeFormulaVersion != null
         ? {
@@ -456,11 +456,14 @@ function trackAppEvents({ account }: { account: Account }) {
             formulaVersion: context.feeFormulaVersion ?? null,
           }
         : null;
-    const provenance = await resolveFeeProvenance({
-      chain,
-      speed: feeSpeed,
-      provided: providedProvenance,
-    });
+    const provenance =
+      feeSpeed === 'fast' || feeSpeed === 'average'
+        ? await resolveFeeProvenance({
+            chain,
+            speed: feeSpeed,
+            provided: providedProvenance,
+          })
+        : null;
     const signedEvm = status === 'success' ? (props.result.evm ?? null) : null;
     const feeParams = getSignedTransactionFeeParams({
       chain,

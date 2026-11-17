@@ -29,6 +29,7 @@ function useInsufficientFundsWarning({
     chain,
     networkFeeConfiguration,
     chainGasPrices,
+    preserveTransactionMaxFee: true,
     onFeeValueCommonReady: null,
   });
 

@@ -16,7 +16,6 @@ import type { IncomingTransactionWithFrom } from 'src/modules/ethereum/types/Inc
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
-import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
 import { getNetworkFeeDisplayValue } from './getNetworkFeeDisplayValue';
@@ -43,7 +42,6 @@ export function NetworkFee({
   label,
   renderDisplayValue,
   displayValueEnd,
-  interpretation,
   expectedGas,
   onFeeValueFiatReady,
 }: {
@@ -57,11 +55,6 @@ export function NetworkFee({
   label?: React.ReactNode;
   renderDisplayValue?: (params: { hintTitle: string; displayValue: string }) => React.ReactNode;
   displayValueEnd?: React.ReactNode;
-  /**
-   * The interpretation response from the transaction simulation API.
-   * Used to display more accurate Network Fee for Fast speed
-   */
-  interpretation?: InterpretResponse | null;
   /** Expected gas units the displayed fee is priced on (WLT-2743). */
   expectedGas?: number | null;
   /** The expected fee in fiat that the user sees, for analytics. */
@@ -86,29 +79,20 @@ export function NetworkFee({
 
   const disabled = isLoading || !onChange;
 
-  const showInterpretationFee = !totalValueExceedsBalance && interpretation?.data.action?.fee;
-  const interpretationFee = showInterpretationFee
-    ? interpretation?.data.action?.fee?.amount.value
-    : undefined;
-
   useEffect(() => {
     const expectedFeeFiat =
       expectedFeeValueFiat == null ? null : new BigNumber(expectedFeeValueFiat).toNumber();
-    onFeeValueFiatReady?.(interpretationFee ?? expectedFeeFiat ?? null);
-  }, [interpretationFee, expectedFeeValueFiat, onFeeValueFiatReady]);
+    onFeeValueFiatReady?.(expectedFeeFiat ?? null);
+  }, [expectedFeeValueFiat, onFeeValueFiatReady]);
 
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
-  const feeValueFormatted = interpretationFee
-    ? formatCurrencyValueExtra(interpretationFee, 'en', currency, {
+  const feeValueFormatted = feeValueFiat
+    ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
         zeroRoundingFallback: 0.01,
       })
-    : feeValueFiat
-      ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
-          zeroRoundingFallback: 0.01,
-        })
-      : feeValueCommon
-        ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
-        : undefined;
+    : feeValueCommon
+      ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
+      : undefined;
 
   const hintTitle = [
     getFeeTypeTitle(feeEstimation?.type),

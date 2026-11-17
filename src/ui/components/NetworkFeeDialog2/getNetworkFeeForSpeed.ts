@@ -178,16 +178,21 @@ export function getExpectedGasForQuote(
   decimals: number | null,
 ): number | null {
   const gasUsed = getGasUsed(quote);
-  if (gasUsed != null) {
-    return gasUsed;
+  let expectedGas = gasUsed;
+  if (expectedGas == null) {
+    const quantity = quote?.networkFee?.amount?.quantity;
+    const price = getSwapOriginalEffectiveGasPrice(quote, baseFee);
+    if (!quantity || decimals == null || !price || price <= 0) {
+      return null;
+    }
+    const gas = commonToBase(quantity, decimals).dividedBy(price);
+    expectedGas = gas.isFinite() && gas.gt(0) ? gas.toNumber() : null;
   }
-  const quantity = quote?.networkFee?.amount?.quantity;
-  const price = getSwapOriginalEffectiveGasPrice(quote, baseFee);
-  if (!quantity || decimals == null || !price || price <= 0) {
+  if (expectedGas == null) {
     return null;
   }
-  const gas = commonToBase(quantity, decimals).dividedBy(price);
-  return gas.isFinite() && gas.gt(0) ? gas.toNumber() : null;
+  const gasLimit = getSwapOriginalGasLimit(quote);
+  return gasLimit != null && gasLimit > 0 ? Math.min(expectedGas, gasLimit) : expectedGas;
 }
 
 /**

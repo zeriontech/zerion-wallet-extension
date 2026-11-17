@@ -44,14 +44,17 @@ describe('getSignedTransactionFeeParams', () => {
     });
   });
 
-  test('defaults the speed to fast for flows without a chooser', () => {
+  test('omits fee_speed and provenance without a speed setting', () => {
     const result = getSignedTransactionFeeParams({
       chain: 'ethereum',
       context: context(),
       signedEvm: SIGNED_TX,
       provenance: null,
     });
-    expect(result.fee_speed).toBe('fast');
+    expect(result.fee_speed).toBeUndefined();
+    expect(result.fee_block).toBeNull();
+    expect(result.fee_source).toBeNull();
+    expect(result.fee_formula_version).toBeNull();
   });
 
   test('keeps descriptive fields and nulls the signed fees on failure', () => {
@@ -59,7 +62,7 @@ describe('getSignedTransactionFeeParams', () => {
       chain: 'ethereum',
       context: context({ feeSpeed: 'custom' }),
       signedEvm: null,
-      provenance: { block: null, source: null, formulaVersion: 'v2' },
+      provenance: { block: 1, source: 'p75', formulaVersion: 'v2' },
     });
     expect(result).toEqual({
       fee_speed: 'custom',
@@ -67,7 +70,7 @@ describe('getSignedTransactionFeeParams', () => {
       max_priority_fee_per_gas: null,
       fee_block: null,
       fee_source: null,
-      fee_formula_version: 'v2',
+      fee_formula_version: null,
     });
   });
 

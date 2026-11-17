@@ -118,18 +118,26 @@ describe('getNetworkFeeRatio', () => {
 
 describe('getExpectedGasForQuote', () => {
   test('prefers gasUsed', () => {
-    const quote = makeQuote(makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) }), {
-      gasUsed: 21000,
-    });
+    const quote = makeQuote(
+      makeEvm({ gas: hex(30000), maxFee: hex(200), maxPriorityFee: hex(10) }),
+      { gasUsed: 21000 },
+    );
     expect(getExpectedGasForQuote(quote, 90, 18)).toBe(21000);
   });
 
   test('derives expected gas from the fee and the quote price', () => {
     // Fee quantity 21000 (decimals 0) at effective price 1 wei.
-    const quote = makeQuote(makeEvm({ maxFee: hex(1), maxPriorityFee: hex(1) }), {
+    const quote = makeQuote(makeEvm({ gas: hex(30000), maxFee: hex(1), maxPriorityFee: hex(1) }), {
       amount: amount('21000') as never,
     });
     expect(getExpectedGasForQuote(quote, 0, 0)).toBe(21000);
+  });
+
+  test('caps expected gas at the quote gas limit', () => {
+    const quote = makeQuote(makeEvm({ gas: hex(256), maxFee: hex(200), maxPriorityFee: hex(10) }), {
+      gasUsed: 21000,
+    });
+    expect(getExpectedGasForQuote(quote, 90, 18)).toBe(256);
   });
 
   test('returns null without enough data', () => {

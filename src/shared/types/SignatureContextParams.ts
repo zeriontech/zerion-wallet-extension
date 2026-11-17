@@ -18,11 +18,6 @@ export type TransactionContextParams = {
   feeBlock?: number | null;
   feeSource?: string | null;
   feeFormulaVersion?: string | null;
-  /**
-   * When the applied gas-price snapshot was fetched. Internal to the signer's
-   * stale-gas refresh; never reported as analytics.
-   */
-  feeUpdatedAt?: number | null;
   initiator: string;
   clientScope: ClientScope | null;
   addressAction: AnyAddressAction | null;

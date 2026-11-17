@@ -305,7 +305,7 @@ function SendFormComponent({
     () => (formState.inputChain ? createChain(formState.inputChain) : null),
     [formState.inputChain],
   );
-  const { data: gasPrices, dataUpdatedAt: gasPricesUpdatedAt } = useGasPrices(inputChainForGas, {
+  const { data: gasPrices } = useGasPrices(inputChainForGas, {
     refetchInterval: 20000,
     keepPreviousData: true,
   });
@@ -533,7 +533,6 @@ function SendFormComponent({
             feeBlock: feeProvenance?.block ?? null,
             feeSource: feeProvenance?.source ?? null,
             feeFormulaVersion: feeProvenance?.formulaVersion ?? null,
-            feeUpdatedAt: gasPricesUpdatedAt,
             addressAction: interpretationAction ?? fallbackAddressAction,
             warningWasShown: Boolean(resolved.warning),
             outputAmountColor: 'grey',

@@ -4,7 +4,7 @@ import type { TransactionContextParams } from 'src/shared/types/SignatureContext
 import type { FeeProvenance } from 'src/modules/ethereum/transactions/gasPrices/provenance';
 
 export interface SignedTransactionFeeParams {
-  fee_speed: TransactionContextParams['feeSpeed'] | 'fast';
+  fee_speed?: NonNullable<TransactionContextParams['feeSpeed']>;
   max_fee_per_gas: string | null;
   max_priority_fee_per_gas: string | null;
   fee_block: number | null;
@@ -43,12 +43,14 @@ export function getSignedTransactionFeeParams({
   if (chain !== NetworkId.Ethereum) {
     return {};
   }
+  const feeSpeed = context.feeSpeed ?? null;
+  const hasAnswerSpeed = feeSpeed === 'fast' || feeSpeed === 'average';
   return {
-    fee_speed: context.feeSpeed ?? 'fast',
+    ...(feeSpeed ? { fee_speed: feeSpeed } : {}),
     max_fee_per_gas: toWeiString(signedEvm?.maxFeePerGas),
     max_priority_fee_per_gas: toWeiString(signedEvm?.maxPriorityFeePerGas),
-    fee_block: provenance?.block ?? null,
-    fee_source: provenance?.source ?? null,
-    fee_formula_version: provenance?.formulaVersion ?? null,
+    fee_block: hasAnswerSpeed ? (provenance?.block ?? null) : null,
+    fee_source: hasAnswerSpeed ? (provenance?.source ?? null) : null,
+    fee_formula_version: hasAnswerSpeed ? (provenance?.formulaVersion ?? null) : null,
   };
 }

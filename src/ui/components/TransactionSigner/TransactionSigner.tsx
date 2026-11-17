@@ -40,7 +40,6 @@ import {
 import { TransactionToaster } from './Toaster/TransactionToaster';
 import { HardwareDialog } from './HardwareDialog/HardwareDialog';
 import { LedgerDialogWrapper } from './LedgerDialogWrapper';
-import { isStepStale, refreshStaleGasForStep } from './refreshStaleGas';
 import type { SendTxParams, SignStep } from './types';
 
 async function signSendStepSoftware({
@@ -233,14 +232,6 @@ async function runQueue(queue: QueueRecord): Promise<void> {
 
     updateQueueRun(queueId, { state: 'running', currentStep: index });
     emitQueueEvent(queueId, { type: 'step-start', index });
-
-    // If the queue sat long enough that the original gas estimate may be
-    // stale (e.g. hardware-wallet confirmation took >1min), re-estimate
-    // gasLimit before sending. Mutate in place so later iterations see the
-    // updated step.
-    if (isStepStale(steps[index], queue.enqueuedAt)) {
-      steps[index] = await refreshStaleGasForStep(steps[index]);
-    }
 
     try {
       const result = await runStep({ queue, step: steps[index], index });
