@@ -162,19 +162,13 @@ export function getCustomExpectedFeeRatio(
   return getNetworkFeeRatio(quote, effectiveGasPrice, baseFee);
 }
 
-type NetworkFeeWithGas = { gas_used?: number | null; gasUsed?: number | null };
-
 function getGasUsed(quote: NetworkFeeQuote | null): number | null {
-  // Accept the camelCase variant defensively: WLT-2743 calls the public field
-  // `gas_used`, but the exact ZPI wire spelling is still unverified.
-  const value = (quote?.networkFee as (NetworkFeeWithGas & object) | null)?.gas_used;
-  const camel = (quote?.networkFee as (NetworkFeeWithGas & object) | null)?.gasUsed;
-  const gas = value ?? camel;
+  const gas = quote?.networkFee?.gasUsed;
   return typeof gas === 'number' && gas > 0 ? gas : null;
 }
 
 /**
- * Gas units the backend priced the fee on: `gas_used` when present, otherwise
+ * Gas units the backend priced the fee on: `gasUsed` when present, otherwise
  * the fee amount converted back through the quote transaction's effective
  * price. `null` when neither input is usable.
  */
@@ -199,7 +193,7 @@ export function getExpectedGasForQuote(
 /**
  * The multiplier for the custom **Max Fee**: `maxFeePerGas × gasLimit`,
  * relative to the quote's expected cost. The gas-limit denominator is the
- * expected gas for a single-tx quote. For an approval + swap quote `gas_used`
+ * expected gas for a single-tx quote. For an approval + swap quote `gasUsed`
  * is the sum across both transactions and cannot describe the swap-only limit,
  * so fall back to the swap tx's own gas limit (previous behaviour).
  */

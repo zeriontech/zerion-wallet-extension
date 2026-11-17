@@ -86,7 +86,7 @@ export function NetworkFeeDialog2({
   fallbackSymbol?: string | null;
   /** Currency for `fallbackFiatValue`. */
   currency?: string | null;
-  /** Native-asset decimals, used to derive expected gas when `gas_used` is absent. */
+  /** Native-asset decimals, used to derive expected gas when `gasUsed` is absent. */
   nativeDecimals?: number | null;
   /**
    * Whether the user has an explicit fee override. Without one, the Fast preset

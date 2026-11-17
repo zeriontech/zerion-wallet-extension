@@ -117,9 +117,9 @@ describe('getNetworkFeeRatio', () => {
 });
 
 describe('getExpectedGasForQuote', () => {
-  test('prefers gas_used', () => {
+  test('prefers gasUsed', () => {
     const quote = makeQuote(makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) }), {
-      gas_used: 21000,
+      gasUsed: 21000,
     });
     expect(getExpectedGasForQuote(quote, 90, 18)).toBe(21000);
   });
@@ -148,7 +148,7 @@ describe('getCustomExpectedFeeRatio', () => {
 describe('getCustomMaxFeeRatio', () => {
   test('uses expected gas for a single-tx quote', () => {
     const quote = makeQuote(makeEvm({ gas: hex(256), maxFee: hex(100), maxPriorityFee: hex(10) }), {
-      gas_used: 100,
+      gasUsed: 100,
     });
     // price ratio 2, limit ratio 200 / expected 100 = 2 → 4.
     expect(getCustomMaxFeeRatio(quote, 200, 200, 90, 18)).toBe(4);
@@ -157,10 +157,10 @@ describe('getCustomMaxFeeRatio', () => {
   test('falls back to the swap gas limit when the quote has an approval', () => {
     const quote = makeQuote(
       makeEvm({ gas: hex(256), maxFee: hex(100), maxPriorityFee: hex(10) }),
-      { gas_used: 400 },
+      { gasUsed: 400 },
       { evm: makeEvm({ gas: hex(128) }), solana: null },
     );
-    // Summed gas_used is unusable for the swap-only limit; 512 / 256 = 2, then ×2 price → 4.
+    // Summed gasUsed is unusable for the swap-only limit; 512 / 256 = 2, then ×2 price → 4.
     expect(getCustomMaxFeeRatio(quote, 200, 512, 90, 18)).toBe(4);
   });
 

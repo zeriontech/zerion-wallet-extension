@@ -94,11 +94,9 @@ function toQuoteNetworkFee(
   if (!networkFee) {
     return null;
   }
-  const gasUsed =
-    networkFee.gas_used ?? (networkFee as { gasUsed?: number | null }).gasUsed ?? null;
   return {
     free: networkFee.free,
-    gas_used: gasUsed,
+    gasUsed: networkFee.gasUsed ?? null,
     amount: networkFee.amount ? { ...networkFee.amount, currency } : null,
     fungible: networkFee.fungible,
   };

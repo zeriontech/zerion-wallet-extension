@@ -163,7 +163,7 @@ export function NetworkFeeCustomForm({
   fallbackFiatValue?: number | null;
   fallbackSymbol?: string | null;
   currency?: string | null;
-  /** Native-asset decimals, used to derive expected gas when `gas_used` is absent. */
+  /** Native-asset decimals, used to derive expected gas when `gasUsed` is absent. */
   nativeDecimals?: number | null;
   onSubmit: (value: NetworkFeeConfiguration) => void;
 }) {
