@@ -89,7 +89,7 @@ import { SwapOnboardingDialog } from './SwapOnboardingDialog/SwapOnboardingDialo
 import {
   clearSwapOnboardingDevForceShow,
   swapOnboardingDevForceShowStore,
-} from './SwapOnboardingDialog/devForceShowStore';
+} from 'src/ui/features/dev-menu/swapOnboardingDevForceShowStore';
 import { SwapFormError, SwapFormSkeleton } from './SwapFormSkeleton';
 import { getCrossEcosystemState } from './shared/getCrossEcosystemState';
 import { SwapSettingsDialog } from './SwapSettingsDialog';

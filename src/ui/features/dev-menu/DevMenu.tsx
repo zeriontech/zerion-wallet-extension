@@ -10,7 +10,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import { SegmentedControlGroup, SegmentedControlRadio } from 'src/ui/ui-kit/SegmentedControl';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
 import { isMacOS } from 'src/ui/shared/isMacos';
-import { devForceShowSwapOnboarding } from 'src/ui/pages/SwapForm2/SwapOnboardingDialog/devForceShowStore';
+import { devForceShowSwapOnboarding } from './swapOnboardingDevForceShowStore';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
 import { walletPort } from 'src/ui/shared/channels';
