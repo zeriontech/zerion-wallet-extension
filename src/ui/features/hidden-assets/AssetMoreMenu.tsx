@@ -12,6 +12,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import DotsIcon from 'jsx:src/ui/assets/dots.svg';
 import EyeIcon from 'jsx:src/ui/assets/eye.svg';
+import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
 import FlagIcon from 'jsx:src/ui/assets/flag.svg';
 import ShareIcon from 'jsx:src/ui/assets/share.svg';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
@@ -91,7 +92,7 @@ export function AssetMoreMenu({
             popoverStore.hide();
           },
           component: (
-            <MenuLabel icon={<EyeIcon style={{ width: 20, height: 20 }} />}>
+            <MenuLabel icon={<InvisibleIcon style={{ width: 20, height: 20 }} />}>
               <VStack gap={0}>
                 <UIText kind="body/regular">Hide</UIText>
                 {canHideMore ? null : (

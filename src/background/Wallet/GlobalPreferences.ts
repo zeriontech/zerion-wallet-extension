@@ -38,6 +38,11 @@ export interface State {
    * user's order.
    */
   hiddenFungibleIds?: string[];
+  /**
+   * Whether the one-time "looks like spam" hide hint has been shown on an
+   * asset page. Device-wide, like the hidden list itself.
+   */
+  hasSeenHideTokenHint?: boolean;
 }
 
 export function getWalletNameFlagsChange(state: State, prevState: State) {
@@ -76,6 +81,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     autoLockTimeout: HALF_DAY,
     networkFeeByChain: {},
     hiddenFungibleIds: [],
+    hasSeenHideTokenHint: false,
   };
 
   private async fetchDefaultWalletNameFlags() {

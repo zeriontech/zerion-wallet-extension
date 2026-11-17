@@ -25,7 +25,7 @@ import SecurityIcon from 'jsx:src/ui/assets/security.svg';
 import SettingsIcon from 'jsx:src/ui/assets/settings.svg';
 import RewardsIcon from 'jsx:src/ui/assets/rewards.svg';
 import ToolsIcon from 'jsx:src/ui/assets/hammer.svg';
-import EyeIcon from 'jsx:src/ui/assets/eye.svg';
+import InvisibleIcon from 'jsx:src/ui/assets/invisible.svg';
 import { version } from 'src/shared/packageVersion';
 import { apostrophe, middot } from 'src/shared/typography';
 import { AppearancePage } from 'src/ui/features/appearance/AppearancePage';
@@ -275,7 +275,7 @@ function SettingsMain() {
             <FrameListItemLink to="/settings/hidden-assets">
               <AngleRightRow>
                 <HStack gap={8} alignItems="center" style={{ width: '100%' }}>
-                  <EyeIcon style={{ width: 24, height: 24 }} />
+                  <InvisibleIcon style={{ width: 24, height: 24 }} />
                   <UIText kind="body/regular">Hidden Assets</UIText>
                   {hiddenIdsAreReady && rawHiddenFungibleIds.length > 0 ? (
                     <UIText

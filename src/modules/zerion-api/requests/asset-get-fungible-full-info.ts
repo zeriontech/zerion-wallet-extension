@@ -41,7 +41,12 @@ export interface AssetFullInfo {
     createdAt: string;
     description: string | null;
     holders: null;
-    liquidity: null;
+    /**
+     * ZPI may omit liquidity (`null`) when it has no market data; when present
+     * it is a fiat amount. The spam heuristic treats `null` as zero liquidity,
+     * matching iOS.
+     */
+    liquidity: number | null;
     top10: null;
     volume24h: null;
     relevantResources: AssetResource[];

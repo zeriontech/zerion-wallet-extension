@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { NavigationType, useNavigate, useNavigationType, useParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { invariant } from 'src/shared/invariant';
@@ -32,6 +32,9 @@ import { useWalletAssetPnl } from 'src/modules/zerion-api/hooks/useWalletAssetPn
 import {
   AssetMoreMenu,
   HiddenAssetBanner,
+  HideTokenHint,
+  shouldShowHideTokenHint,
+  useHideTokenHint,
   reportAssetSpam,
   trackAssetVisibilityChanged,
   useHiddenFungibleActions,
@@ -69,9 +72,36 @@ export function AssetInfo() {
   );
   const assetFullInfo = assetFullInfoData?.data;
   const { ready, params } = useAddressParams();
-  const { hiddenFungibleIds, isReady: hiddenIdsAreReady, canHideMore } = useHiddenFungibleIds();
+  const {
+    rawHiddenFungibleIds,
+    hiddenFungibleIds,
+    isReady: hiddenIdsAreReady,
+    canHideMore,
+  } = useHiddenFungibleIds();
   const { hide, unhide } = useHiddenFungibleActions();
+  const { hasSeenHideTokenHint, markSeen: markHideTokenHintSeen } = useHideTokenHint();
+  const [hideHintAssetId, setHideHintAssetId] = useState<string | null>(null);
+  const [hideHintDismissedFor, setHideHintDismissedFor] = useState<string | null>(null);
   const isHidden = hiddenIdsAreReady && hiddenFungibleIds.includes(asset_code);
+  const isHideHintEligible = shouldShowHideTokenHint({
+    fullInfo: assetFullInfo,
+    hiddenFungibleIds: rawHiddenFungibleIds,
+    hiddenListReady: hiddenIdsAreReady,
+    hasSeenHint: hasSeenHideTokenHint,
+    isHidden,
+  });
+  useEffect(() => {
+    if (!isHideHintEligible || hideHintDismissedFor === asset_code) {
+      return;
+    }
+    // The hint is one-time: showing it is what marks it as seen. State is keyed
+    // by asset id so the router reusing this component for another asset cannot
+    // show the hint there, and a failed write does not retry on every render.
+    setHideHintAssetId(asset_code);
+    markHideTokenHintSeen();
+  }, [isHideHintEligible, hideHintDismissedFor, asset_code, markHideTokenHintSeen]);
+  const showHideHint =
+    hideHintAssetId === asset_code && hideHintDismissedFor !== asset_code && !isHidden;
   const { data: portfolioData } = useWalletPortfolio(
     {
       addresses: [params.address],
@@ -257,6 +287,15 @@ export function AssetInfo() {
       <PageTop />
       <VStack gap={24} style={{ flexGrow: 1, alignContent: 'start', paddingBottom: 72 }}>
         {isHidden ? <HiddenAssetBanner onUnhide={() => unhideAsset('banner')} /> : null}
+        {showHideHint ? (
+          <HideTokenHint
+            onHide={() => {
+              setHideHintDismissedFor(asset_code);
+              hideAsset('hint');
+            }}
+            onDismiss={() => setHideHintDismissedFor(asset_code)}
+          />
+        ) : null}
         <AssetTitleAndChart asset={assetFullInfo.fungible} address={params.address} />
         <AssetGlobalStats assetFullInfo={assetFullInfo} />
         <AssetAddressStats

@@ -26,6 +26,8 @@ export function useHiddenFungibleIds() {
   return {
     /** Stored order, untouched: the Hidden Assets list renders in this order. */
     rawHiddenFungibleIds,
+    /** Device-wide one-time spam-hint flag, stored next to the hidden list. */
+    hasSeenHideTokenHint: query.data?.hasSeenHideTokenHint ?? false,
     /** Wire shape: empty ids dropped, deduplicated and sorted. */
     hiddenFungibleIds: normalizeHiddenFungibleIds(rawHiddenFungibleIds),
     isReady: query.isSuccess,
