@@ -5,30 +5,91 @@ import { resolveChainId } from 'src/modules/ethereum/transactions/resolveChainId
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
 import { fetchGasPrice } from 'src/modules/ethereum/transactions/gasPrices/requests';
 import { assignGasPrice } from 'src/modules/ethereum/transactions/gasPrices/assignGasPrice';
+import { getFeeProvenance } from 'src/modules/ethereum/transactions/gasPrices/provenance';
+import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import { rejectAfterDelay } from 'src/shared/rejectAfterDelay';
 import { getPreferences } from 'src/ui/features/preferences/usePreferences';
 import type { SignStep } from './types';
 
-const STALE_THRESHOLD_MS = 60_000;
+const STALE_THRESHOLD_MS = 10_000;
 const REFRESH_TIMEOUT_MS = 2_000;
 
-export function isStepStale(enqueuedAt: number, now: number = Date.now()) {
-  return now - enqueuedAt > STALE_THRESHOLD_MS;
+/**
+ * Whether the gas snapshot the step was built from is older than the refresh
+ * threshold. `feeUpdatedAt` records when the applied gas prices were fetched;
+ * callers that cannot supply it fall back to the queue enqueue time.
+ */
+export function isStepStale(step: SignStep, enqueuedAt: number, now: number = Date.now()) {
+  const feeUpdatedAt = step.kind === 'send' ? step.params.feeUpdatedAt : null;
+  const since = feeUpdatedAt != null && feeUpdatedAt > 0 ? feeUpdatedAt : enqueuedAt;
+  return now - since > STALE_THRESHOLD_MS;
 }
 
 /**
- * If the queue has been waiting long enough that the original gas estimate
- * may be wrong (e.g. user took >1min on a hardware confirmation), re-run
- * eth_estimateGas and refetch gas prices, then replace the corresponding
- * fields on the transaction.
+ * Apply a fresh estimate and/or price snapshot to a step, preserving the
+ * user's selected speed. Pure so the speed/provenance behaviour is testable.
+ * `custom` fees are absolute user choices and are left untouched.
+ */
+export function applyStaleGas(
+  step: SignStep,
+  {
+    freshGas,
+    freshPrice,
+    now = Date.now(),
+  }: {
+    freshGas: number | null;
+    freshPrice: ChainGasPrice | null;
+    now?: number;
+  },
+): SignStep {
+  if (step.kind !== 'send' || !step.params.transaction.evm) {
+    return step;
+  }
+  const speed = step.params.feeSpeed ?? 'fast';
+  if (speed === 'custom') {
+    return step;
+  }
+  const tx = step.params.transaction.evm;
+  const previousGasRaw = getGas(tx);
+  const previousGas = previousGasRaw == null ? null : Number(previousGasRaw);
+  const shouldUpdateGas =
+    freshGas != null &&
+    (previousGas == null || !Number.isFinite(previousGas) || freshGas > previousGas);
+  if (!shouldUpdateGas && !freshPrice) {
+    return step;
+  }
+  return produce(step, (draft) => {
+    if (draft.kind !== 'send' || !draft.params.transaction.evm) return;
+    const evm = draft.params.transaction.evm;
+    if (shouldUpdateGas && freshGas != null) {
+      delete evm.gas;
+      evm.gasLimit = freshGas;
+    }
+    if (freshPrice) {
+      assignGasPrice(evm, freshPrice[speed]);
+      const provenance = getFeeProvenance(freshPrice, speed);
+      draft.params.feeBlock = provenance?.block ?? null;
+      draft.params.feeSource = provenance?.source ?? null;
+      draft.params.feeFormulaVersion = provenance?.formulaVersion ?? null;
+    }
+    draft.params.feeUpdatedAt = now;
+  });
+}
+
+/**
+ * If the gas snapshot has gone stale (the user took >10s on a hardware
+ * confirmation, or the form sat open), re-run eth_estimateGas and refetch gas
+ * prices, then replace the corresponding fields on the transaction while
+ * keeping the user's selected speed.
  *
- * Solana steps are skipped — only EVM has eth_estimateGas. Errors are
- * swallowed: a refresh failure shouldn't block a tx the user already
- * approved; we fall through to the original values.
+ * Solana steps and custom fees are skipped. Errors are swallowed: a refresh
+ * failure shouldn't block a tx the user already approved; we fall through to
+ * the original values.
  */
 export async function refreshStaleGasForStep(step: SignStep): Promise<SignStep> {
   if (step.kind !== 'send') return step;
+  if (step.params.feeSpeed === 'custom') return step;
   const tx = step.params.transaction.evm;
   if (!tx) return step;
 
@@ -53,27 +114,9 @@ export async function refreshStaleGasForStep(step: SignStep): Promise<SignStep> 
       ]),
     ]);
 
-    const previousGasRaw = getGas(tx);
-    const previousGas = previousGasRaw == null ? null : Number(previousGasRaw);
-    const fresh = gasResult.status === 'fulfilled' ? gasResult.value : null;
+    const freshGas = gasResult.status === 'fulfilled' ? gasResult.value : null;
     const freshPrice = priceResult.status === 'fulfilled' ? priceResult.value : null;
-
-    const shouldUpdateGas =
-      fresh != null &&
-      (previousGas == null || !Number.isFinite(previousGas) || fresh > previousGas);
-    if (!shouldUpdateGas && !freshPrice) return step;
-
-    return produce(step, (draft) => {
-      if (draft.kind !== 'send' || !draft.params.transaction.evm) return;
-      const evm = draft.params.transaction.evm;
-      if (shouldUpdateGas) {
-        delete evm.gas;
-        evm.gasLimit = fresh;
-      }
-      if (freshPrice) {
-        assignGasPrice(evm, freshPrice.fast);
-      }
-    });
+    return applyStaleGas(step, { freshGas, freshPrice });
   } catch {
     return step;
   }

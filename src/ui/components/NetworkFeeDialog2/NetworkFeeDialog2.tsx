@@ -61,6 +61,8 @@ export function NetworkFeeDialog2({
   fallbackFiatValue = null,
   fallbackSymbol = null,
   currency = null,
+  nativeDecimals = null,
+  hasNetworkFeeOverride = true,
 }: {
   open: boolean;
   onClose: () => void;
@@ -84,6 +86,13 @@ export function NetworkFeeDialog2({
   fallbackSymbol?: string | null;
   /** Currency for `fallbackFiatValue`. */
   currency?: string | null;
+  /** Native-asset decimals, used to derive expected gas when `gas_used` is absent. */
+  nativeDecimals?: number | null;
+  /**
+   * Whether the user has an explicit fee override. Without one, the Fast preset
+   * is the backend quote's own price and is shown unscaled.
+   */
+  hasNetworkFeeOverride?: boolean;
 }) {
   const [view, setView] = useState<View>('selector');
 
@@ -145,6 +154,7 @@ export function NetworkFeeDialog2({
                     currency={currency}
                     onSelectPreset={handlePresetSelect}
                     onSelectCustom={() => setView('custom')}
+                    hasNetworkFeeOverride={hasNetworkFeeOverride}
                   />
                 </motion.div>
               ) : (
@@ -163,6 +173,7 @@ export function NetworkFeeDialog2({
                     fallbackFiatValue={fallbackFiatValue}
                     fallbackSymbol={fallbackSymbol}
                     currency={currency}
+                    nativeDecimals={nativeDecimals}
                     onSubmit={handleCustomSubmit}
                   />
                 </motion.div>

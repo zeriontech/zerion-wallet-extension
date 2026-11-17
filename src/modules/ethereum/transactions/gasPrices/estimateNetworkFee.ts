@@ -11,12 +11,13 @@ import type { ChainGasPrice } from './types';
 export interface EstimatedFeeValue {
   estimatedFee: number | BigNumber;
   maxFee?: number | BigNumber;
-  type: Exclude<keyof ChainGasPrice['fast'], 'eta'>;
+  type: 'eip1559' | 'classic' | 'optimistic';
 }
 
 export async function estimateNetworkFee({
   address,
   gas,
+  expectedGas,
   gasPrices,
   gasPrice,
   transaction,
@@ -24,6 +25,8 @@ export async function estimateNetworkFee({
 }: {
   address: string | null;
   gas: string | number | null;
+  /** Expected gas units the fee is priced on (WLT-2743); falls back to `gas`. */
+  expectedGas?: number | null;
   gasPrices: ChainGasPrice | null /** it is possible to estimate classic fee if gasPrices is null */;
   gasPrice: GasPriceObject | null;
   transaction: IncomingTransaction | null;
@@ -58,18 +61,25 @@ export async function estimateNetworkFee({
   if (!gasPrice) {
     return null;
   }
+  const gasUnits = expectedGas != null && expectedGas > 0 ? expectedGas : Number(gas);
   const { eip1559, classic } = gasPrice;
   if (eip1559 && gasPrices?.fast.eip1559) {
     const estimatedFee = estimateFee({
-      gas,
+      gas: gasUnits,
       eip1559,
       baseFee: gasPrices.fast.eip1559.baseFee,
     });
+    // The balance reserve stays on the execution limit: WLT-2743 requires
+    // `maxFeePerGas × gasLimit`, not the expected-gas cost.
     const maxFee = Number(gas) * eip1559.maxFee;
     return { estimatedFee, maxFee, type: 'eip1559' };
   }
   if (classic) {
-    return { estimatedFee: Number(gas) * Number(classic), type: 'classic' };
+    return {
+      estimatedFee: gasUnits * Number(classic),
+      maxFee: Number(gas) * Number(classic),
+      type: 'classic',
+    };
   }
   return null;
 }

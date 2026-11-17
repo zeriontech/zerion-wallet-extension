@@ -5,7 +5,7 @@ import {
   adjustedCheckEligibility,
   fetchAndAssignPaymaster,
 } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
-import { estimateGasForNetwork } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
+import { estimateGasDetailed } from 'src/modules/ethereum/transactions/fetchAndAssignGasPrice';
 import { uiGetBestKnownTransactionCount } from 'src/modules/ethereum/transactions/getBestKnownTransactionCount/uiGetBestKnownTransactionCount';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { getAddress, getAssetImplementationInChain, getDecimals } from 'src/modules/networks/asset';
@@ -183,14 +183,16 @@ export async function prepareSendData(
     if (data && isNativeAsset) {
       tx = { ...tx, data };
     }
+    let expectedGas: number | null = null;
     if (gasLimit) {
       invariant(isNumeric(gasLimit), 'Gas limit must be numeric');
       tx.gasLimit = valueToHex(gasLimit);
       tx.gas = valueToHex(gasLimit);
     } else {
-      const gas = await estimateGasForNetwork(tx, network);
-      tx.gasLimit = valueToHex(gas);
-      tx.gas = valueToHex(gas);
+      const estimate = await estimateGasDetailed(tx, network);
+      expectedGas = estimate.expectedGas;
+      tx.gasLimit = valueToHex(estimate.gas);
+      tx.gas = valueToHex(estimate.gas);
     }
     let nonce = formState.nonce;
     if (nonce == null) {
@@ -220,6 +222,7 @@ export async function prepareSendData(
     const feeEstimation = await getNetworkFeeEstimation({
       address: from,
       gas: gas ? Number(gas) : null,
+      expectedGas,
       gasPrices: applied.chainGasPrices,
       gasPrice,
       transaction: tx,
@@ -256,9 +259,10 @@ export async function prepareSendData(
     let networkFee: NetworkFeeType | null = null;
     const baseAssetDecimals = getBaseAssetDecimals(network);
     if (feeEstimation && baseAssetDecimals != null) {
-      const feeBase = new BigNumber(String(feeEstimation.maxFee ?? feeEstimation.estimatedFee));
+      const feeBase = new BigNumber(String(feeEstimation.estimatedFee));
       networkFee = {
         free: false,
+        gas_used: expectedGas,
         amount: {
           quantity: baseToCommon(feeBase, baseAssetDecimals).toFixed(),
           value: null,
