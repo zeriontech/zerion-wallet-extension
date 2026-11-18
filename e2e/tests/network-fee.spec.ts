@@ -410,7 +410,7 @@ test('keeps the acceleration fee UI unchanged', async ({ context, page, extensio
     await expect(page.getByText('Pending').first()).toBeVisible({
       timeout: 10_000,
     });
-    await page.getByText('Pending').first().click();
+    await page.getByText('Pending').last().click();
     await page.getByRole('button', { name: action }).click();
     const feeRow = page.getByRole('button', { name: 'Network Fee' }).first();
     await expect(feeRow).toBeVisible({ timeout: 10_000 });
