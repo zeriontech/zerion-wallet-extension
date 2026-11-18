@@ -23,6 +23,7 @@ import type { CustomConfiguration } from 'src/shared/types/TransactionConfigurat
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import { toMultichainTransaction } from 'src/shared/types/Quote';
 import { toIncomingTransaction } from 'src/shared/types/Quote';
+import type { Quote2 } from 'src/shared/types/Quote';
 import { equal } from 'src/modules/fast-deep-equal';
 import {
   signUntilFirstBroadcast,
@@ -67,7 +68,13 @@ import {
 import { useNetworkFeePreference } from 'src/ui/shared/useNetworkFeePreference';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
-import { calculatePriceImpactFromPositions } from './shared/price-impact';
+import {
+  EMPTY_QUOTE_PRICE_MEMO,
+  nextQuotePriceMemo,
+  selectEffectivePrice,
+  selectSwapFormFiat,
+  type QuotePriceMemo,
+} from './shared/quotePrice';
 import { applyTransactionConfiguration } from './applyTransactionConfiguration';
 import { useSwapQuote } from './useSwapQuote';
 import { useFormState } from './useFormState';
@@ -247,16 +254,46 @@ function SwapFormComponent({
     }
   }, [formState.inputKind, inputPosition, setUserFormState]);
 
-  const priceImpact = useMemo(
-    () =>
-      calculatePriceImpactFromPositions({
-        inputValue: resolvedInputAmount || null,
-        outputValue: quote?.outputAmount?.quantity ?? null,
-        inputPosition,
-        outputPosition,
+  const { currency } = useCurrency();
+  const inputKey = {
+    chainId: formState.inputChain,
+    fungibleId: formState.inputFungibleId,
+    currency,
+  };
+  const outputKey = {
+    chainId: formState.outputChain,
+    fungibleId: formState.outputFungibleId ?? '',
+    currency,
+  };
+
+  const [quotePrices, setQuotePrices] = useState<{ quote: Quote2 | null; memo: QuotePriceMemo }>({
+    quote: null,
+    memo: EMPTY_QUOTE_PRICE_MEMO,
+  });
+  if (quote && quote !== quotePrices.quote) {
+    setQuotePrices({
+      quote,
+      memo: nextQuotePriceMemo(quotePrices.memo, {
+        quote,
+        input: inputKey,
+        output: outputKey,
+        currency,
+        now: Date.now(),
       }),
-    [resolvedInputAmount, quote?.outputAmount?.quantity, inputPosition, outputPosition],
-  );
+    });
+  }
+
+  const now = Date.now();
+  const inputPositionPrice = inputPosition?.fungible.meta.price ?? null;
+  const outputPositionPrice = outputPosition?.fungible.meta.price ?? null;
+  const { payFiat, receiveFiat, priceImpact } = selectSwapFormFiat({
+    quote,
+    resolvedInputAmount: resolvedInputAmount || null,
+    inputPrice: selectEffectivePrice(quotePrices.memo.input, inputKey, now, inputPositionPrice),
+    outputPrice: selectEffectivePrice(quotePrices.memo.output, outputKey, now, outputPositionPrice),
+    inputPositionPrice,
+    outputPositionPrice,
+  });
 
   // "Price unknown" should be derived purely from the input position so it
   // doesn't flicker as quotes refetch in the background.
@@ -326,7 +363,6 @@ function SwapFormComponent({
 
   const settingsDialog = useDialog2();
 
-  const { currency } = useCurrency();
   const { preferences, setPreferences } = usePreferences();
   const { globalPreferences } = useGlobalPreferences();
   const devForceShowOnboarding = useStore(swapOnboardingDevForceShowStore);
@@ -708,6 +744,7 @@ function SwapFormComponent({
               position={inputPosition}
               positions={positions}
               resolvedInputAmount={resolvedInputAmount}
+              payFiat={payFiat}
             />
             <MiddleLine />
             <ReverseButton onClick={reverseTokens} />
@@ -715,6 +752,7 @@ function SwapFormComponent({
               onSelectFungible={selectOutput}
               position={outputPosition}
               outputAmount={quote?.outputAmount?.quantity ?? null}
+              receiveFiat={receiveFiat}
               positions={positions}
               receiverPositions={receivePositions}
               networks={networks}

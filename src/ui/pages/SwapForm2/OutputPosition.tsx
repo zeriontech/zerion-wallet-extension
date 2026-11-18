@@ -7,7 +7,7 @@ import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-ge
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { BlurrableBalance } from 'src/ui/components/BlurrableBalance';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
-import BigNumber from 'bignumber.js';
+import type BigNumber from 'bignumber.js';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import type { Networks } from 'src/modules/networks/Networks';
@@ -34,12 +34,12 @@ import { OutputPositionSelector } from './PositionSelector/OutputPositionSelecto
 
 function OutputDescription({
   outputAmount,
-  position,
+  fiatValue,
   priceImpact,
   inputKind,
 }: {
   outputAmount: string | null;
-  position: FungiblePosition | null;
+  fiatValue: BigNumber | null;
   priceImpact: PriceImpact | null;
   inputKind: InputKind;
 }) {
@@ -61,9 +61,6 @@ function OutputDescription({
       : isProfit
         ? 'var(--positive-500)'
         : 'var(--neutral-600)';
-
-  const price = position?.fungible.meta.price;
-  const fiatValue = price != null ? new BigNumber(outputAmount).times(price) : null;
 
   const priceImpactPercentage =
     priceImpact && (isLossWarning || isProfit) ? getPriceImpactPercentage(priceImpact) : null;
@@ -105,6 +102,7 @@ export function OutputPosition({
   onSelectFungible,
   position,
   outputAmount,
+  receiveFiat,
   positions,
   receiverPositions,
   networks,
@@ -117,6 +115,7 @@ export function OutputPosition({
   onSelectFungible: (chainId: string, fungibleId: string) => void;
   position: FungiblePosition | null;
   outputAmount: string | null;
+  receiveFiat: BigNumber | null;
   positions: FungiblePosition[];
   receiverPositions: FungiblePosition[];
   networks: Networks;
@@ -131,14 +130,11 @@ export function OutputPosition({
   const positionBalance = position?.amount.quantity ?? null;
   const { currency } = useCurrency();
   const currencySymbol = getCurrencySymbol(currency);
-  const outputPrice = position?.fungible.meta.price ?? null;
 
   const displayValue = (() => {
     if (outputAmount == null) return '0';
     if (inputKind === 'currency') {
-      const fiat =
-        outputPrice != null ? new BigNumber(outputAmount).times(outputPrice).toFixed() : null;
-      return roundCurrencyDisplayValue(fiat) ?? '0';
+      return roundCurrencyDisplayValue(receiveFiat?.toFixed() ?? null) ?? '0';
     }
     return roundTokenDisplayValue(outputAmount) ?? '0';
   })();
@@ -211,7 +207,7 @@ export function OutputPosition({
         endDescription={
           <OutputDescription
             outputAmount={outputAmount}
-            position={position}
+            fiatValue={receiveFiat}
             priceImpact={priceImpact}
             inputKind={inputKind}
           />

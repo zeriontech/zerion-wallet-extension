@@ -43,14 +43,14 @@ export function applyPriceImpactOverride({
 }): Quote2[] | null {
   if (!quotes || override === 'off') return quotes;
 
-  if (inputFiatValue == null || inputFiatValue <= 0) return quotes;
-
   const targetRatio = 1 - OVERRIDE_TO_PERCENT[override] / 100;
 
   return quotes.map((quote) => {
+    const quoteInputFiatValue = quote.inputAmount?.value ?? inputFiatValue;
+    if (quoteInputFiatValue == null || quoteInputFiatValue <= 0) return quote;
     const outputValue = quote.outputAmount?.value;
     if (outputValue == null || outputValue <= 0) return quote;
-    const factor = (inputFiatValue * targetRatio) / outputValue;
+    const factor = (quoteInputFiatValue * targetRatio) / outputValue;
     if (!Number.isFinite(factor) || factor <= 0) return quote;
     return scaleQuote(quote, factor);
   });
