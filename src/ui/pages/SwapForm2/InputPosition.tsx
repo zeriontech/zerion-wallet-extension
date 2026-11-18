@@ -55,6 +55,7 @@ export function InputPosition({
   position,
   positions,
   resolvedInputAmount,
+  payFiat,
 }: {
   formState: SwapFormState2;
   onChange: HandleChangeFunction;
@@ -62,6 +63,7 @@ export function InputPosition({
   position: FungiblePosition | null;
   positions: FungiblePosition[];
   resolvedInputAmount: string | null;
+  payFiat: BigNumber | null;
 }) {
   const { currency } = useCurrency();
   const { inputAmount } = formState;
@@ -96,10 +98,8 @@ export function InputPosition({
   // When input price is unknown, omit the currency equivalent — showing $0.00 would be misleading.
   const secondaryNode =
     inputKind === 'token' ? (
-      inputPrice != null ? (
-        <UIText kind="small/regular">
-          {formatCurrencyValue(new BigNumber(inputAmount || '0').times(inputPrice), 'en', currency)}
-        </UIText>
+      payFiat != null ? (
+        <UIText kind="small/regular">{formatCurrencyValue(payFiat, 'en', currency)}</UIText>
       ) : null
     ) : (
       <UIText kind="small/regular">{roundTokenDisplayValue(resolvedInputAmount) || '0'}</UIText>
