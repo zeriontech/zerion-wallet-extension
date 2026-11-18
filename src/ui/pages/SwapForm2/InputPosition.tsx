@@ -98,8 +98,8 @@ export function InputPosition({
   // When input price is unknown, omit the currency equivalent — showing $0.00 would be misleading.
   const secondaryNode =
     inputKind === 'token' ? (
-      payFiat != null ? (
-        <UIText kind="small/regular">{formatCurrencyValue(payFiat, 'en', currency)}</UIText>
+      payFiat != null || (inputPrice != null && !inputAmount) ? (
+        <UIText kind="small/regular">{formatCurrencyValue(payFiat ?? 0, 'en', currency)}</UIText>
       ) : null
     ) : (
       <UIText kind="small/regular">{roundTokenDisplayValue(resolvedInputAmount) || '0'}</UIText>

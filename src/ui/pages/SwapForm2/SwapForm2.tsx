@@ -149,10 +149,12 @@ const SWAP_FORM_SEARCH_PARAM_KEYS: (keyof SwapFormState2)[] = [
 function SwapFormComponent({
   address,
   positions,
+  positionsUpdatedAt,
   networks,
 }: {
   address: string;
   positions: FungiblePosition[];
+  positionsUpdatedAt: number;
   networks: Networks;
 }) {
   const [
@@ -191,11 +193,13 @@ function SwapFormComponent({
     setUserFormState((state) => ({ ...state, ...partial }));
   });
 
-  const { inputPosition, outputPosition } = useFormPositions({
-    formState,
-    positions,
-    networks,
-  });
+  const { inputPosition, inputPriceUpdatedAt, outputPosition, outputPriceUpdatedAt } =
+    useFormPositions({
+      formState,
+      positions,
+      positionsUpdatedAt,
+      networks,
+    });
 
   const inputNetworkConfig = useMemo(
     () =>
@@ -313,16 +317,17 @@ function SwapFormComponent({
     });
   }
 
-  const now = Date.now();
-  const inputPositionPrice = inputPosition?.fungible.meta.price ?? null;
-  const outputPositionPrice = outputPosition?.fungible.meta.price ?? null;
   const { payFiat, receiveFiat, priceImpact } = selectSwapFormFiat({
     quote,
     resolvedInputAmount: resolvedInputAmount || null,
-    inputPrice: selectEffectivePrice(quotePrices.memo.input, inputKey, now, inputPositionPrice),
-    outputPrice: selectEffectivePrice(quotePrices.memo.output, outputKey, now, outputPositionPrice),
-    inputPositionPrice,
-    outputPositionPrice,
+    inputPrice: selectEffectivePrice(quotePrices.memo.input, inputKey, {
+      price: inputPosition?.fungible.meta.price ?? null,
+      updatedAt: inputPriceUpdatedAt,
+    }),
+    outputPrice: selectEffectivePrice(quotePrices.memo.output, outputKey, {
+      price: outputPosition?.fungible.meta.price ?? null,
+      updatedAt: outputPriceUpdatedAt,
+    }),
   });
 
   // "Price unknown" should be derived purely from the input position so it
@@ -949,7 +954,7 @@ function SwapFormWrapper({ address, ready }: { address: string; ready: boolean }
   });
 
   const refetchInterval = usePositionsRefetchInterval(20000);
-  const { data, isError, refetch } = useWalletSimplePositions(
+  const { data, dataUpdatedAt, isError, refetch } = useWalletSimplePositions(
     { address, currency },
     { source: useHttpClientSource() },
     { enabled: ready, refetchInterval },
@@ -977,7 +982,12 @@ function SwapFormWrapper({ address, ready }: { address: string; ready: boolean }
   return isError ? (
     <SwapFormError onReload={() => refetch()} />
   ) : prepared && positions && networks && !isFetching ? (
-    <SwapFormComponent address={address} positions={positions} networks={networks} />
+    <SwapFormComponent
+      address={address}
+      positions={positions}
+      positionsUpdatedAt={dataUpdatedAt}
+      networks={networks}
+    />
   ) : (
     <SwapFormSkeleton />
   );
