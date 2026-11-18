@@ -48,37 +48,6 @@ function toFiatValue(value: string | null, price: number) {
   return new BigNumber(value || 0).times(price);
 }
 
-export function fiatRatio(inputFiatValue: BigNumber, outputFiatValue: BigNumber): number | null {
-  return outputFiatValue.isGreaterThan(0) && inputFiatValue.isGreaterThan(0)
-    ? outputFiatValue.minus(inputFiatValue).div(inputFiatValue).toNumber()
-    : null;
-}
-
-export function calculatePriceImpactFromPrices({
-  inputValue,
-  outputValue,
-  inputPrice,
-  outputPrice,
-}: {
-  inputValue: string | null;
-  outputValue: string | null;
-  inputPrice: number | null;
-  outputPrice: number | null;
-}): PriceImpact | null {
-  if (inputValue == null || !isNumeric(inputValue)) {
-    return null;
-  }
-
-  if (inputPrice == null || outputPrice == null) {
-    return ratioToPriceImpact(null);
-  }
-
-  const inputFiatValue = toFiatValue(inputValue, inputPrice);
-  const outputFiatValue = toFiatValue(outputValue, outputPrice);
-
-  return ratioToPriceImpact(fiatRatio(inputFiatValue, outputFiatValue));
-}
-
 export function calculatePriceImpactFromPositions({
   inputValue,
   outputValue,
@@ -90,12 +59,26 @@ export function calculatePriceImpactFromPositions({
   inputPosition: FungiblePosition | null;
   outputPosition: FungiblePosition | null;
 }): PriceImpact | null {
-  return calculatePriceImpactFromPrices({
-    inputValue,
-    outputValue,
-    inputPrice: inputPosition?.fungible.meta.price ?? null,
-    outputPrice: outputPosition?.fungible.meta.price ?? null,
-  });
+  if (inputValue == null || !isNumeric(inputValue)) {
+    return null;
+  }
+
+  const inputPrice = inputPosition?.fungible.meta.price ?? null;
+  const outputPrice = outputPosition?.fungible.meta.price ?? null;
+
+  if (inputPrice == null || outputPrice == null) {
+    return ratioToPriceImpact(null);
+  }
+
+  const inputFiatValue = toFiatValue(inputValue, inputPrice);
+  const outputFiatValue = toFiatValue(outputValue, outputPrice);
+
+  const ratio =
+    outputFiatValue.isGreaterThan(0) && inputFiatValue.isGreaterThan(0)
+      ? outputFiatValue.minus(inputFiatValue).div(inputFiatValue).toNumber()
+      : null;
+
+  return ratioToPriceImpact(ratio);
 }
 
 export function getPriceImpactPercentage(priceImpact: PriceImpact) {

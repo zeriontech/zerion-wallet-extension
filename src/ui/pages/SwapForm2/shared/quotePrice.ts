@@ -2,14 +2,7 @@ import BigNumber from 'bignumber.js';
 import { isNumeric } from 'src/shared/isNumeric';
 import type { Amount } from 'src/modules/zerion-api/types/Amount';
 import type { Quote2 } from 'src/shared/types/Quote';
-import {
-  calculatePriceImpactFromPrices,
-  fiatRatio,
-  ratioToPriceImpact,
-  type PriceImpact,
-} from './price-impact';
-
-export const QUOTE_PRICE_TTL_MS = 40_000;
+import { ratioToPriceImpact, type PriceImpact } from './price-impact';
 
 type FungibleKey = { chainId: string; fungibleId: string };
 
@@ -70,19 +63,18 @@ export function nextQuotePriceMemo(
 export function selectEffectivePrice(
   entry: QuotePriceEntry | null,
   key: { chainId: string; fungibleId: string; currency: string },
-  now: number,
-  fallback: number | null,
+  position: { price: number | null; updatedAt: number | null },
 ): number | null {
   if (
     entry &&
     entry.chainId === key.chainId &&
     entry.fungibleId === key.fungibleId &&
     entry.currency === key.currency &&
-    now - entry.receivedAt < QUOTE_PRICE_TTL_MS
+    (position.price == null || position.updatedAt == null || entry.receivedAt >= position.updatedAt)
   ) {
     return entry.price;
   }
-  return fallback;
+  return position.price;
 }
 
 export function selectSwapFormFiat({
@@ -90,52 +82,27 @@ export function selectSwapFormFiat({
   resolvedInputAmount,
   inputPrice,
   outputPrice,
-  inputPositionPrice,
-  outputPositionPrice,
 }: {
   quote: Quote2 | null;
   resolvedInputAmount: string | null;
   inputPrice: number | null;
   outputPrice: number | null;
-  inputPositionPrice: number | null;
-  outputPositionPrice: number | null;
 }): { payFiat: BigNumber | null; receiveFiat: BigNumber | null; priceImpact: PriceImpact | null } {
-  const quoteInputValue = quote?.inputAmount?.value ?? null;
-  const quoteOutputValue = quote?.outputAmount.value ?? null;
-
-  const receiveFiat =
-    quoteOutputValue != null
-      ? new BigNumber(quoteOutputValue)
-      : quote && outputPrice != null
-        ? new BigNumber(quote.outputAmount.quantity).times(outputPrice)
-        : null;
-
-  const inputQuantityMatches =
-    quote?.inputAmount != null &&
-    resolvedInputAmount != null &&
-    isNumeric(resolvedInputAmount) &&
-    new BigNumber(quote.inputAmount.quantity).eq(resolvedInputAmount);
-
+  const amountIsNumeric = resolvedInputAmount != null && isNumeric(resolvedInputAmount);
   const payFiat =
-    quoteInputValue != null && inputQuantityMatches
-      ? new BigNumber(quoteInputValue)
-      : inputPrice != null
-        ? new BigNumber(resolvedInputAmount || 0).times(inputPrice)
-        : null;
-
-  const priceImpact =
-    resolvedInputAmount == null || !isNumeric(resolvedInputAmount)
-      ? null
-      : quoteInputValue != null && quoteOutputValue != null
-        ? ratioToPriceImpact(
-            fiatRatio(new BigNumber(quoteInputValue), new BigNumber(quoteOutputValue)),
-          )
-        : calculatePriceImpactFromPrices({
-            inputValue: resolvedInputAmount,
-            outputValue: quote?.outputAmount.quantity ?? null,
-            inputPrice: inputPositionPrice,
-            outputPrice: outputPositionPrice,
-          });
-
+    amountIsNumeric && inputPrice != null
+      ? new BigNumber(resolvedInputAmount).times(inputPrice)
+      : null;
+  const receiveFiat =
+    quote && outputPrice != null
+      ? new BigNumber(quote.outputAmount.quantity).times(outputPrice)
+      : null;
+  const priceImpact = amountIsNumeric
+    ? ratioToPriceImpact(
+        payFiat && receiveFiat && payFiat.isGreaterThan(0) && receiveFiat.isGreaterThan(0)
+          ? receiveFiat.minus(payFiat).div(payFiat).toNumber()
+          : null,
+      )
+    : null;
   return { payFiat, receiveFiat, priceImpact };
 }

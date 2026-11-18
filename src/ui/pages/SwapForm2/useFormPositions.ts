@@ -17,11 +17,11 @@ function useEmptyPosition({
   currency: string;
   networks: Networks;
 }) {
-  const { data } = useAssetListFungibles({
+  const { data, dataUpdatedAt } = useAssetListFungibles({
     fungibleIds: [fungibleId],
     currency,
   });
-  return useMemo<FungiblePosition | null>(() => {
+  const position = useMemo<FungiblePosition | null>(() => {
     const fungible = data?.data.at(0);
     if (!fungible || !fungible.implementations?.[chainId]) {
       return null;
@@ -44,15 +44,18 @@ function useEmptyPosition({
       },
     };
   }, [chainId, currency, data, networks]);
+  return { position, dataUpdatedAt };
 }
 
 export function useFormPositions({
   formState,
   positions,
+  positionsUpdatedAt,
   networks,
 }: {
   formState: SwapFormState2;
   positions: FungiblePosition[];
+  positionsUpdatedAt: number;
   networks: Networks;
 }) {
   const inputExistingPosition: FungiblePosition | undefined = useMemo(() => {
@@ -83,9 +86,23 @@ export function useFormPositions({
 
   return useMemo(
     () => ({
-      inputPosition: inputExistingPosition || inputEmptyPosition,
-      outputPosition: outputExistingPosition || outputEmptyPosition,
+      inputPosition: inputExistingPosition || inputEmptyPosition.position,
+      inputPriceUpdatedAt: inputExistingPosition
+        ? positionsUpdatedAt
+        : inputEmptyPosition.dataUpdatedAt,
+      outputPosition: outputExistingPosition || outputEmptyPosition.position,
+      outputPriceUpdatedAt: outputExistingPosition
+        ? positionsUpdatedAt
+        : outputEmptyPosition.dataUpdatedAt,
     }),
-    [inputExistingPosition, inputEmptyPosition, outputExistingPosition, outputEmptyPosition],
+    [
+      inputExistingPosition,
+      inputEmptyPosition.position,
+      inputEmptyPosition.dataUpdatedAt,
+      outputExistingPosition,
+      outputEmptyPosition.position,
+      outputEmptyPosition.dataUpdatedAt,
+      positionsUpdatedAt,
+    ],
   );
 }

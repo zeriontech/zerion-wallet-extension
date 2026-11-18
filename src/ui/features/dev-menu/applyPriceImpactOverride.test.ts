@@ -1,6 +1,11 @@
 import type { Amount } from 'src/modules/zerion-api/types/Amount';
 import type { Quote2 } from 'src/shared/types/Quote';
-import { selectSwapFormFiat } from 'src/ui/pages/SwapForm2/shared/quotePrice';
+import {
+  EMPTY_QUOTE_PRICE_MEMO,
+  nextQuotePriceMemo,
+  selectEffectivePrice,
+  selectSwapFormFiat,
+} from 'src/ui/pages/SwapForm2/shared/quotePrice';
 import { applyPriceImpactOverride } from './applyPriceImpactOverride';
 
 function amount(quantity: string, value: number): Amount {
@@ -27,13 +32,31 @@ describe('applyPriceImpactOverride', () => {
         override: '7',
       }) ?? [];
 
+    const input = { chainId: 'solana', fungibleId: 'sol' };
+    const output = { chainId: 'solana', fungibleId: 'xstock' };
+    const quoteReceivedAt = 2_000;
+    const positionsUpdatedAt = 1_000;
+    const memo = nextQuotePriceMemo(EMPTY_QUOTE_PRICE_MEMO, {
+      quote: overridden,
+      input,
+      output,
+      currency: 'usd',
+      now: quoteReceivedAt,
+    });
+
     const { priceImpact } = selectSwapFormFiat({
       quote: overridden,
       resolvedInputAmount,
-      inputPrice,
-      outputPrice: null,
-      inputPositionPrice: inputPrice,
-      outputPositionPrice: 1.8,
+      inputPrice: selectEffectivePrice(
+        memo.input,
+        { ...input, currency: 'usd' },
+        { price: inputPrice, updatedAt: positionsUpdatedAt },
+      ),
+      outputPrice: selectEffectivePrice(
+        memo.output,
+        { ...output, currency: 'usd' },
+        { price: 2.5, updatedAt: positionsUpdatedAt },
+      ),
     });
     expect(priceImpact?.kind).toBe('loss');
     expect(priceImpact?.kind === 'loss' ? priceImpact.ratio : null).toBeCloseTo(-0.07, 9);
