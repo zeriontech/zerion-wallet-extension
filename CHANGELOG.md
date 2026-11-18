@@ -1,5 +1,11 @@
 # zerion-wallet
 
+## 1.46.1
+
+### Patch Changes
+
+- 4fac09b: Restore the UI font and other bundled assets lost in the Vite build: `@font-face` rules are no longer dropped from a CSS module, the onboarding welcome banner loads its background again, and the in-dapp notification logo and close icons resolve.
+
 ## 1.46.0
 
 ### Minor Changes

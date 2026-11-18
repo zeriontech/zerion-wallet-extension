@@ -22,6 +22,7 @@ import type { SignTransactionResult } from 'src/shared/types/SignTransactionResu
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
 import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { ConfidentialAnalyticsEvent } from 'src/shared/types/confidential-events';
+import type { TransactionFailure } from 'src/shared/analytics/transactionFailure';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
 import type { WalletOrigin } from './Wallet/model/WalletOrigin';
 import type { WalletContainer } from './Wallet/model/types';
@@ -55,7 +56,7 @@ export type BackgroundEvents = {
     context: { mode: 'default' | 'testnet' } & TransactionContextParams,
   ) => void;
   transactionFailed: (
-    errorMessage: string,
+    failure: TransactionFailure,
     context: { mode: 'default' | 'testnet' } & TransactionContextParams,
   ) => void;
   quoteError: (context: QuoteErrorContext, source: NetworksSource) => void;

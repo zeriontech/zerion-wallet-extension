@@ -30,6 +30,8 @@ const TESTS = [
     'Forgot Password › Closing and reopening the dialog clears the confirmation',
     3.6,
   ],
+  ['fonts.spec.ts', 'loads and renders the Aeonik Pro UI font', 2.5],
+  ['onboarding-assets.spec.ts', 'loads the onboarding welcome background image', 2.5],
   ['get-started.spec.ts', 'Get Started › Onboarded with private key › Matches snapshot', 3.2],
   ['hidden-assets.spec.ts', 'Hides and unhides a token from the asset page', 4.0],
   ['hidden-assets.spec.ts', 'Hidden Assets persists, lists and unhides a token', 4.0],
