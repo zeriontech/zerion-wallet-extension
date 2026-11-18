@@ -24,6 +24,8 @@ const TESTS = [
   ['confidential-balances.spec.ts', 'confidential balances: panel → reveal → unmasked', 7.9],
   ['connect-ledger.spec.ts', 'Connect Ledger › Matches snapshot', 3.4],
   ['forgot-password.spec.ts', 'Forgot Password › Matches snapshot', 3.3],
+  ['fonts.spec.ts', 'loads and renders the Aeonik Pro UI font', 2.5],
+  ['onboarding-assets.spec.ts', 'loads the onboarding welcome background image', 2.5],
   ['get-started.spec.ts', 'Get Started › Onboarded with private key › Matches snapshot', 3.2],
   ['hidden-assets.spec.ts', 'Hidden Assets persists, lists and unhides a token', 4.0],
   [

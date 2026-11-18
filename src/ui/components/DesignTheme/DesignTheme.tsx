@@ -1,6 +1,6 @@
 import 'normalize.css';
 import 'src/ui/style/theme.module.css';
-import 'src/ui/style/fonts.module.css';
+import 'src/ui/style/fonts.css';
 import { useLayoutEffect } from 'react';
 
 export function DesignTheme({ bodyClassList = [] }: { bodyClassList?: string[] }) {
