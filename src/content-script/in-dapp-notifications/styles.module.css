@@ -47,7 +47,7 @@
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  background-image: url('data-url:./zerion-logo.svg');
+  background-image: url('./zerion-logo.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: 40px 40px;
@@ -129,7 +129,7 @@
   color: #81848e;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.16);
   background-color: #fff;
-  background-image: url('data-url:./close.svg');
+  background-image: url('./close.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: 12px 12px;
