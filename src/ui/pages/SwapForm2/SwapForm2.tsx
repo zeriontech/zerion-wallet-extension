@@ -94,6 +94,7 @@ import {
 } from 'src/ui/features/dev-menu/swapOnboardingDevForceShowStore';
 import { SwapFormError, SwapFormSkeleton } from './SwapFormSkeleton';
 import { getCrossEcosystemState } from './shared/getCrossEcosystemState';
+import { getZamaSwapKind } from './shared/zamaSwapKind';
 import { SwapSettingsDialog } from './SwapSettingsDialog';
 import type { SwapFormState2 } from './types';
 import * as styles from './styles.module.css';
@@ -551,6 +552,17 @@ function SwapFormComponent({
             receiveAmount: quote.outputAmount,
             network: inputNetwork,
             rate: quote.rate,
+            type:
+              getZamaSwapKind({
+                inputChain: formState.inputChain,
+                inputFungibleId: inputPosition.fungible.id,
+                inputAddress:
+                  inputPosition.fungible.implementations[formState.inputChain]?.address ?? null,
+                outputChain: formState.outputChain,
+                outputFungibleId: outputPosition.fungible.id,
+                outputAddress:
+                  outputPosition.fungible.implementations[formState.outputChain]?.address ?? null,
+              }) ?? 'trade',
           });
 
       const swapMultichain = toMultichainTransaction(swapTx);
