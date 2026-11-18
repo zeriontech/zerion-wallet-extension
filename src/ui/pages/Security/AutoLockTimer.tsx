@@ -1,4 +1,4 @@
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import React, { useEffect } from 'react';
 import type { GlobalPreferences } from 'src/shared/types/GlobalPreferences';
 import { NavigationTitle } from 'src/ui/components/NavigationTitle';

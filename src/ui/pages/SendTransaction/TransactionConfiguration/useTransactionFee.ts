@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import type { Asset } from 'src/defi-sdk.types';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import { useQuery } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import type { EIP1559, NetworkFeeConfiguration } from 'src/shared/types/TransactionConfiguration';

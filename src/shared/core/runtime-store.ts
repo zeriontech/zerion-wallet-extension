@@ -1,4 +1,4 @@
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 import type Browser from 'webextension-polyfill';
 
 type OnInstalledDetails = Pick<

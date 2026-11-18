@@ -159,9 +159,11 @@ export function createExtensionTest(testConfig?: Config) {
       const headless = !isHeaded;
       const context = await chromium.launchPersistentContext('', {
         headless,
-        devtools: Boolean(testConfig?.devtools),
         channel: 'chromium',
-        args: createBrowserArgs(headless),
+        args: [
+          ...createBrowserArgs(headless),
+          ...(testConfig?.devtools ? ['--auto-open-devtools-for-tabs'] : []),
+        ],
         env: getBrowserEnv(),
       });
       await use(context);

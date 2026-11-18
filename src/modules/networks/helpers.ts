@@ -1,4 +1,4 @@
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import { invariant } from 'src/shared/invariant';
 import type { ChainExplorer } from 'src/modules/zerion-api/types/ChainFullInfo';
 import type { AddEthereumChainParameter } from '../ethereum/types/AddEthereumChainParameter';

@@ -1,4 +1,4 @@
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import React, { useMemo, useRef } from 'react';
 import type { PointStyle } from 'chart.js';
 import type { Asset } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';

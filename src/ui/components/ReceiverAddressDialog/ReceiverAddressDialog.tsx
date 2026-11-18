@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Combobox, ComboboxProvider, ComboboxItem } from '@ariakit/react/combobox';
-import { normalizedContains } from 'normalized-contains';
+import { normalizedContains } from 'src/shared/normalizedContains';
 import SearchIcon from 'jsx:src/ui/assets/search.svg';
 import PersonIcon from 'jsx:src/ui/assets/person.svg';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';

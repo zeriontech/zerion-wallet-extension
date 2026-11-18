@@ -10,7 +10,7 @@ import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import {
@@ -33,7 +33,7 @@ import SyncIcon from 'jsx:src/ui/assets/sync.svg';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { Button } from 'src/ui/ui-kit/Button';
 import { KeyboardShortcut } from 'src/ui/components/KeyboardShortcut';
-import dayjs from 'dayjs';
+import dayjs from 'src/shared/date';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';

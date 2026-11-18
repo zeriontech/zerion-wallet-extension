@@ -1,5 +1,5 @@
 import { BrowserStorage } from 'src/background/webapis/storage';
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 
 export enum Loglevel {
   none = 0,

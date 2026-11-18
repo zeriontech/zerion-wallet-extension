@@ -1,4 +1,4 @@
-import debounce from 'lodash/debounce';
+import { debounce } from 'moderndash';
 import { useEffect, useRef, useState } from 'react';
 
 export function useStaleTime(value: unknown, staleTime: number) {

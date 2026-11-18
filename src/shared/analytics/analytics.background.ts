@@ -1,4 +1,4 @@
-import omit from 'lodash/omit';
+import { omit } from 'src/shared/omit';
 import { LoginActivity, type Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';

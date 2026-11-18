@@ -1,4 +1,4 @@
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { parseError } from './parseError';
 import { samples } from './samples';
 

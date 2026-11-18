@@ -45,7 +45,7 @@ import { useAddressPositionsFromNode } from 'src/ui/shared/requests/useAddressPo
 import { CenteredFillViewportView } from 'src/ui/components/FillView/FillView';
 import { invariant } from 'src/shared/invariant';
 import { ErrorBoundary } from 'src/ui/components/ErrorBoundary';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { Spacer } from 'src/ui/ui-kit/Spacer';

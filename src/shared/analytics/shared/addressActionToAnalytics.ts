@@ -1,4 +1,4 @@
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { Transfer } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type { Quote2 } from 'src/shared/types/Quote';

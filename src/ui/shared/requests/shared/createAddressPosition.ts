@@ -1,4 +1,4 @@
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import type { AddressPosition } from 'src/defi-sdk.types';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { getBaseAssetImplementation } from 'src/modules/networks/NetworkInfo';

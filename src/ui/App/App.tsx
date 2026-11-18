@@ -1,10 +1,8 @@
 import React, { useMemo } from 'react';
-import { AreaProvider } from 'react-area';
+import { AreaProvider } from 'src/shared/react-area';
 import { QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { HashRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import dayjs from 'dayjs';
 import * as styles from 'src/ui/style/global.module.css';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import { GetStarted } from 'src/ui/pages/GetStarted';
 import { Intro } from 'src/ui/pages/Intro';
 import { Overview } from 'src/ui/pages/Overview';
@@ -12,7 +10,7 @@ import { RequestAccounts } from 'src/ui/pages/RequestAccounts';
 import { SendTransaction } from 'src/ui/pages/SendTransaction';
 import { SignMessage } from 'src/ui/pages/SignMessage';
 import { SignTypedData } from 'src/ui/pages/SignTypedData';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { runtimeStore } from 'src/shared/core/runtime-store';
 import { Playground } from 'src/ui-lab/Playground';
 import { useNavigate } from 'react-router-dom';
@@ -490,7 +488,6 @@ function Views({ initialRoute }: { initialRoute?: string }) {
 }
 
 initializeApperance();
-dayjs.extend(relativeTime);
 registerPersistentRoute('/send-form');
 registerPersistentRoute('/swap-form');
 // Both deposit steps are restored: RouteRestoration persists the search string

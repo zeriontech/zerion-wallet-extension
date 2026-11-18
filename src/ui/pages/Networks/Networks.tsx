@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { RenderArea } from 'react-area';
+import { RenderArea } from 'src/shared/react-area';
 import { useMutation } from '@tanstack/react-query';
 import {
   NavigationType,
@@ -10,7 +10,7 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks as NetworksModule } from 'src/modules/networks/Networks';

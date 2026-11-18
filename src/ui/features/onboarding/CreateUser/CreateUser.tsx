@@ -1,8 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import ArrowLeftIcon from 'jsx:src/ui/assets/arrow-left.svg';
-import noop from 'lodash/noop';
 import React, { useCallback, useState } from 'react';
-import { RenderArea } from 'react-area';
+import { RenderArea } from 'src/shared/react-area';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { invariant } from 'src/shared/invariant';
 import { wait } from 'src/shared/wait';
@@ -60,7 +59,7 @@ export function CreateUser() {
   const [values, toggleValueOriginal] = useToggledValues(
     () => new Set<BlockchainType>(FEATURE_SOLANA === 'on' ? ['evm', 'solana'] : ['evm']),
   );
-  const toggleValue = FEATURE_SOLANA === 'on' ? toggleValueOriginal : noop;
+  const toggleValue = FEATURE_SOLANA === 'on' ? toggleValueOriginal : () => {};
 
   const { mutate: handleSubmit, isLoading } = useMutation({
     mutationFn: async () => {

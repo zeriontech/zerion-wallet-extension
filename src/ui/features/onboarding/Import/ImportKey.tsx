@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Content } from 'react-area';
+import { Content } from 'src/shared/react-area';
 import { validate } from 'src/ui/pages/GetStarted/ImportWallet/ImportWallet';
 import { prepareUserInputSeedOrPrivateKey } from 'src/ui/shared/prepareUserInputSeedOrPrivateKey';
 import type { ValidationResult } from 'src/shared/validation/ValidationResult';
