@@ -3,7 +3,7 @@ import type { BrowserContext, Locator, Page, Route } from '@playwright/test';
 import { testWallets } from 'e2e/fixtures/constants';
 import { createExtensionTest } from './test';
 
-const test = createExtensionTest({ headless: true });
+const test = createExtensionTest();
 
 const RECIPIENT = '0xea79c0adb4f9d249770a8752fc6c0020999c52a0';
 const ETH_CHAIN = 'ethereum';

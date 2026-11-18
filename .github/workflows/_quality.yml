@@ -83,8 +83,8 @@ jobs:
     # 22 extension tests and the 13 dapp tests into five balanced groups and a
     # `--verify` step fails if any test is not assigned to exactly one shard.
     #
-    # Dapp tests use the hosted test dapp via DAPP_URL and are skipped when
-    # DAPP_URL is unset (for local runs of the extension suite).
+    # Dapp tests use the hosted test dapp, which is the default in
+    # e2e/dapp/config.ts.
     #
     # `--workers=2` per shard: two workers keep the test step short; each test
     # still gets its own browser context, so isolation is unchanged.
@@ -104,7 +104,6 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4, 5]
     env:
-      DAPP_URL: https://zeriontech.github.io/zerion-test-dapp/
       E2E_PROXY_PORT: '4789'
       # The build has no secret; it only needs to point at the proxy.
       E2E_USE_PROXY: '1'
