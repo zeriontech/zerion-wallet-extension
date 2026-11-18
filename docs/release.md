@@ -149,6 +149,10 @@ Submission is not transactional: if Chrome succeeded and Firefox failed, both st
 
 ## Emergency release
 
+For a defect in the last published version while `main` has unreleased work, use
+the hotfix runbook: [hotfix.md](hotfix.md). It branches from the release tag and
+backmerges only the fix commit.
+
 1. Bump the version and sync the manifests: `npm version <bump> --no-git-tag-version` (the `version` lifecycle hook skips `changeset version` and only syncs the manifests; `postversion` does the same). Plain `npm version` also works but tags before the manifest sync is committed, so prefer the explicit two-step.
 2. Add the `CHANGELOG.md` entry, commit and merge to `main`.
 3. Create and push the tag with an account that is a bypass actor on `hive-protect-tags`: `git tag -a vX.Y.Z -m vX.Y.Z && git push origin vX.Y.Z`.
