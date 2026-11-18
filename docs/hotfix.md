@@ -11,10 +11,14 @@ submission, a regression in the version that is already live.
 
 - Branch from the release tag of the broken version, never from `main`.
 - The fix commit contains the fix, its regression test and a changeset.
-- Keep the version bump in a separate commit. It is **not** backmerged.
+- Keep the version bump in a separate commit. Backmerge it too when `main` is
+  still at the broken release's version; otherwise the next Version Packages PR
+  computes the same version as the hotfix tag and silently creates no release.
 - The tag points at the hotfix HEAD containing the version commit and triggers
   `release.yml`.
-- Backmerge only the fix commit(s); never merge the version bump into `main`.
+- Backmerge the fix commit(s), docs commits and, when `main` is behind, the
+  version commit. Do not merge the whole hotfix branch if `main` has moved past
+  the hotfix version.
 - `release.yml` runs no quality gates. CI proof comes from the backmerge PR (or
   the local gates if the release cannot wait).
 
@@ -75,6 +79,10 @@ git commit -m "chore(release): 1.46.1"
 The tag, `package.json` and both manifests must carry the same version;
 `scripts/release/store-zips.mjs` refuses to package a mismatch.
 
+This commit is not a dead end: when `main` still has the broken release's
+version, it is cherry-picked into the backmerge PR so the next Version Packages
+PR starts from the hotfix version.
+
 ## 4. Get CI proof
 
 Push the hotfix branch, then open the backmerge PR so the fix runs through the
@@ -86,15 +94,29 @@ git push -u origin hotfix/v1.46.1
 git fetch origin
 git switch -c backmerge/1.46.1 origin/main
 git cherry-pick <fix-commit-sha>
+git cherry-pick <version-commit-sha>   # when main is still at the broken version
+git cherry-pick <docs-commit-sha>
 git push -u origin backmerge/1.46.1
 
 gh pr create --base main --head backmerge/1.46.1 \
   --title "Backmerge 1.46.1: <summary>" \
-  --body "Cherry-pick of <fix-commit-sha> from hotfix/v1.46.1. The version commit is intentionally excluded."
+  --body "Cherry-pick of <fix-commit-sha> and <version-commit-sha> from hotfix/v1.46.1. The version commit is included because main is still at <parent-version>."
 ```
 
-Cherry-pick docs-only commits from the hotfix branch too; they do not carry the
-version bump. Only `chore(release):` commits stay behind.
+Cherry-pick the version commit only when `main`'s `package.json` still has the
+broken release's version. If `main` has already moved to or past the hotfix
+version, leave it out; cherry-picking it would move `main` backwards. Never
+merge the whole hotfix branch.
+
+This matters because Changesets never inspects tags. It computes the next
+version from `main`'s `package.json` plus the pending changeset bump levels. If
+`main` stays at the parent version and all pending changesets are patches, it
+proposes the hotfix version again. Merging that Version Packages PR then makes
+`scripts/release/tag-version.mjs` see the existing tag and exit 0: no GitHub
+Release and no store upload. Advancing `main` to the hotfix version makes the
+next release the following patch (or minor) instead.
+
+Cherry-pick docs-only commits as well; they do not carry the version bump.
 
 Contexts from the tag, not `main`. The changeset in the fix commit satisfies
 `changeset-check`, and the PR runs lint, typecheck, unit tests, the production
@@ -140,16 +162,18 @@ the same one.
 
 ## 7. Backmerge to `main`
 
-Merge the backmerge PR opened in step 4. It contains only the fix commit, its
-test and the changeset.
+Merge the backmerge PR opened in step 4. It contains the fix, its tests, the
+changeset, the docs and — when `main` was behind — the version commit.
 
-Do **not** merge `hotfix/vX.Y.Z` into `main`: it carries the version bump and
-would move `main` backwards (or skip its pending changesets). Do not
-cherry-pick the `chore(release):` commit.
+Do **not** merge `hotfix/vX.Y.Z` wholesale into `main`: if `main` has already
+moved past the hotfix version, that would move it backwards. Cherry-pick only
+the commits listed in step 4.
 
 The changeset rides along, so the next Version Packages PR on `main` records the
-fix in the next changelog. That a fix appears in both the hotfix changelog and
-the next minor's changelog is expected across release lines.
+fix in the next changelog. Because the hotfix already released that entry, the
+fix also appears in the hotfix changelog; that duplicate across release lines is
+expected. To avoid the duplicate entry in the next release, delete the hotfix
+changeset after the backmerge with a `skip-changeset` PR.
 
 If `scripts/e2e-shards.mjs` conflicts, keep `main`'s entries and add only the
 new test rows.
@@ -166,19 +190,20 @@ After the backmerge PR merges and the release is published, delete the
 - [ ] `package.json` and both manifests have the release version
 - [ ] `CHANGELOG.md` has the release entry
 - [ ] Backmerge PR is green
+- [ ] Main's `package.json` is at least the hotfix version before the next Version Packages PR merges
 - [ ] Tag points at the hotfix HEAD containing the version commit and is pushed by a ruleset bypass actor
 - [ ] `release.yml` is green and store uploads succeeded
 - [ ] Chrome release published from the dashboard
-- [ ] Backmerge PR merged; version commit was not merged
+- [ ] Backmerge PR merged; main's version is the hotfix version or higher
 - [ ] Temporary branches deleted
 
 ## Worked example: v1.46.1
 
-| Step           | Ref                                                                        |
-| -------------- | -------------------------------------------------------------------------- |
-| Broken release | `v1.46.0`                                                                  |
-| Hotfix branch  | `hotfix/v1.46.1`                                                           |
-| Fix commit     | `4fac09be` — font/asset restore, e2e tests, changeset                      |
-| Version commit | `ffac8f7f` — `1.46.1` in package and manifests, CHANGELOG                  |
-| Release tag    | `v1.46.1` on the hotfix HEAD (version commit `ffac8f7f` plus this runbook) |
-| Backmerge      | cherry-pick `4fac09be` onto `main`                                         |
+| Step           | Ref                                                                                                 |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| Broken release | `v1.46.0`                                                                                           |
+| Hotfix branch  | `hotfix/v1.46.1`                                                                                    |
+| Fix commit     | `4fac09be` — font/asset restore, e2e tests, changeset                                               |
+| Version commit | `ffac8f7f` — `1.46.1` in package and manifests, CHANGELOG                                           |
+| Release tag    | `v1.46.1` on the hotfix HEAD (version commit `ffac8f7f` plus this runbook)                          |
+| Backmerge      | cherry-pick `4fac09be` and the runbook; `main` was at `1.46.0`, so `ffac8f7f` was cherry-picked too |
