@@ -121,8 +121,10 @@ export function InputPosition({
 
   const handleToggle = () => {
     const nextKind = inputKind === 'token' ? 'currency' : 'token';
-    if (inputAmount) {
-      const converted = convertOnToggle(inputAmount, inputKind, nextKind, inputPrice);
+    const isMax = formState.inputAmountIsMax === 'true';
+    const sourceValue = isMax && resolvedInputAmount ? resolvedInputAmount : inputAmount;
+    if (sourceValue) {
+      const converted = convertOnToggle(sourceValue, inputKind, nextKind, inputPrice);
       onChange('inputAmount', converted);
     }
     onChange('inputKind', nextKind);
@@ -141,6 +143,9 @@ export function InputPosition({
     } else {
       onChange('inputAmount', tokenValue);
     }
+    // The rounded fiat display cannot express the exact balance, so MAX keeps
+    // the balance as the amount sent to the quote.
+    onChange('inputAmountIsMax', factor === 1 ? 'true' : undefined);
     inputRef.current?.focus();
   };
 
@@ -238,6 +243,7 @@ export function InputPosition({
                     onChange={(event) => {
                       const next = event.currentTarget.value.replace(',', '.').replace(/\s/g, '');
                       if (!/^\d*\.?\d*$/.test(next)) return;
+                      if (formState.inputAmountIsMax) onChange('inputAmountIsMax', undefined);
                       setLiveInput(next);
                       handleChange(next);
                     }}

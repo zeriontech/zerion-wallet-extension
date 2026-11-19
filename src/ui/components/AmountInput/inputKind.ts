@@ -15,6 +15,29 @@ export function resolveTokenValue(
   return bn.dividedBy(price).toFixed();
 }
 
+/**
+ * Resolves the amount sent to the quote from the value shown in the input.
+ * MAX carries the exact token balance because the displayed fiat value is
+ * rounded to cents and can resolve back to more tokens than the wallet holds.
+ */
+export function resolveInputAmount({
+  rawValue,
+  inputKind,
+  price,
+  balance,
+  isMax,
+}: {
+  rawValue: string;
+  inputKind: InputKind;
+  price: number | null;
+  balance: string | null;
+  isMax: boolean;
+}): string {
+  if (!rawValue) return rawValue;
+  if (isMax && balance != null) return balance;
+  return resolveTokenValue(rawValue, inputKind, price);
+}
+
 export function convertOnToggle(
   rawValue: string,
   fromKind: InputKind,

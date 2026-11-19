@@ -196,7 +196,7 @@ test('MAX in USD input mode uses the full balance', async ({
   expect(quoteAmounts.at(-1)).toBe(USDC_BALANCE);
 
   // The balance must not be rendered as an error.
-  const balanceRow = page.getByText('Balance:', { exact: true }).locator('..');
+  const balanceRow = page.getByText('Balance:', { exact: true }).first().locator('..');
   const color = await balanceRow.evaluate((element) => getComputedStyle(element).color);
   expect(['rgb(255, 74, 74)', 'rgb(255, 92, 92)']).not.toContain(color);
 });
