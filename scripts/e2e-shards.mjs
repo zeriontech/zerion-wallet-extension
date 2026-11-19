@@ -74,6 +74,11 @@ const TESTS = [
   ['network-fee.spec.ts', 'remembers the fee level per chain and flags non-Fast levels', 12.2],
   ['network-fee.spec.ts', 'keeps the acceleration fee UI unchanged', 5.3],
   ['network-fee.spec.ts', 'keeps custom fee values after switching to Fast', 5.5],
+  [
+    'network-fee.spec.ts',
+    'offers Slow on the confirm screen when it saves the configured threshold',
+    6.1,
+  ],
   ['manage-wallets.spec.ts', 'Manage Wallets › Action links are working', 3.6],
   ['manage-wallets.spec.ts', 'Manage Wallets › User can erase all data', 5.1],
   ['onboarding.spec.ts', 'Onboarding › Matches snapshot', 1.0],
