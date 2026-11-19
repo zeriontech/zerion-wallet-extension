@@ -22,4 +22,11 @@ export interface RemoteConfig {
     interval_ms: number;
     max_attempts: number;
   };
+  extension_fee_hint_config: {
+    /**
+     * Show the confirm-screen Slow hint when this transaction's Fast fee minus
+     * its Slow fee is at least this many USD. Dollar saving, not a ratio.
+     */
+    min_savings_usd: number;
+  };
 }

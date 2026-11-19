@@ -285,6 +285,7 @@ function TransactionDefaultView({
   onOpenAdvancedView,
   onFeeValueCommonReady,
   onFeeValueFiatReady,
+  onFeeHintShown,
   expectedGas,
 }: {
   networks: Networks;
@@ -309,6 +310,7 @@ function TransactionDefaultView({
   onOpenAdvancedView: () => void;
   onFeeValueCommonReady: (value: string) => void;
   onFeeValueFiatReady: (value: number | null) => void;
+  onFeeHintShown: () => void;
   expectedGas: number | null;
 }) {
   const { singleAddress } = useAddressParams();
@@ -459,6 +461,8 @@ function TransactionDefaultView({
                     paymasterWaiting={paymasterWaiting}
                     interactiveNetworkFee={true}
                     expectedGas={expectedGas}
+                    showFeeHint={true}
+                    onFeeHintShown={onFeeHintShown}
                   />
                 </React.Suspense>
               ) : null}
@@ -523,6 +527,10 @@ function SendTransactionContent({
   });
   const { data: chainGasPrices, ...gasPricesQuery } = useGasPrices(chain);
   const toastRef = useRef<PopoverToastHandle>(null);
+  const feeHintShownRef = useRef(false);
+  const handleFeeHintShown = useEvent(() => {
+    feeHintShownRef.current = true;
+  });
 
   const transactionAction = describeTransaction(populatedTransaction, {
     networks,
@@ -712,6 +720,7 @@ function SendTransactionContent({
         chain: chain.toString(),
         feeValueCommon,
         feeSpeed,
+        feeHintShown: feeHintShownRef.current,
         feeGasPriceWei,
         networkFeeUsd: feeValueFiatRef.current ?? addressAction?.fee?.amount?.value ?? null,
         feeBlock: feeProvenance?.block ?? null,
@@ -795,6 +804,7 @@ function SendTransactionContent({
             onOpenAdvancedView={openAdvancedView}
             onFeeValueCommonReady={handleFeeValueCommonReady}
             onFeeValueFiatReady={handleFeeValueFiatReady}
+            onFeeHintShown={handleFeeHintShown}
             expectedGas={expectedGas}
           />
         ) : null}

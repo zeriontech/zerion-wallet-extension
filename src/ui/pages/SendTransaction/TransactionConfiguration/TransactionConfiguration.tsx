@@ -105,6 +105,8 @@ function NetworkFeeLine({
   paymasterEligible,
   keepPreviousData = false,
   expectedGas,
+  showFeeHint = false,
+  onFeeHintShown,
 }: {
   transaction: IncomingTransactionWithFrom;
   chain: Chain;
@@ -116,6 +118,8 @@ function NetworkFeeLine({
   paymasterEligible: boolean;
   keepPreviousData?: boolean;
   expectedGas?: number | null;
+  showFeeHint?: boolean;
+  onFeeHintShown?: () => void;
 }) {
   const { data: chainGasPrices = null } = useGasPrices(chain, {
     suspense: true,
@@ -177,6 +181,9 @@ function NetworkFeeLine({
         }
         expectedGas={expectedGas}
         onFeeValueFiatReady={onFeeValueFiatReady}
+        showFeeHint={showFeeHint}
+        onFeeHintShown={onFeeHintShown}
+        preserveTransactionMaxFee={true}
       />
     </>
   );
@@ -203,6 +210,8 @@ export function TransactionConfiguration({
   interactiveNetworkFee,
   networkFee,
   expectedGas,
+  showFeeHint,
+  onFeeHintShown,
 }: {
   transaction: IncomingTransaction;
   from: string;
@@ -218,6 +227,9 @@ export function TransactionConfiguration({
   interactiveNetworkFee: boolean;
   networkFee?: NetworkFeeType | null;
   expectedGas?: number | null;
+  /** Only the confirm screen offers the Slow hint; see NetworkFeeHint. */
+  showFeeHint?: boolean;
+  onFeeHintShown?: () => void;
 }) {
   const { preferences } = usePreferences();
   const transactionWithFrom = useMemo(
@@ -272,6 +284,8 @@ export function TransactionConfiguration({
               paymasterEligible={paymasterEligible}
               expectedGas={expectedGas}
               onFeeValueFiatReady={onFeeValueFiatReady}
+              showFeeHint={showFeeHint}
+              onFeeHintShown={onFeeHintShown}
             />
           ) : networkFee ? (
             <NetworkFeeLineInfo networkFee={networkFee} />

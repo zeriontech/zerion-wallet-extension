@@ -438,6 +438,7 @@ function trackAppEvents({ account }: { account: Account }) {
       contract_type: quote ? (quote.contractMetadata.name ?? null) : null,
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
       warning_was_shown: warningWasShown,
+      fee_hint_shown: context.feeHintShown ?? false,
       output_amount_color: outputAmountColor,
       transaction_success: status === 'success',
       backend_error_message: quote?.error?.message || null,

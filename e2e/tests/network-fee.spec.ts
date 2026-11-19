@@ -210,6 +210,8 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
 
   await openTransaction(page, extensionPopupUrl, '0x1');
   await expect(dappFeeRow(page)).toContainText('Fast');
+  // Fast−Slow is ~$0.04 on 21k gas at these prices, below the default $1 threshold.
+  await expect(page.getByRole('button', { name: /Switch to Slow/ })).toHaveCount(0);
 
   // Pick Slow: the fee row shows the level inline, with no second line.
   await openFeeDialog(page);
@@ -502,4 +504,89 @@ test('keeps custom fee values after switching to Fast', async ({
   await openFeeDialog(page);
   await preset(page, 'Custom').click();
   await expect(page.locator('input[name="maxFee"]')).toHaveValue('33');
+});
+
+test('offers Slow on the confirm screen when it saves the configured threshold', async ({
+  context,
+  page,
+  extensionPopupUrl,
+}) => {
+  await page.setViewportSize({ width: 440, height: 700 });
+  await context.route('**/asset/list-fungibles/v1*', async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: [
+          {
+            id: 'eth',
+            name: 'Ether',
+            symbol: 'ETH',
+            implementations: { ethereum: { address: null, decimals: 18 } },
+            iconUrl: null,
+            verified: true,
+            new: false,
+            meta: {
+              price: 2000,
+              circulatingSupply: null,
+              totalSupply: null,
+              marketCap: null,
+            },
+          },
+        ],
+        meta: null,
+        errors: null,
+      }),
+    });
+  });
+  // 160 gwei effective Fast vs 110 gwei effective Slow over 21k gas at
+  // $2,000/ETH: the saving is ~$2.10, above the default $1 threshold.
+  await context.route('**/chain/get-gas-prices/v1*', async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: {
+          average: {
+            classic: null,
+            eip1559: {
+              maxFee: 150_000_000_000,
+              priorityFee: 10_000_000_000,
+              baseFee: 100_000_000_000,
+            },
+            optimistic: null,
+            eta: 60,
+          },
+          fast: {
+            classic: null,
+            eip1559: {
+              maxFee: 200_000_000_000,
+              priorityFee: 60_000_000_000,
+              baseFee: 100_000_000_000,
+            },
+            optimistic: null,
+            eta: 15,
+          },
+        },
+        errors: null,
+        meta: null,
+      }),
+    });
+  });
+
+  await openTransaction(page, extensionPopupUrl, '0x1');
+  await expect(dappFeeRow(page)).toContainText('Fast');
+  const hint = page.getByRole('button', { name: /Switch to Slow/ });
+  await expect(hint).toBeVisible();
+  await expect(hint).toContainText(/Save \$[1-9]/);
+
+  await hint.click();
+  await expect(dappFeeRow(page)).toContainText('Slow');
+  await expect(hint).toHaveCount(0);
+
+  // The one tap is a real selection, not just a label change.
+  await openFeeDialog(page);
+  await expect(preset(page, 'Slow')).toHaveAttribute('aria-pressed', 'true');
+  await preset(page, 'Fast').click();
+  await expect(hint).toBeVisible();
 });

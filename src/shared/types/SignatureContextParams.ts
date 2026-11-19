@@ -10,6 +10,8 @@ export type TransactionContextParams = {
   feeValueCommon: string | null;
   /** Selected network-fee speed, for `signed_transaction` analytics. */
   feeSpeed?: NetworkFeeSpeed | null;
+  /** Whether the confirm screen showed the Slow fee hint for this transaction. */
+  feeHintShown?: boolean;
   /** Effective gas price of the selected speed, in wei. */
   feeGasPriceWei?: number | null;
   /** The network fee the user saw at the selected speed, in USD. */
