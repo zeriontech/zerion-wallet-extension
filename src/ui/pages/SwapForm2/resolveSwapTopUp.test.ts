@@ -76,7 +76,7 @@ describe('resolveSwapTopUp', () => {
     expect(depositPathFor(topUp?.depositTarget ?? null)).toBe('/deposit');
   });
 
-  it.each([0, 3, 4, 99])('code %p shows no top-up', (code) => {
+  it.each([0, 3, 4, 99])('code %i shows no top-up', (code) => {
     expect(
       resolveSwapTopUp({
         quote: quoteWithError(code),

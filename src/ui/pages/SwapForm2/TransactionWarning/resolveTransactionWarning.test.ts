@@ -639,13 +639,13 @@ describe('resolveTransactionWarning', () => {
       [5, "Token can't be transferred: Fee-On-Transfer (FoT) tokens aren't supported!"],
       [99, 'Some FUTURE error, with Mixed Case & punctuation?!'],
       [-1, 'negative code message'],
-    ])('code %p → neutral Error with the backend message as is', (code, message) => {
+    ])('code %i → neutral Error with the backend message as is', (code, message) => {
       const r = resolveForError(code, message);
       expect(r.warning).toEqual({ variant: 'neutral', title: 'Error', description: message });
       expect(r.dangerTitle).toBeNull();
     });
 
-    it.each([0, 1, 2, 3, 4, 5, 99])('code %p is never titled "Transaction will fail"', (code) => {
+    it.each([0, 1, 2, 3, 4, 5, 99])('code %i is never titled "Transaction will fail"', (code) => {
       const r = resolveForError(code, 'Transaction will fail');
       expect(r.warning?.title).not.toBe('Transaction will fail');
     });
