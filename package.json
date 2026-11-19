@@ -134,7 +134,7 @@
     "vite": "npm:@voidzero-dev/vite-plus-core@1.4.0"
   },
   "lint-staged": {
-    "*.{ts,tsx}": "vp lint --fix",
+    "*.{ts,tsx}": "vp lint --fix --no-error-on-unmatched-pattern",
     "*.{ts,tsx,css,md,json}": "vp fmt"
   },
   "browserslist": "> 0.5%, last 2 versions, not dead",
