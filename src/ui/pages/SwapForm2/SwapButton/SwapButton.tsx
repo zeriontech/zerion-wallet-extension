@@ -15,93 +15,17 @@ import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialo
 import { applyTransactionConfiguration } from '../applyTransactionConfiguration';
 import { useSwapButtonOnboardingGate } from '../SwapButtonOnboardingDialog/useSwapButtonOnboardingGate';
 import type { SwapFormState2 } from '../types';
+import { isDisabled, resolveLabel, resolveLinkTarget } from './resolveSwapButtonState';
 import {
   DangerSignButton,
   RegularSignButton,
   type ButtonState,
 } from 'src/ui/components/HoldToSignButton';
 import { simulateSwapQuote, type SimulationResult } from './simulateSwapQuote';
+import { Button } from 'src/ui/ui-kit/Button';
+import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 
 export type { SimulationResult };
-
-function resolveLabel({
-  formState,
-  quote,
-  quotesQuery,
-  state,
-  simulated,
-  isCrossEcosystem,
-  receiverEcosystemMismatch,
-  isCrossChain,
-}: {
-  formState: SwapFormState2;
-  quote: Quote2 | null;
-  quotesQuery: QuotesData<Quote2>;
-  state: ButtonState;
-  simulated: boolean;
-  isCrossEcosystem: boolean;
-  receiverEcosystemMismatch: boolean;
-  isCrossChain: boolean;
-}): string {
-  if (state === 'simulating') {
-    return 'Verifying Transaction';
-  }
-  if (simulated) {
-    return 'Confirm Swap';
-  }
-  if (!formState.outputFungibleId) {
-    return 'Select Token';
-  }
-  if (!formState.inputAmount || Number(formState.inputAmount) === 0) {
-    return 'Enter an Amount';
-  }
-  if (isCrossEcosystem && !formState.to) {
-    return 'Enter Recipient Address';
-  }
-  if (isCrossEcosystem && receiverEcosystemMismatch) {
-    return 'Unable to Swap';
-  }
-  if (quote?.error || quotesQuery.error) {
-    return 'Unable to Swap';
-  }
-  if (quotesQuery.isLoading && !quote) {
-    return 'Getting quote';
-  }
-  if (formState.to) {
-    return isCrossChain ? 'Bridge & Send Now' : 'Send Now';
-  }
-  return isCrossChain ? 'Bridge Now' : 'Swap Now';
-}
-
-function isDisabled({
-  quote,
-  formState,
-  state,
-  simulated,
-  signing,
-  isCrossEcosystem,
-  receiverEcosystemMismatch,
-}: {
-  quote: Quote2 | null;
-  formState: SwapFormState2;
-  state: ButtonState;
-  simulated: boolean;
-  signing: boolean;
-  isCrossEcosystem: boolean;
-  receiverEcosystemMismatch: boolean;
-}) {
-  if (signing) return true;
-  if (state === 'simulating') return true;
-  if (simulated) return false;
-  if (!formState.outputFungibleId) return true;
-  if (!formState.inputAmount || Number(formState.inputAmount) === 0) return true;
-  if (isCrossEcosystem && !formState.to) return true;
-  if (isCrossEcosystem && receiverEcosystemMismatch) return true;
-  if (!quote) return true;
-  if (!isExecutableQuote(quote)) return true;
-  return false;
-}
-
 function useSimulation({
   address,
   formState,
@@ -258,6 +182,7 @@ export function SwapButton({
   const effectiveFire = simulated ? fire : onboardingGuardedFire;
 
   const isDanger = Boolean(dangerTitle) && (state === 'simulating' || !disabled);
+  const linkTarget = disabled ? null : resolveLinkTarget(quote);
 
   return (
     <>
@@ -287,12 +212,28 @@ export function SwapButton({
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: -30, filter: 'blur(4px)' }}
           >
-            <RegularSignButton
-              state={state}
-              fire={effectiveFire}
-              label={label}
-              disabled={disabled}
-            />
+            {linkTarget ? (
+              <Button
+                kind="primary"
+                as={UnstyledLink}
+                to={linkTarget}
+                style={{
+                  width: '100%',
+                  height: 52,
+                  borderRadius: 16,
+                  paddingInline: 24,
+                }}
+              >
+                {label}
+              </Button>
+            ) : (
+              <RegularSignButton
+                state={state}
+                fire={effectiveFire}
+                label={label}
+                disabled={disabled}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

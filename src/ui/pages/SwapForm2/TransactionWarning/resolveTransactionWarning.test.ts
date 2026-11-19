@@ -562,6 +562,43 @@ describe('resolveTransactionWarning', () => {
     });
   });
 
+  describe('quote.error code 3 (no wallet)', () => {
+    const errors = [
+      { message: 'No wallet was provided for this trade', hint: 2 },
+      { message: '', hint: undefined },
+      { message: 'anything', hint: 7 },
+    ];
+
+    it.each(errors)('no card and no danger title for %o', (error) => {
+      const quote = {
+        outputAmount: { currency: 'usd', quantity: '100', value: null, usdValue: null },
+        error: { code: 3, ...error },
+      } as unknown as Quote2;
+      const r = resolveTransactionWarning({
+        ...baseInputs,
+        quote,
+        simulationResult: null,
+      });
+      expect(r.warning).toBeNull();
+      expect(r.dangerTitle).toBeNull();
+    });
+
+    it('no danger title even when price impact needs confirmation', () => {
+      const quote = {
+        outputAmount: { currency: 'usd', quantity: '100', value: null, usdValue: null },
+        error: { code: 3, message: 'No wallet was provided for this trade', hint: 2 },
+      } as unknown as Quote2;
+      const r = resolveTransactionWarning({
+        ...baseInputs,
+        quote,
+        priceImpactNeedsConfirmation: true,
+        simulationResult: null,
+      });
+      expect(r.warning).toBeNull();
+      expect(r.dangerTitle).toBeNull();
+    });
+  });
+
   describe('form-state warnings (existing behavior preserved)', () => {
     it('quote.error code 1 → Insufficient balance warning (no danger, no block)', () => {
       const quote = {
