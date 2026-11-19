@@ -64,4 +64,30 @@ describe('SwapButton label and disabled state', () => {
       linkTarget: null,
     });
   });
+
+  it('code 4 (geo-blocked) → disabled "Unable to Swap" with no link', () => {
+    const quote = makeQuote({
+      code: 4,
+      message: 'Trading is not allowed in your country',
+      hint: 0,
+    });
+    expect(resolveButton(quote)).toEqual({
+      label: 'Unable to Swap',
+      disabled: true,
+      linkTarget: null,
+    });
+  });
+
+  it('an executable quote without an error → enabled "Swap Now"', () => {
+    const quote = {
+      outputAmount: { currency: 'usd', quantity: '100', value: null, usdValue: null },
+      transactionSwap: { id: 'transaction' },
+      error: null,
+    } as unknown as Quote2;
+    expect(resolveButton(quote)).toEqual({
+      label: 'Swap Now',
+      disabled: false,
+      linkTarget: null,
+    });
+  });
 });

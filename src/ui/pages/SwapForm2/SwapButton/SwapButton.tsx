@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMutation } from '@tanstack/react-query';
 import type { Quote2 } from 'src/shared/types/Quote';
-import { isExecutableQuote, isIntentQuote, toMultichainTransaction } from 'src/shared/types/Quote';
+import { isIntentQuote, toMultichainTransaction } from 'src/shared/types/Quote';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
