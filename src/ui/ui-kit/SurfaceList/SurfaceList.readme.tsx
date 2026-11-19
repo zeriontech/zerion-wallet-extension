@@ -1,4 +1,4 @@
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import React from 'react';
 import { WindowSize } from 'src/ui-lab/components/WindowSize';
 import type { Readme } from 'src/ui-lab/types';

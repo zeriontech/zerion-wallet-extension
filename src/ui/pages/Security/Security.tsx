@@ -24,7 +24,7 @@ import { Input } from 'src/ui/ui-kit/Input';
 import { Button } from 'src/ui/ui-kit/Button';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { estimatePasswordStrengh, Strength } from 'src/shared/validation/password-strength';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { PASSWORD_MIN_LENGTH } from 'src/shared/validation/user-input';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { isMacOS } from 'src/ui/shared/isMacos';

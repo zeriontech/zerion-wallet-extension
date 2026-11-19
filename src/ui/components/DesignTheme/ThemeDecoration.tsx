@@ -1,4 +1,4 @@
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import React from 'react';
 import { ThemeStore, themeStore } from 'src/ui/features/appearance';
 

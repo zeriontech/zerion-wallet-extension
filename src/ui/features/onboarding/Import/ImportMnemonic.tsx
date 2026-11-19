@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { animated, useSpring } from '@react-spring/web';
-import { Content } from 'react-area';
+import { Content } from 'src/shared/react-area';
 import { validate } from 'src/ui/pages/GetStarted/ImportWallet/ImportWallet';
 import type { ValidationResult } from 'src/shared/validation/ValidationResult';
 import { prepareUserInputSeedOrPrivateKey } from 'src/ui/shared/prepareUserInputSeedOrPrivateKey';

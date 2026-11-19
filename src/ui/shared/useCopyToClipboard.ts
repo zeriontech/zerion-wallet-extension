@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import debounce from 'lodash/debounce';
+import { debounce } from 'moderndash';
 import { copy } from 'src/modules/copy-to-clipboard';
 import { useEvent } from './useEvent';
 

@@ -1,4 +1,4 @@
-import { normalizedContains } from 'normalized-contains';
+import { normalizedContains } from 'src/shared/normalizedContains';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
 

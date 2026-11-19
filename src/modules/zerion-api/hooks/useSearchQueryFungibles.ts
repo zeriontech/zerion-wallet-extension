@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.client';
 import type { Response } from 'src/modules/zerion-api/requests/search-query-fungibles';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import type { Params } from '../requests/search-query-fungibles';
 
 export function useSearchQueryFungibles(

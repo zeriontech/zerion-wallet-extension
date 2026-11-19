@@ -1,4 +1,4 @@
-import throttle from 'lodash/throttle';
+import { debounce } from 'moderndash';
 import { PersistentStore } from 'src/modules/persistent-store';
 import type { RemoteConfig } from 'src/modules/remote-config';
 import { getRemoteConfigValue } from 'src/modules/remote-config';
@@ -38,6 +38,11 @@ export interface State {
    * user's order.
    */
   hiddenFungibleIds?: string[];
+  /**
+   * Whether the one-time "looks like spam" hide hint has been shown on an
+   * asset page. Device-wide, like the hidden list itself.
+   */
+  hasSeenHideTokenHint?: boolean;
 }
 
 export function getWalletNameFlagsChange(state: State, prevState: State) {
@@ -76,6 +81,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     autoLockTimeout: HALF_DAY,
     networkFeeByChain: {},
     hiddenFungibleIds: [],
+    hasSeenHideTokenHint: false,
   };
 
   private async fetchDefaultWalletNameFlags() {
@@ -92,9 +98,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     this.fetchDefaultWalletNameFlags();
   }
 
-  refresh = throttle(() => this.initialize(), this.REFRESH_RATE, {
-    leading: false,
-  });
+  refresh = debounce(() => this.initialize(), this.REFRESH_RATE);
 
   async getPreferences(): Promise<Required<State>> {
     /**

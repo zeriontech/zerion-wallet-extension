@@ -1,4 +1,4 @@
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 import type { ConfidentialDecryptTrigger } from 'src/shared/types/confidential-events';
 
 export interface RevealDialogRequest {

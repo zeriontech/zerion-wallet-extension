@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import React, { useEffect, useRef } from 'react';
 import type { NetworkFeeConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';

@@ -1,6 +1,6 @@
 import type { Asset } from 'src/defi-sdk.types';
-import { isTruthy } from 'is-truthy-ts';
-import { capitalize } from 'capitalize-ts';
+import { isTruthy } from 'src/shared/isTruthy';
+import { capitalize } from 'src/shared/capitalize';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import type { EthereumChainConfig } from 'src/modules/ethereum/chains/types';
 import { normalizeChainId } from 'src/shared/normalizeChainId';

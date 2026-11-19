@@ -5,7 +5,7 @@ test.describe.configure({ mode: 'parallel' });
 
 /**
  * These are supported by the test dapp but not by the wallet. The assertions
- * pin the observable rejection so the gap matrix in docs/dapp-e2e.md cannot
+ * pin the observable rejection so the gap matrix in docs/e2e.md cannot
  * drift into a false "covered" claim.
  */
 test.describe('Unsupported methods and malformed payloads', () => {

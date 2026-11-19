@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import type { Asset } from 'src/defi-sdk.types';
 import type { LocalActionContentRequest } from 'src/modules/ethereum/transactions/addressAction/creators';
 import {

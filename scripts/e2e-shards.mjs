@@ -24,7 +24,16 @@ const TESTS = [
   ['confidential-balances.spec.ts', 'confidential balances: panel → reveal → unmasked', 7.9],
   ['connect-ledger.spec.ts', 'Connect Ledger › Matches snapshot', 3.4],
   ['forgot-password.spec.ts', 'Forgot Password › Matches snapshot', 3.3],
+  ['forgot-password.spec.ts', 'Forgot Password › Erasing all data requires typing ERASE', 3.4],
+  [
+    'forgot-password.spec.ts',
+    'Forgot Password › Closing and reopening the dialog clears the confirmation',
+    3.6,
+  ],
+  ['fonts.spec.ts', 'loads and renders the Aeonik Pro UI font', 2.5],
+  ['onboarding-assets.spec.ts', 'loads the onboarding welcome background image', 2.5],
   ['get-started.spec.ts', 'Get Started › Onboarded with private key › Matches snapshot', 3.2],
+  ['hidden-assets.spec.ts', 'Hides and unhides a token from the asset page', 4.0],
   ['hidden-assets.spec.ts', 'Hidden Assets persists, lists and unhides a token', 4.0],
   [
     'get-started.spec.ts',
@@ -85,8 +94,8 @@ const TESTS = [
   ['settings.spec.ts', 'Settings › Matches snapshot', 3.3],
   ['settings.spec.ts', 'Settings › User can lock and unlock wallet', 3.8],
 
-  // Dapp suite. These only run when DAPP_URL is set; CI points then at the
-  // hosted zerion-test-dapp deployment.
+  // Dapp suite. These run against the hosted zerion-test-dapp deployment by
+  // default; DAPP_URL overrides it for a local dapp.
   [
     'connection.spec.ts',
     'Connection › EIP-6963 discovery exposes Zerion and connection returns the account',

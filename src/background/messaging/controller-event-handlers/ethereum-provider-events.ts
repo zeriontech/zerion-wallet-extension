@@ -1,9 +1,9 @@
-import browser from 'webextension-polyfill';
 import type { Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 import type { RuntimePort } from 'src/background/webapis/RuntimePort';
 import { payloadId } from '@walletconnect/jsonrpc-utils';
 import { getProviderInjectionChange } from 'src/background/Wallet/GlobalPreferences';
+import { PORT_NAMES } from 'src/shared/portNames';
 import { getPortContext } from '../getPortContext';
 
 interface Listener {
@@ -33,10 +33,10 @@ export class EthereumEventsBroadcaster implements Listener {
     const ports = this.getActivePorts();
     return ports.filter(
       (port) =>
-        port.name === `${browser.runtime.id}/ethereum` ||
+        port.name === PORT_NAMES.ethereum ||
         // "/wallet" is our own UI and we need to notify changes to it
         // when it's opened as a sidepanel
-        port.name === `${browser.runtime.id}/wallet`,
+        port.name === PORT_NAMES.wallet,
     );
   }
 

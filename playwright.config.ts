@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
+import { isCI, maxFailures } from './e2e/playwright-shared';
 
 dotenv.config();
 
@@ -17,7 +18,7 @@ export default defineConfig({
     ? {
         command: 'node e2e/proxy.mjs',
         url: `http://127.0.0.1:${proxyPort}/health`,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: !isCI,
         timeout: 30_000,
       }
     : undefined,
@@ -27,11 +28,12 @@ export default defineConfig({
   // Run tests in files in parallel
   fullyParallel: true,
   // Fail the build on CI if you accidentally left test.only in the source code
-  forbidOnly: !!process.env.CI,
+  forbidOnly: isCI,
   // Retry on CI only
-  retries: process.env.CI ? 2 : 0,
+  retries: isCI ? 2 : 0,
+  maxFailures,
   // Opt out of parallel tests on CI
-  workers: process.env.CI ? 1 : undefined,
+  workers: isCI ? 1 : undefined,
   // Reporter to use.
   // See https://playwright.dev/docs/test-reporters
   reporter: [['html', { outputFolder: 'e2e-report' }]],

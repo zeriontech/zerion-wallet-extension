@@ -1,7 +1,7 @@
 import { BrowserStorage } from 'src/background/webapis/storage';
 import { dataToModel } from 'src/modules/ethereum/transactions/model';
 import type { StoredTransactions } from 'src/modules/ethereum/transactions/types';
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 import browser from 'webextension-polyfill';
 
 class LocalTransactionsStore extends Store<StoredTransactions> {

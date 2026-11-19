@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { walletPort } from 'src/ui/shared/channels';
 import { invariant } from 'src/shared/invariant';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';

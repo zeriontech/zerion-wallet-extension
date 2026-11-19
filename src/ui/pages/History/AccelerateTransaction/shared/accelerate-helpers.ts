@@ -1,7 +1,7 @@
 import { produce } from 'immer';
 import type { BigNumberish } from 'ethers';
 import { BigNumber } from '@ethersproject/bignumber';
-import omit from 'lodash/omit';
+import { omit } from 'src/shared/omit';
 import type {
   AnyAddressAction,
   LocalAddressAction,

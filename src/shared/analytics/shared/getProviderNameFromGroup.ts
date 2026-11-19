@@ -1,4 +1,4 @@
-import { capitalize } from 'capitalize-ts';
+import { capitalize } from 'src/shared/capitalize';
 import type { Brand } from 'src/shared/type-utils/Brand';
 import type { WalletGroup } from 'src/shared/types/WalletGroup';
 import { isAccountContainer } from 'src/shared/types/validators';

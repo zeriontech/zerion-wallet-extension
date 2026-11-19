@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import groupBy from 'lodash/groupBy';
-import { capitalize } from 'capitalize-ts';
+import { group } from 'moderndash';
+import { capitalize } from 'src/shared/capitalize';
 import { FillView } from 'src/ui/components/FillView';
 import { PageColumn } from 'src/ui/components/PageColumn';
 import { PageTop } from 'src/ui/components/PageTop';
@@ -170,7 +170,7 @@ function WalletGroups() {
     if (!walletGroups) {
       return null;
     }
-    const grouped = groupBy(walletGroups, (group) => getContainerType(group.walletContainer));
+    const grouped = group(walletGroups, (group) => getContainerType(group.walletContainer));
     // Define order of groups
     return [
       ContainerType.mnemonic,
@@ -179,9 +179,7 @@ function WalletGroups() {
       ContainerType.readonly,
     ]
       .filter((containerType) => grouped[containerType])
-      .map((containerType) => [containerType, grouped[containerType]]) as Array<
-      [ContainerType, (typeof grouped)['string']]
-    >;
+      .map((containerType) => [containerType, grouped[containerType]] as const);
   }, [walletGroups]);
 
   if (isLoading) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import cx from 'classnames';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import { ThemeStore, themeStore } from 'src/ui/features/appearance';
 import { uiTextParams } from 'src/ui/ui-kit/UIText';
 import * as s from './styles.module.css';

@@ -1,4 +1,4 @@
-import { Store } from 'store-unit';
+import { Store } from 'src/shared/store/store';
 import { BrowserStorage } from 'src/background/webapis/storage';
 
 type Options<S> = {

@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import BigNumber from 'bignumber.js';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, useNavigationType } from 'react-router';
@@ -31,7 +31,7 @@ import {
   type ToasterView,
 } from 'src/ui/components/TransactionSigner';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { useGlobalPreferences, usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
@@ -96,7 +96,7 @@ import { SwapOnboardingDialog } from './SwapOnboardingDialog/SwapOnboardingDialo
 import {
   clearSwapOnboardingDevForceShow,
   swapOnboardingDevForceShowStore,
-} from './SwapOnboardingDialog/devForceShowStore';
+} from 'src/ui/features/dev-menu/swapOnboardingDevForceShowStore';
 import { SwapFormError, SwapFormSkeleton } from './SwapFormSkeleton';
 import { getCrossEcosystemState } from './shared/getCrossEcosystemState';
 import { SwapSettingsDialog } from './SwapSettingsDialog';
@@ -287,6 +287,9 @@ function SwapFormComponent({
     quoteSettled &&
     priceImpact?.kind === 'loss' &&
     (priceImpact.level === 'medium' || priceImpact.level === 'high');
+
+  const priceImpactNeedsConfirmation =
+    inputPriceUnknown || priceImpact?.kind === 'n/a' || showPriceImpactWarning;
 
   const isCrossChain = formState.inputChain !== formState.outputChain;
 
@@ -649,8 +652,17 @@ function SwapFormComponent({
         simulationResult,
         inputNetwork: inputNetworkConfig,
         outputNetwork: outputNetworkConfig,
+        priceImpactNeedsConfirmation,
       }),
-    [quote, quotesQuery, formState, simulationResult, inputNetworkConfig, outputNetworkConfig],
+    [
+      quote,
+      quotesQuery,
+      formState,
+      simulationResult,
+      inputNetworkConfig,
+      outputNetworkConfig,
+      priceImpactNeedsConfirmation,
+    ],
   );
 
   const isUnverified = resolved.unverified;
@@ -666,6 +678,7 @@ function SwapFormComponent({
       simulationResult: result,
       inputNetwork: inputNetworkConfig,
       outputNetwork: outputNetworkConfig,
+      priceImpactNeedsConfirmation,
     });
     if (fresh.blocksAutoSign) {
       setHasSimulated(true);
@@ -814,12 +827,7 @@ function SwapFormComponent({
             onSimulationCompleted={handleSimulationCompleted}
             onSign={() => handleSignTransaction(simulationResult)}
             onCancel={handleCancel}
-            dangerTitle={
-              resolved.dangerTitle ??
-              (inputPriceUnknown || priceImpact?.kind === 'n/a' || showPriceImpactWarning
-                ? 'Proceed Anyway'
-                : undefined)
-            }
+            dangerTitle={resolved.dangerTitle ?? undefined}
           />
         )}
         <PageBottom />

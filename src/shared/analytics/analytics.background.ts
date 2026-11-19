@@ -1,4 +1,4 @@
-import omit from 'lodash/omit';
+import { omit } from 'src/shared/omit';
 import { LoginActivity, type Account } from 'src/background/account/Account';
 import { emitter } from 'src/background/events';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/Wallet/Wallet';
@@ -52,6 +52,8 @@ import { gaCollect, prepareGaParams } from './google-analytics';
 import { waitForAnalyticsIdSet } from './analyticsId';
 import { getAssetVisibilityEvent } from './shared/assetVisibilityEvent';
 import { whenAnalyticsEnabled } from './shared/whenAnalyticsEnabled';
+import { redactAddresses } from './transactionFailure';
+import type { TransactionFailure } from './transactionFailure';
 
 const toEcosystemProperty = (value: 'evm' | 'solana') =>
   value === 'evm' ? 'EVM' : value === 'solana' ? 'Solana' : value;
@@ -388,7 +390,7 @@ function trackAppEvents({ account }: { account: Account }) {
     status: 'success';
     result: SignTransactionResult;
   };
-  type TransactionFailedContext = { status: 'failed'; errorMessage: string };
+  type TransactionFailedContext = { status: 'failed'; failure: TransactionFailure };
 
   const trackTransactionSign = async (
     props: {
@@ -484,7 +486,21 @@ function trackAppEvents({ account }: { account: Account }) {
         ecosystem: toEcosystemProperty(getAddressType(address)),
       };
     } else {
-      statusParams = { transaction_error_message: props.errorMessage };
+      const { failure } = props;
+      const errorMessage = redactAddresses(failure.message);
+      statusParams = {
+        transaction_error_message: errorMessage,
+        backend_error_message: errorMessage,
+        error_code: failure.code,
+        error_stage: failure.stage,
+        error_message: failure.nodeMessage ? redactAddresses(failure.nodeMessage) : null,
+        ...(failure.address
+          ? {
+              wallet_address: failure.address,
+              ecosystem: toEcosystemProperty(getAddressType(failure.address)),
+            }
+          : {}),
+      };
     }
 
     const params = {
@@ -511,8 +527,8 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on(
     'transactionFailed',
-    gated(async (errorMessage, context) => {
-      trackTransactionSign({ status: 'failed', errorMessage, context });
+    gated(async (failure, context) => {
+      trackTransactionSign({ status: 'failed', failure, context });
     }),
   );
 

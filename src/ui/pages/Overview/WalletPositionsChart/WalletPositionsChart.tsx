@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useStore } from '@store-unit/react';
+import { useStore } from 'src/shared/store/useStore';
 import WalletIcon from 'jsx:src/ui/assets/wallet-fancy.svg';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useWalletChart } from 'src/modules/zerion-api/hooks/useWalletChart';

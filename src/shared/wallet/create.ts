@@ -1,5 +1,5 @@
 import { Wallet as EthersV5Wallet } from '@ethersproject/wallet';
-import sortBy from 'lodash/sortBy';
+import { sort } from 'moderndash';
 import {
   fromMnemonicToEd25519,
   fromSecretKeyToEd25519,
@@ -89,7 +89,7 @@ export function generateWalletsForEcosystems(ecosystems: BlockchainType[]): Bare
   const result: BareMnemonicWallet[] = [];
 
   const toPriority = (value: BlockchainType) => BLOCKCHAIN_TYPES.indexOf(value);
-  const sorted = sortBy(ecosystems, toPriority); // priority sorting
+  const sorted = sort(ecosystems, { by: toPriority }); // priority sorting
 
   for (const ecosystem of sorted) {
     if (ecosystem === 'evm') {

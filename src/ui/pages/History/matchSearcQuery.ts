@@ -1,4 +1,4 @@
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import type { LocalAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { Collection, NFTPreview } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import type { Fungible } from 'src/modules/zerion-api/types/Fungible';

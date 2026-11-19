@@ -32,6 +32,23 @@ async function walletRequest(page: Page, method: string, params: Record<string, 
   );
 }
 
+test('Hides and unhides a token from the asset page', async ({ extensionPopupUrl, page }) => {
+  await page.goto(new URL('#/asset/eth', extensionPopupUrl).toString());
+  await page.getByRole('button', { name: 'Asset actions' }).click();
+  await page.getByText('Hide', { exact: true }).click();
+  await expect(page.getByText('You hid this token')).toBeVisible();
+
+  await page.goto(new URL('#/settings/hidden-assets', extensionPopupUrl).toString());
+  await expect(page.getByText('Ethereum')).toBeVisible();
+  await page.getByRole('button', { name: /Unhide/i }).click();
+  await expect(page.getByText('No hidden tokens yet')).toBeVisible();
+
+  const preferences = (await walletRequest(page, 'getGlobalPreferences', {})) as {
+    hiddenFungibleIds?: string[];
+  };
+  expect(preferences.hiddenFungibleIds).toEqual([]);
+});
+
 test('Hidden Assets persists, lists and unhides a token', async ({ extensionPopupUrl, page }) => {
   const settingsUrl = new URL('#/settings', extensionPopupUrl).toString();
   await page.goto(settingsUrl);

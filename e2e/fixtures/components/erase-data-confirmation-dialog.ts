@@ -6,7 +6,9 @@ export class EraseDataConfirmationDialog {
     name: /Erase My Data/i,
   });
   readonly backButton = this.dialog.getByRole('button', { name: /Back/i });
-  readonly eraseMyDataCheckbox = this.dialog.locator('label > input[type="checkbox"] + div');
+  readonly confirmationInput = this.dialog.getByRole('textbox', {
+    name: /Type ERASE to confirm/i,
+  });
 
   constructor(public readonly dialog: Locator) {}
 
@@ -14,15 +16,15 @@ export class EraseDataConfirmationDialog {
     await expect(this.dialog).toMatchAriaSnapshot(`
       - dialog:
         - img
-        - text: Erase data for the browser extension? Your crypto assets remain secured on the blockchain and can be accessed with your private keys and recovery phrase Yes, erase my data
-        - checkbox "Yes, erase my data"
-        - button "Erase My Data"
+        - text: Erase data for the browser extension? Every wallet in the browser extension will be erased and can only be restored from your recovery phrase or a backup. Your crypto assets remain secured on the blockchain. Type ERASE to confirm
+        - textbox "Type ERASE to confirm"
+        - button "Erase My Data" [disabled]
         - button "Back"
     `);
   }
 
   async confirm() {
-    await this.eraseMyDataCheckbox.check();
+    await this.confirmationInput.fill('ERASE');
     await this.eraseButton.click();
   }
 }

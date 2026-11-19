@@ -1,17 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { Button } from 'src/ui/ui-kit/Button';
-import { HStack } from 'src/ui/ui-kit/HStack';
+import { Input } from 'src/ui/ui-kit/Input';
 import { BottomSheetDialog } from 'src/ui/ui-kit/ModalDialogs/BottomSheetDialog';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { Toggle } from 'src/ui/ui-kit/Toggle';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { WarningIcon } from '../WarningIcon';
 
+const ERASE_CONFIRMATION = 'ERASE';
+
 function ResetWarningForm() {
+  const inputId = useId();
+  const [confirmation, setConfirmation] = useState('');
+  const isConfirmed = confirmation === ERASE_CONFIRMATION;
+
   return (
     <VStack gap={8}>
-      <form method="dialog">
+      <form
+        method="dialog"
+        onSubmit={(event) => {
+          if (!isConfirmed) {
+            event.preventDefault();
+          }
+        }}
+      >
         <VStack gap={8}>
           <WarningIcon
             size={44}
@@ -22,19 +34,30 @@ function ResetWarningForm() {
           />
           <UIText kind="headline/h3">Erase data for the browser extension?</UIText>
           <UIText kind="body/regular">
-            Your crypto assets remain secured on the blockchain and can be accessed with your
-            private keys and recovery phrase
+            Every wallet in the browser extension will be erased and can only be restored from your
+            recovery phrase or a backup. Your crypto assets remain secured on the blockchain.
           </UIText>
         </VStack>
         <Spacer height={28} />
-        <label>
-          <HStack gap={12} justifyContent="space-between" alignItems="center">
-            <UIText kind="body/regular">Yes, erase my data</UIText>
-            <Toggle defaultChecked={false} required={true} />
-          </HStack>
-        </label>
+        <VStack gap={8}>
+          <UIText as="label" htmlFor={inputId} kind="body/regular">
+            Type ERASE to confirm
+          </UIText>
+          <Input
+            id={inputId}
+            name="erase-confirmation"
+            value={confirmation}
+            onChange={(event) => setConfirmation(event.target.value)}
+            placeholder={ERASE_CONFIRMATION}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="characters"
+            spellCheck={false}
+            autoFocus={true}
+          />
+        </VStack>
         <Spacer height={16} />
-        <Button kind="danger" value="confirm" style={{ width: '100%' }}>
+        <Button kind="danger" value="confirm" disabled={!isConfirmed} style={{ width: '100%' }}>
           Erase My Data
         </Button>
       </form>

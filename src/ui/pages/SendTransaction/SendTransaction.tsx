@@ -73,7 +73,7 @@ import {
   fetchAndAssignPaymaster,
 } from 'src/modules/ethereum/account-abstraction/fetchAndAssignPaymaster';
 import { useCurrency } from 'src/modules/currency/useCurrency';
-import { RenderArea } from 'react-area';
+import { RenderArea } from 'src/shared/react-area';
 import { wait } from 'src/shared/wait';
 import { assertProp } from 'src/shared/assert-property';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
@@ -99,7 +99,7 @@ import ArrowDownIcon from 'jsx:src/ui/assets/caret-down-filled.svg';
 import { RequestInitiator } from 'src/ui/components/RequestInitiator';
 import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { NetworkId } from 'src/modules/networks/NetworkId';
-import { getError } from 'get-error';
+import { getError } from 'src/shared/errors/getErrorBase';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { baseToCommon, commonToBase, normalizeNumberValue } from 'src/shared/units/convert';
 import BigNumber from 'bignumber.js';

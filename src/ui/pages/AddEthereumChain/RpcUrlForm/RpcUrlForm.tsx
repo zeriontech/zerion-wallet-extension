@@ -1,6 +1,5 @@
 import React, { useId } from 'react';
-import { produce } from 'immer';
-import merge from 'lodash/merge';
+import { merge } from 'moderndash';
 import ArrowDownIcon from 'jsx:src/ui/assets/arrow-down.svg';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Button } from 'src/ui/ui-kit/Button';
@@ -8,7 +7,7 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
-import { Content } from 'react-area';
+import { Content } from 'src/shared/react-area';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { ViewLoading } from 'src/ui/components/ViewLoading';
@@ -59,7 +58,7 @@ export function RpcUrlForm({
         }
         const formObject = collectData(form, {});
         // Use prevNetwork as base, overwrite only values used in current form
-        const result = produce(prevNetwork, (draft) => merge(draft, formObject));
+        const result = merge(prevNetwork, formObject) as unknown as NetworkInfo;
         onSubmit(network.id, toAddEthereumChainParameter(result));
       }}
     >

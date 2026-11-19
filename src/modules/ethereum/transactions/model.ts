@@ -1,9 +1,9 @@
-import sortBy from 'lodash/sortBy';
+import { sort } from 'moderndash';
 import type { StoredTransactions, TransactionObject } from './types';
 import { getTransactionObjectStatus } from './getTransactionObjectStatus';
 
 export function dataToModel(transactions: StoredTransactions) {
-  return sortBy(transactions, (item) => item.timestamp ?? Infinity).reverse();
+  return sort(transactions, { by: (item) => item.timestamp ?? Infinity }).reverse();
 }
 
 export function isPendingTransaction(item: TransactionObject): boolean {

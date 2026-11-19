@@ -1,4 +1,4 @@
-import { isTruthy } from 'is-truthy-ts';
+import { isTruthy } from 'src/shared/isTruthy';
 import type { NetworkFeeSpeed } from 'src/shared/types/TransactionConfiguration';
 import { NETWORK_SPEED_TO_TITLE, SHOW_FAST_LEVEL_LABEL } from './constants';
 
