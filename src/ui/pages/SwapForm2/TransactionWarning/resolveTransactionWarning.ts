@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import type { Quote2 } from 'src/shared/types/Quote';
 import { isIntentQuote } from 'src/shared/types/Quote';
+import type { TransactionPrepareError } from 'src/modules/zerion-api/types/TransactionPrepareError';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { SwapFormState2 } from '../types';
@@ -109,6 +110,31 @@ export function getQuotesErrorFallback(status: number): {
   };
 }
 
+function resolveQuoteErrorWarning(error: TransactionPrepareError): WarningContent {
+  switch (error.code) {
+    case 1:
+      return {
+        variant: 'warning',
+        title: 'Insufficient balance',
+        description: 'Input asset balance is not enough',
+      };
+    case 2:
+      return {
+        variant: 'warning',
+        title: 'Insufficient gas balance',
+        description: 'Base asset balance is not enough to cover network fee',
+      };
+    case 4:
+      return {
+        variant: 'neutral',
+        title: 'Error',
+        description: 'Trading is not allowed in your country',
+      };
+    default:
+      return { variant: 'neutral', title: 'Error', description: error.message };
+  }
+}
+
 function resolveFormStateWarning({
   quote,
   quotesQuery,
@@ -156,25 +182,7 @@ function resolveFormStateWarning({
   }
 
   if (quote?.error) {
-    if (quote.error.code === 1) {
-      return {
-        variant: 'warning',
-        title: 'Insufficient balance',
-        description: quote.error.message,
-      };
-    }
-    if (quote.error.code === 2) {
-      return {
-        variant: 'warning',
-        title: 'Insufficient gas balance',
-        description: quote.error.message,
-      };
-    }
-    return {
-      variant: 'error',
-      title: 'Transaction will fail',
-      description: quote.error.message,
-    };
+    return resolveQuoteErrorWarning(quote.error);
   }
 
   if (quotesQuery.error && !quotesQuery.isLoading) {

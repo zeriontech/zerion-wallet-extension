@@ -600,48 +600,6 @@ describe('resolveTransactionWarning', () => {
   });
 
   describe('form-state warnings (existing behavior preserved)', () => {
-    it('quote.error code 1 → Insufficient balance warning (no danger, no block)', () => {
-      const quote = {
-        outputAmount: {
-          currency: 'usd',
-          quantity: '100',
-          value: null,
-          usdValue: null,
-        },
-        error: { code: 1, message: 'Need more ETH' },
-      } as unknown as Quote2;
-      const r = resolveTransactionWarning({
-        ...baseInputs,
-        quote,
-        simulationResult: null,
-      });
-      expect(r.warning?.title).toBe('Insufficient balance');
-      expect(r.warning?.variant).toBe('warning');
-      expect(r.dangerTitle).toBeNull();
-      expect(r.blocksAutoSign).toBe(false);
-    });
-
-    it('quote.error generic code → Transaction will fail variant error', () => {
-      const quote = {
-        outputAmount: {
-          currency: 'usd',
-          quantity: '100',
-          value: null,
-          usdValue: null,
-        },
-        error: { code: 99, message: 'unknown' },
-      } as unknown as Quote2;
-      const r = resolveTransactionWarning({
-        ...baseInputs,
-        quote,
-        simulationResult: null,
-      });
-      expect(r.warning?.title).toBe('Transaction will fail');
-      expect(r.warning?.variant).toBe('error');
-      // Form-state warnings don't trigger danger (button is disabled by quote.error)
-      expect(r.dangerTitle).toBeNull();
-    });
-
     it('cross-chain to non-bridging network', () => {
       const r = resolveTransactionWarning({
         ...baseInputs,
@@ -655,6 +613,78 @@ describe('resolveTransactionWarning', () => {
         simulationResult: null,
       });
       expect(r.warning?.title).toContain('doesn’t support bridging');
+    });
+  });
+
+  describe('quote.error banners', () => {
+    const SENTINEL = 'BACKEND-SENTINEL';
+
+    function resolveForError(code: number, message: string) {
+      const quote = {
+        outputAmount: {
+          currency: 'usd',
+          quantity: '100',
+          value: null,
+          usdValue: null,
+        },
+        error: { code, message, hint: null },
+      } as unknown as Quote2;
+      return resolveTransactionWarning({ ...baseInputs, quote, simulationResult: null });
+    }
+
+    function expectNoSentinel(warning: object | null) {
+      for (const value of Object.values(warning ?? {})) {
+        expect(String(value)).not.toContain(SENTINEL);
+      }
+    }
+
+    it('code 1 → Insufficient balance with client-owned wording (no danger, no block)', () => {
+      const r = resolveForError(1, SENTINEL);
+      expect(r.warning).toEqual({
+        variant: 'warning',
+        title: 'Insufficient balance',
+        description: 'Input asset balance is not enough',
+      });
+      expectNoSentinel(r.warning);
+      expect(r.dangerTitle).toBeNull();
+      expect(r.blocksAutoSign).toBe(false);
+    });
+
+    it('code 2 → Insufficient gas balance with client-owned wording', () => {
+      const r = resolveForError(2, SENTINEL);
+      expect(r.warning).toEqual({
+        variant: 'warning',
+        title: 'Insufficient gas balance',
+        description: 'Base asset balance is not enough to cover network fee',
+      });
+      expectNoSentinel(r.warning);
+    });
+
+    it('code 4 → neutral Error with client-owned geo-block wording', () => {
+      const r = resolveForError(4, SENTINEL);
+      expect(r.warning).toEqual({
+        variant: 'neutral',
+        title: 'Error',
+        description: 'Trading is not allowed in your country',
+      });
+      expectNoSentinel(r.warning);
+    });
+
+    it.each([
+      [0, 'zero-code message'],
+      [3, 'No wallet connected'],
+      [5, "Token can't be transferred: Fee-On-Transfer (FoT) tokens aren't supported!"],
+      [99, 'Some FUTURE error, with Mixed Case & punctuation?!'],
+      [-1, 'negative code message'],
+    ])('code %p → neutral Error with the backend message as is', (code, message) => {
+      const r = resolveForError(code, message);
+      expect(r.warning).toEqual({ variant: 'neutral', title: 'Error', description: message });
+      expect(r.dangerTitle).toBeNull();
+    });
+
+    it.each([0, 1, 2, 3, 4, 5, 99])('code %p is never titled "Transaction will fail"', (code) => {
+      const r = resolveForError(code, 'Transaction will fail');
+      expect(r.warning?.title).not.toBe('Transaction will fail');
     });
   });
 
