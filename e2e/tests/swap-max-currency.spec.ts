@@ -188,10 +188,10 @@ test('MAX in USD input mode uses the full balance', async ({
 
   await maxButton.click();
 
-  // The display still rounds to cents…
-  await expect(page.locator('input[name="inputAmount"]')).toHaveValue('50.01');
+  // The display shows the exact dollar value of the balance…
+  await expect(page.locator('input[name="inputAmount"]')).toHaveValue('50.0073838');
 
-  // …but the quote must ask for the exact balance, never more.
+  // …and the quote asks for the exact balance, never more.
   await expect.poll(() => quoteAmounts.at(-1) ?? null).not.toBeNull();
   expect(quoteAmounts.at(-1)).toBe(USDC_BALANCE);
 

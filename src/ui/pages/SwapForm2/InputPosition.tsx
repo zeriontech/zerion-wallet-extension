@@ -124,7 +124,11 @@ export function InputPosition({
     const isMax = formState.inputAmountIsMax === 'true';
     const sourceValue = isMax && resolvedInputAmount ? resolvedInputAmount : inputAmount;
     if (sourceValue) {
-      const converted = convertOnToggle(sourceValue, inputKind, nextKind, inputPrice);
+      const converted = isMax
+        ? nextKind === 'currency' && inputPrice
+          ? new BigNumber(sourceValue).multipliedBy(inputPrice).toFixed()
+          : sourceValue
+        : convertOnToggle(sourceValue, inputKind, nextKind, inputPrice);
       onChange('inputAmount', converted);
     }
     onChange('inputKind', nextKind);
@@ -134,18 +138,21 @@ export function InputPosition({
   const handleQuickAmount = (factor: number) => {
     if (!positionBalance) return;
     const tokenValue = getPartialBalance(positionBalance, factor);
+    const isMax = factor === 1;
     if (inputKind === 'currency' && inputPrice) {
-      const currencyValue = new BigNumber(tokenValue)
-        .multipliedBy(inputPrice)
-        .decimalPlaces(2, BigNumber.ROUND_HALF_UP)
-        .toFixed();
-      onChange('inputAmount', currencyValue);
+      const currencyValue = new BigNumber(tokenValue).multipliedBy(inputPrice);
+      onChange(
+        'inputAmount',
+        isMax
+          ? currencyValue.toFixed()
+          : currencyValue.decimalPlaces(2, BigNumber.ROUND_HALF_UP).toFixed(),
+      );
     } else {
       onChange('inputAmount', tokenValue);
     }
-    // The rounded fiat display cannot express the exact balance, so MAX keeps
-    // the balance as the amount sent to the quote.
-    onChange('inputAmountIsMax', factor === 1 ? 'true' : undefined);
+    // The exact balance is not always representable in the rounded display, so
+    // MAX also keeps it as the amount sent to the quote.
+    onChange('inputAmountIsMax', isMax ? 'true' : undefined);
     inputRef.current?.focus();
   };
 
