@@ -3,6 +3,7 @@ import type { Quote2 } from 'src/shared/types/Quote';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { SwapFormState2 } from '../types';
+import { isNoWalletQuote } from '../shared/isNoWalletQuote';
 import {
   pickHighestNonGray,
   readSimulationStatus,
@@ -147,6 +148,10 @@ function resolveFormStateWarning({
       title: `${inputNetwork.name} doesn’t support trading`,
       description: `Tokens on ${inputNetwork.name} can’t be swapped within the same network. Try bridging to a network that supports trading.`,
     };
+  }
+
+  if (isNoWalletQuote(quote)) {
+    return null;
   }
 
   if (quote?.error) {
@@ -364,6 +369,6 @@ export function resolveTransactionWarning({
     // disabled by quote.error / missing quote / etc. Unverified and price
     // impact do: the user confirms after seeing the simulation outcome.
     blocksAutoSign: unverified || priceImpactNeedsConfirmation,
-    dangerTitle: priceImpactNeedsConfirmation ? 'Proceed Anyway' : null,
+    dangerTitle: priceImpactNeedsConfirmation && !isNoWalletQuote(quote) ? 'Proceed Anyway' : null,
   };
 }
