@@ -40,7 +40,13 @@ export function TransactionWarning({ warning }: { warning: WarningContent | null
 
   return (
     <div
-      className={warning.variant === 'error' ? `${styles.card} ${styles.cardError}` : styles.card}
+      className={
+        warning.variant === 'error'
+          ? `${styles.card} ${styles.cardError}`
+          : warning.variant === 'neutral'
+            ? `${styles.card} ${styles.cardNeutral}`
+            : styles.card
+      }
     >
       <VStack gap={warning.description ? 8 : 0}>
         <UIText kind="small/accent" color="currentColor">

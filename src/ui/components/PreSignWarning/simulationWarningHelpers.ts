@@ -4,7 +4,7 @@ import type {
 } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import type { SimulationResult } from 'src/ui/shared/requests/useSimulateTransactions';
 
-export type WarningVariant = 'warning' | 'error';
+export type WarningVariant = 'warning' | 'error' | 'neutral';
 
 export interface WarningContent {
   variant: WarningVariant;
