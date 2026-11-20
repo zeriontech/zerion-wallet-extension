@@ -43,6 +43,7 @@ export function NetworkFeeTypeSelector({
   currency = null,
   onSelectPreset,
   onSelectCustom,
+  hasNetworkFeeOverride = true,
 }: {
   /** Highlights the matching preset (or the Custom button) with a border. */
   selectedSpeed: NetworkFeeSpeed;
@@ -58,6 +59,8 @@ export function NetworkFeeTypeSelector({
   currency?: string | null;
   onSelectPreset: (value: NetworkFeeConfiguration) => void;
   onSelectCustom: () => void;
+  /** Without an override the Fast preset is the quote's own price (ratio 1). */
+  hasNetworkFeeOverride?: boolean;
 }) {
   const retainedCustom = configuration?.networkFee;
   const hasCustomValues = Boolean(
@@ -95,17 +98,20 @@ export function NetworkFeeTypeSelector({
   return (
     <VStack gap={8}>
       {PRESETS.map(({ speed, label }) => {
-        const ratio = getNetworkFeeRatioForConfiguration(
-          quote,
-          {
-            speed,
-            custom1559GasPrice: null,
-            customClassicGasPrice: null,
-            gasLimit: null,
-          },
-          gasPrices,
-          baseFee,
-        );
+        const ratio =
+          !hasNetworkFeeOverride && speed === 'fast'
+            ? 1
+            : getNetworkFeeRatioForConfiguration(
+                quote,
+                {
+                  speed,
+                  custom1559GasPrice: null,
+                  customClassicGasPrice: null,
+                  gasLimit: null,
+                },
+                gasPrices,
+                baseFee,
+              );
         const feeLabel = quote
           ? formatNetworkFee(quote, ratio, {
               fallbackFiatValue,

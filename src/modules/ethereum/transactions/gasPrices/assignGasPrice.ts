@@ -32,9 +32,13 @@ export function assignGasPrice<
       // because it will be implied by gas prices
       delete transaction.type;
     }
+    // EIP-1559 requires tip <= max fee. A custom fee form can be saved with a
+    // tip above the max fee; the effective price already clamps at maxFee, so
+    // clamping here matches what the fee row showed and keeps the tx valid.
+    const priorityFee = Math.min(eip1559GasPrices.priorityFee, eip1559GasPrices.maxFee);
     return Object.assign(transaction, {
       maxFeePerGas: ethers.toQuantity(eip1559GasPrices.maxFee),
-      maxPriorityFeePerGas: ethers.toQuantity(eip1559GasPrices.priorityFee),
+      maxPriorityFeePerGas: ethers.toQuantity(priorityFee),
     });
   } else if (classicGasPrices != null) {
     delete transaction.maxFeePerGas;

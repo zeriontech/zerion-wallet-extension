@@ -5,7 +5,6 @@ import type { CustomConfiguration } from 'src/shared/types/TransactionConfigurat
 import { useMeasure } from 'src/ui/shared/useMeasure';
 import type { Networks } from 'src/modules/networks/Networks';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
-import type { NetworkFeeType } from 'src/modules/zerion-api/types/NetworkFeeType';
 import type { Amount } from 'src/modules/zerion-api/types/Amount';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { createChain } from 'src/modules/networks/Chain';
@@ -13,7 +12,6 @@ import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import type { IncomingTransaction } from 'src/modules/ethereum/types/IncomingTransaction';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
-import { useAssetListFungibles } from 'src/modules/zerion-api/hooks/useAssetListFungibles';
 import { HStack } from 'src/ui/ui-kit/HStack';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
@@ -33,16 +31,21 @@ import { formatNetworkFee } from 'src/ui/components/NetworkFeeDialog2/formatNetw
 import {
   getBaseFee,
   getCustomFormDefaults,
-  getNetworkFeeRatioForConfiguration,
 } from 'src/ui/components/NetworkFeeDialog2/getNetworkFeeForSpeed';
+import { getGas } from 'src/modules/ethereum/transactions/getGas';
+import { getBaseAssetDecimals } from 'src/modules/networks/NetworkInfo';
+import { baseToCommon, normalizeNumberValue } from 'src/shared/units/convert';
 import ChevronRightIcon from 'jsx:src/ui/assets/chevron-right.svg';
 import type { SendQuote } from '../useSendTransaction';
+import { useNetworkFeeFiatValue } from '../shared/useNetworkFeeFiatValue';
 import * as styles from './SendDetails.module.css';
 
 export function SendDetails({
   inputChain,
   networks,
   sendQuote,
+  displayedNetworkFee,
+  hasNetworkFeeOverride,
   network,
   evmTx,
   address,
@@ -59,6 +62,10 @@ export function SendDetails({
   inputChain: string;
   networks: Networks;
   sendQuote: SendQuote | null;
+  /** The fee for the selected speed (backend fee untouched without an override). */
+  displayedNetworkFee: SendQuote['networkFee'];
+  /** Whether the user explicitly picked a fee; the dialog Fast row is unscaled otherwise. */
+  hasNetworkFeeOverride: boolean;
   network: NetworkInfo | null;
   evmTx: IncomingTransaction | null;
   address: string;
@@ -77,15 +84,37 @@ export function SendDetails({
   const networkFeeDialog = useDialog2();
   const { preferences } = usePreferences();
   const { currency } = useCurrency();
-  const networkFee: NetworkFeeType | null = sendQuote?.networkFee ?? null;
   const baseFee = getBaseFee(gasPrices);
   const customDefaults = getCustomFormDefaults(sendQuote);
-  const feeRatio = getNetworkFeeRatioForConfiguration(
-    sendQuote,
-    configuration.networkFee,
-    gasPrices,
-    baseFee,
-  );
+  const nativeDecimals = network ? getBaseAssetDecimals(network) : null;
+  const rawFee = useNetworkFeeFiatValue({
+    networkFee: sendQuote?.networkFee ?? null,
+    network,
+    currency,
+  });
+  const displayedFee = useNetworkFeeFiatValue({
+    networkFee: displayedNetworkFee,
+    network,
+    currency,
+  });
+  const rowQuote = sendQuote ? { ...sendQuote, networkFee: displayedNetworkFee } : null;
+  const maxFeeBase = (() => {
+    if (!evmTx) {
+      return null;
+    }
+    const gas = getGas(evmTx);
+    const price = evmTx.maxFeePerGas ?? evmTx.gasPrice;
+    if (gas == null || price == null) {
+      return null;
+    }
+    return new BigNumber(normalizeNumberValue(gas)).multipliedBy(normalizeNumberValue(price));
+  })();
+  const maxFeeCommon =
+    maxFeeBase && nativeDecimals != null ? baseToCommon(maxFeeBase, nativeDecimals) : null;
+  const maxFeeFiat =
+    maxFeeCommon && displayedFee.feePrice != null
+      ? maxFeeCommon.multipliedBy(displayedFee.feePrice).toNumber()
+      : null;
   const showNonce = Boolean(preferences?.configurableNonce && isEthereumAddress(address));
 
   const chain = createChain(inputChain);
@@ -117,20 +146,6 @@ export function SendDetails({
         })()
       : null;
 
-  const feeFungibleId = networkFee?.fungible?.id ?? network?.baseAsset?.id;
-  const { data: feeFungibleResponse } = useAssetListFungibles(
-    feeFungibleId ? { fungibleIds: [feeFungibleId], currency } : { currency },
-    { suspense: false },
-  );
-  const feePrice = feeFungibleId
-    ? (feeFungibleResponse?.data.find((f) => f.id === feeFungibleId)?.meta.price ?? null)
-    : null;
-  const feeQuantity = networkFee?.amount?.quantity ?? null;
-  const feeFiatValue =
-    feeQuantity && feePrice != null
-      ? new BigNumber(feeQuantity).multipliedBy(feePrice).toNumber()
-      : null;
-
   return (
     <MotionConfig transition={{ duration: 0.15 }}>
       <VStack gap={0}>
@@ -140,12 +155,12 @@ export function SendDetails({
               label="Network Fee"
               onClick={evmTx ? networkFeeDialog.openDialog : undefined}
               value={
-                sendQuote ? (
+                rowQuote ? (
                   <HStack gap={4} alignItems="center">
                     <NetworkFeeLevelLabel speed={configuration.networkFee.speed} />
                     <UIText kind="small/accent">
-                      {formatNetworkFee(sendQuote, feeRatio, {
-                        fallbackFiatValue: feeFiatValue,
+                      {formatNetworkFee(rowQuote, 1, {
+                        fallbackFiatValue: displayedFee.feeFiatValue,
                         fallbackSymbol: network?.baseAsset?.symbol,
                         currency,
                       })}
@@ -180,6 +195,21 @@ export function SendDetails({
                     <VStack gap={16}>
                       <div />
                       {showReceived ? <DetailRow label="Received" value={receivedValue} /> : null}
+                      {maxFeeCommon ? (
+                        <DetailRow
+                          label="Max fee"
+                          value={`${formatTokenValue(
+                            maxFeeCommon.toFixed(),
+                            network?.baseAsset?.symbol,
+                          )}${
+                            maxFeeFiat != null
+                              ? ` (${formatCurrencyValueExtra(maxFeeFiat, 'en', currency, {
+                                  zeroRoundingFallback: 0.01,
+                                })})`
+                              : ''
+                          }`}
+                        />
+                      ) : null}
                       {showNonce ? (
                         <React.Suspense fallback={<DetailRow label="Nonce" value={noValueDash} />}>
                           {evmTx && evmTx.from ? (
@@ -256,9 +286,11 @@ export function SendDetails({
           quote={sendQuote}
           gasPrices={gasPrices}
           baseFee={baseFee}
-          fallbackFiatValue={feeFiatValue}
+          fallbackFiatValue={rawFee.feeFiatValue}
           fallbackSymbol={network?.baseAsset?.symbol}
           currency={currency}
+          nativeDecimals={nativeDecimals}
+          hasNetworkFeeOverride={hasNetworkFeeOverride}
         />
       ) : null}
     </MotionConfig>

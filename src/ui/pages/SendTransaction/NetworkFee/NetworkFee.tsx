@@ -1,5 +1,6 @@
+import BigNumber from 'bignumber.js';
 import { isTruthy } from 'src/shared/isTruthy';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import type { NetworkFeeConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import { CircleSpinner } from 'src/ui/ui-kit/CircleSpinner';
@@ -15,12 +16,11 @@ import type { IncomingTransactionWithFrom } from 'src/modules/ethereum/types/Inc
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
-import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
 import { getNetworkFeeDisplayValue } from './getNetworkFeeDisplayValue';
 
-function getFeeTypeTitle(type: Exclude<keyof ChainGasPrice['fast'], 'eta'> | undefined) {
+function getFeeTypeTitle(type: 'eip1559' | 'classic' | 'optimistic' | undefined) {
   if (!type) {
     return undefined;
   }
@@ -42,7 +42,8 @@ export function NetworkFee({
   label,
   renderDisplayValue,
   displayValueEnd,
-  interpretation,
+  expectedGas,
+  onFeeValueFiatReady,
 }: {
   transaction: IncomingTransactionWithFrom;
   transactionFee: TransactionFee;
@@ -54,11 +55,10 @@ export function NetworkFee({
   label?: React.ReactNode;
   renderDisplayValue?: (params: { hintTitle: string; displayValue: string }) => React.ReactNode;
   displayValueEnd?: React.ReactNode;
-  /**
-   * The interpretation response from the transaction simulation API.
-   * Used to display more accurate Network Fee for Fast speed
-   */
-  interpretation?: InterpretResponse | null;
+  /** Expected gas units the displayed fee is priced on (WLT-2743). */
+  expectedGas?: number | null;
+  /** The expected fee in fiat that the user sees, for analytics. */
+  onFeeValueFiatReady?: (value: number | null) => void;
 }) {
   const { networks } = useNetworks();
   const { currency } = useCurrency();
@@ -66,6 +66,7 @@ export function NetworkFee({
   const { time, feeEstimation, feeEstimationQuery, costs, costsQuery } = transactionFee;
   const {
     feeValueCommon: expectedFeeValueCommon,
+    feeValueFiat: expectedFeeValueFiat,
     maxFeeValueCommon,
     relevantFeeValueFiat: feeValueFiat,
     relevantFeeValueCommon: feeValueCommon,
@@ -78,26 +79,20 @@ export function NetworkFee({
 
   const disabled = isLoading || !onChange;
 
-  const showInterpretationFee =
-    !totalValueExceedsBalance &&
-    networkFeeConfiguration.speed === 'fast' &&
-    interpretation?.data.action?.fee;
-  const interpretationFee = showInterpretationFee
-    ? interpretation?.data.action?.fee?.amount.value
-    : undefined;
+  useEffect(() => {
+    const expectedFeeFiat =
+      expectedFeeValueFiat == null ? null : new BigNumber(expectedFeeValueFiat).toNumber();
+    onFeeValueFiatReady?.(expectedFeeFiat ?? null);
+  }, [expectedFeeValueFiat, onFeeValueFiatReady]);
 
   const feeValuePrefix = totalValueExceedsBalance ? 'Up to ' : '';
-  const feeValueFormatted = interpretationFee
-    ? formatCurrencyValueExtra(interpretationFee, 'en', currency, {
+  const feeValueFormatted = feeValueFiat
+    ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
         zeroRoundingFallback: 0.01,
       })
-    : feeValueFiat
-      ? formatCurrencyValueExtra(feeValueFiat, 'en', currency, {
-          zeroRoundingFallback: 0.01,
-        })
-      : feeValueCommon
-        ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
-        : undefined;
+    : feeValueCommon
+      ? formatTokenValue(feeValueCommon.toString(), nativeAssetSymbol)
+      : undefined;
 
   const hintTitle = [
     getFeeTypeTitle(feeEstimation?.type),
@@ -138,6 +133,7 @@ export function NetworkFee({
           chainGasPrices={chainGasPrices}
           transaction={transaction}
           customViewOnly={customViewOnly}
+          expectedGas={expectedGas}
         />
       ) : null}
       <HStack gap={8} justifyContent="space-between">

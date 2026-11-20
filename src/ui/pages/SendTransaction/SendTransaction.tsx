@@ -77,6 +77,11 @@ import { RenderArea } from 'src/shared/react-area';
 import { wait } from 'src/shared/wait';
 import { assertProp } from 'src/shared/assert-property';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
+import {
+  getBaseFee,
+  getConfigurationEffectiveGasPrice,
+} from 'src/ui/components/NetworkFeeDialog2/getNetworkFeeForSpeed';
+import { getFeeProvenance } from 'src/modules/ethereum/transactions/gasPrices/provenance';
 import { valueToHex } from 'src/shared/units/valueToHex';
 import { useStaleTime } from 'src/ui/shared/useStaleTime';
 import type { useInterpretTxBasedOnEligibility } from 'src/ui/shared/requests/uiInterpretTransaction';
@@ -96,7 +101,8 @@ import { SiteFaviconImg } from 'src/ui/components/SiteFaviconImg';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getError } from 'src/shared/errors/getErrorBase';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
-import { baseToCommon, commonToBase } from 'src/shared/units/convert';
+import { baseToCommon, commonToBase, normalizeNumberValue } from 'src/shared/units/convert';
+import BigNumber from 'bignumber.js';
 import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import { getDecimals } from 'src/modules/networks/asset';
 import { UNLIMITED_APPROVAL_AMOUNT } from 'src/modules/ethereum/constants';
@@ -170,7 +176,22 @@ async function configureTransactionToSign<T extends IncomingTransaction>(
     tx = { ...tx, nonce };
   }
 
+  const dappMaxFee = transaction.maxFeePerGas;
   tx = applyConfiguration(tx, configuration, chainGasPrices);
+
+  // Keep a dapp's own higher max fee. Zerion's preset still supplies the tip;
+  // a Custom fee is used exactly as the user entered it (iOS WLT-2744).
+  if (
+    configuration.networkFee.speed !== 'custom' &&
+    dappMaxFee != null &&
+    tx.maxFeePerGas != null
+  ) {
+    const dappMax = new BigNumber(normalizeNumberValue(dappMaxFee));
+    const zerionMax = new BigNumber(normalizeNumberValue(tx.maxFeePerGas));
+    if (dappMax.gt(zerionMax)) {
+      tx.maxFeePerGas = valueToHex(dappMax.toFixed());
+    }
+  }
 
   return tx as PartiallyRequired<T, 'chainId' | 'from'>;
 }
@@ -234,7 +255,9 @@ function usePreparedTx(transaction: IncomingTransaction, origin: string) {
   });
   return {
     /** popuLATERtrasaction - it's partially populated now and will get more data later :D */
-    populatedTransaction: resolveGasQuery.data || withChainId || null,
+    populatedTransaction: resolveGasQuery.data?.transaction || withChainId || null,
+    /** Raw expected gas units the fee is priced on (WLT-2743); null until resolved. */
+    expectedGas: resolveGasQuery.data?.expectedGas ?? null,
   };
 }
 
@@ -261,6 +284,8 @@ function TransactionDefaultView({
   paymasterWaiting,
   onOpenAdvancedView,
   onFeeValueCommonReady,
+  onFeeValueFiatReady,
+  expectedGas,
 }: {
   networks: Networks;
   chain: Chain;
@@ -283,6 +308,8 @@ function TransactionDefaultView({
   paymasterWaiting: boolean;
   onOpenAdvancedView: () => void;
   onFeeValueCommonReady: (value: string) => void;
+  onFeeValueFiatReady: (value: number | null) => void;
+  expectedGas: number | null;
 }) {
   const { singleAddress } = useAddressParams();
   const [params] = useSearchParams();
@@ -424,13 +451,14 @@ function TransactionDefaultView({
                     from={wallet.address}
                     chain={chain}
                     onFeeValueCommonReady={onFeeValueCommonReady}
+                    onFeeValueFiatReady={onFeeValueFiatReady}
                     configuration={configuration}
                     onConfigurationChange={onConfigurationChange}
                     paymasterEligible={paymasterEligible}
                     paymasterPossible={paymasterPossible}
                     paymasterWaiting={paymasterWaiting}
-                    interpretation={interpretation}
                     interactiveNetworkFee={true}
+                    expectedGas={expectedGas}
                   />
                 </React.Suspense>
               ) : null}
@@ -450,6 +478,7 @@ function TransactionDefaultView({
 
 function SendTransactionContent({
   populatedTransaction,
+  expectedGas,
   origin,
   clientScope,
   wallet,
@@ -457,6 +486,7 @@ function SendTransactionContent({
   chain,
 }: {
   populatedTransaction: IncomingTransactionWithChainId;
+  expectedGas: number | null;
   origin: string;
   clientScope: string | null;
   wallet: ExternallyOwnedAccount;
@@ -634,6 +664,10 @@ function SendTransactionContent({
   const handleFeeValueCommonReady = useCallback((value: string) => {
     feeValueCommonRef.current = value;
   }, []);
+  const feeValueFiatRef = useRef<number | null>(null); /** for analytics only */
+  const handleFeeValueFiatReady = useCallback((value: number | null) => {
+    feeValueFiatRef.current = value;
+  }, []);
 
   const next = params.get('next');
   async function handleSentTransaction(res: SignTransactionResult) {
@@ -665,10 +699,24 @@ function SendTransactionContent({
         });
       }
       const feeValueCommon = feeValueCommonRef.current || null;
+      const feeSpeed = configuration.networkFee.speed;
+      const baseFee = getBaseFee(chainGasPrices ?? null);
+      const feeGasPriceWei = getConfigurationEffectiveGasPrice(
+        configuration.networkFee,
+        chainGasPrices ?? null,
+        baseFee,
+      );
+      const feeProvenance = getFeeProvenance(chainGasPrices ?? null, feeSpeed);
       return sendTxBtnRef.current.sendTransaction({
         transaction: { evm: tx },
         chain: chain.toString(),
         feeValueCommon,
+        feeSpeed,
+        feeGasPriceWei,
+        networkFeeUsd: feeValueFiatRef.current ?? addressAction?.fee?.amount?.value ?? null,
+        feeBlock: feeProvenance?.block ?? null,
+        feeSource: feeProvenance?.source ?? null,
+        feeFormulaVersion: feeProvenance?.formulaVersion ?? null,
         initiator: origin,
         clientScope: clientScope || 'External Dapp',
         addressAction,
@@ -746,6 +794,8 @@ function SendTransactionContent({
             paymasterWaiting={paymasterWaiting}
             onOpenAdvancedView={openAdvancedView}
             onFeeValueCommonReady={handleFeeValueCommonReady}
+            onFeeValueFiatReady={handleFeeValueFiatReady}
+            expectedGas={expectedGas}
           />
         ) : null}
         <CenteredDialog
@@ -854,7 +904,7 @@ function EthSendTransaction() {
 
   // NOTE: this hook populates {networks} with a network for resolved chainId
   // This is why the {networks} object has necessary data, but it's very implicit.
-  const { populatedTransaction } = usePreparedTx(incomingTransaction, origin);
+  const { populatedTransaction, expectedGas } = usePreparedTx(incomingTransaction, origin);
   const { networks } = useNetworks();
 
   if (isLoading || !wallet || !networks || !populatedTransaction) {
@@ -869,6 +919,7 @@ function EthSendTransaction() {
   return (
     <SendTransactionContent
       populatedTransaction={populatedTransaction}
+      expectedGas={expectedGas}
       origin={origin}
       clientScope={clientScope}
       wallet={wallet}
