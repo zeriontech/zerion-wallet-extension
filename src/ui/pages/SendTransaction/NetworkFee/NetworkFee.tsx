@@ -18,7 +18,10 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
+import { NetworkFeeHint } from './NetworkFeeHint';
 import { getNetworkFeeDisplayValue } from './getNetworkFeeDisplayValue';
+
+const noop = () => {};
 
 function getFeeTypeTitle(type: 'eip1559' | 'classic' | 'optimistic' | undefined) {
   if (!type) {
@@ -44,6 +47,9 @@ export function NetworkFee({
   displayValueEnd,
   expectedGas,
   onFeeValueFiatReady,
+  showFeeHint = false,
+  onFeeHintShown,
+  preserveTransactionMaxFee = false,
 }: {
   transaction: IncomingTransactionWithFrom;
   transactionFee: TransactionFee;
@@ -59,6 +65,12 @@ export function NetworkFee({
   expectedGas?: number | null;
   /** The expected fee in fiat that the user sees, for analytics. */
   onFeeValueFiatReady?: (value: number | null) => void;
+  /** Offer Slow when Fast minus Slow reaches the remote-config threshold. */
+  showFeeHint?: boolean;
+  /** Reports that the hint was shown, so the sign flow can attach `fee_hint_shown`. */
+  onFeeHintShown?: () => void;
+  /** Match the fee estimation's dapp max-fee handling when pricing the hint. */
+  preserveTransactionMaxFee?: boolean;
 }) {
   const { networks } = useNetworks();
   const { currency } = useCurrency();
@@ -181,6 +193,19 @@ export function NetworkFee({
           </UIText>
         ) : null}
       </HStack>
+      {showFeeHint && onChange && networkFeeConfiguration.speed === 'fast' ? (
+        <NetworkFeeHint
+          transaction={transaction}
+          chain={chain}
+          networkFeeConfiguration={networkFeeConfiguration}
+          chainGasPrices={chainGasPrices}
+          fastTransactionFee={transactionFee}
+          expectedGas={expectedGas}
+          preserveTransactionMaxFee={preserveTransactionMaxFee}
+          onSelectSlow={() => onChange({ ...networkFeeConfiguration, speed: 'average' })}
+          onShown={onFeeHintShown ?? noop}
+        />
+      ) : null}
     </>
   );
 }

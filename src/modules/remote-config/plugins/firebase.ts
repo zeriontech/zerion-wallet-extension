@@ -22,6 +22,9 @@ const defaultConfig: RemoteConfig = {
     interval_ms: 1000,
     max_attempts: 10,
   },
+  extension_fee_hint_config: {
+    min_savings_usd: 1,
+  },
 };
 
 const knownKeys = Object.keys(defaultConfig) as (keyof RemoteConfig)[];
