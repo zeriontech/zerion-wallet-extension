@@ -239,6 +239,54 @@ test('remembers the fee level per chain and flags non-Fast levels', async ({
   await preset(page, 'Fast').click();
   await expect(dappFeeRow(page)).toContainText('Fast');
   await expect(dappFeeRow(page)).not.toContainText('Slow');
+
+  // Hover underline must take each text run's color (WLT-3817). A single
+  // ancestor-owned decoration would keep the button's blue under the grey label.
+  const feeRow = dappFeeRow(page);
+  await feeRow.hover();
+  const textRuns = await feeRow.evaluate((button) =>
+    Array.from(button.querySelectorAll<HTMLElement>('div, span'))
+      .filter((element) =>
+        Array.from(element.childNodes).some(
+          (node) => node.nodeType === 3 && node.textContent?.trim(),
+        ),
+      )
+      .map((element) => {
+        const style = getComputedStyle(element);
+        return {
+          text: (element.textContent ?? '').trim(),
+          underline: style.textDecorationLine,
+          color: style.color,
+          underlineColor: style.textDecorationColor,
+        };
+      }),
+  );
+  const levelRun = textRuns.find((run) => run.text === 'Fast');
+  const amountRun = textRuns.find((run) => /\$[\d.,]+/.test(run.text));
+  expect(levelRun?.underline).toBe('underline');
+  expect(levelRun?.underlineColor).toBe(levelRun?.color);
+  expect(amountRun?.underline).toBe('underline');
+  expect(amountRun?.underlineColor).toBe(amountRun?.color);
+  expect(levelRun?.color).not.toBe(amountRun?.color);
+  // A `text-decoration: none` on the dot cannot cancel a line painted by an
+  // ancestor, so check the dot and every wrapper up to the button.
+  const separatorPaintedUnderline = await feeRow.evaluate((button) => {
+    const separator = Array.from(button.querySelectorAll<HTMLElement>('div, span')).find(
+      (element) =>
+        element.textContent?.trim() === '·' &&
+        Array.from(element.childNodes).some((node) => node.nodeType === 3),
+    );
+    for (
+      let element: HTMLElement | null = separator ?? null;
+      element && element !== button;
+      element = element.parentElement
+    ) {
+      if (getComputedStyle(element).textDecorationLine.includes('underline')) return true;
+    }
+    return getComputedStyle(button).textDecorationLine.includes('underline');
+  });
+  expect(separatorPaintedUnderline).toBe(false);
+
   await openFeeDialog(page);
   const fastPicker = preset(page, 'Fast');
   await expect(fastPicker).toHaveAttribute('aria-pressed', 'true');

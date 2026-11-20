@@ -1,0 +1,16 @@
+@media (hover: hover) {
+  /*
+   * An underline owned by an ancestor paints in that ancestor's color, so the
+   * grey/orange fee-level label inside this blue button kept a blue underline.
+   * Underline each leaf text run instead: each line then takes its own color.
+   * Containers are skipped so no line is painted across their children, and
+   * the separator dot opts out entirely — it is punctuation, not a target.
+   */
+  .feeButton:hover {
+    text-decoration: none;
+  }
+
+  .feeButton:hover :where(div, span):not(:has(*)):not(.feeSeparator) {
+    text-decoration: underline;
+  }
+}

@@ -12,9 +12,11 @@ import { NetworkFeeIcon } from 'src/ui/pages/SendTransaction/NetworkFee/NetworkF
 export function NetworkFeeLevelLabel({
   speed,
   separatorColor = 'var(--black)',
+  separatorClassName,
 }: {
   speed: NetworkFeeSpeed;
   separatorColor?: string;
+  separatorClassName?: string;
 }) {
   if (!shouldShowNetworkFeeLevelLabel(speed)) {
     return null;
@@ -24,7 +26,7 @@ export function NetworkFeeLevelLabel({
     <HStack gap={4} alignItems="center" style={{ color, whiteSpace: 'nowrap' }}>
       <NetworkFeeIcon speed={speed} style={{ width: 16, height: 16 }} />
       <UIText kind="small/accent">{NETWORK_SPEED_TO_TITLE[speed]}</UIText>
-      <UIText kind="small/accent" color={separatorColor}>
+      <UIText kind="small/accent" color={separatorColor} className={separatorClassName}>
         &middot;
       </UIText>
     </HStack>
