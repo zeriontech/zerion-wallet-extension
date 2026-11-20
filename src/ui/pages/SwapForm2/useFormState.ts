@@ -217,6 +217,7 @@ export function useFormState({
           ...CLEARED_NETWORK_FEE_OVERRIDES,
           inputChain: chainId,
           inputFungibleId: fungibleId,
+          inputAmountIsMax: undefined,
           ...(collidesWithOutput ? { outputChain: undefined, outputFungibleId: undefined } : null),
         };
       });
@@ -235,6 +236,7 @@ export function useFormState({
           outputChain: chainId,
           outputFungibleId: fungibleId,
           ...(collidesWithInput ? { inputChain: undefined, inputFungibleId: undefined } : null),
+          ...(collidesWithInput ? { inputAmountIsMax: undefined } : null),
         };
       });
     },
@@ -254,6 +256,7 @@ export function useFormState({
         inputFungibleId: state.outputFungibleId || defaultFormState.outputFungibleId,
         outputFungibleId: state.inputFungibleId || defaultFormState.inputFungibleId,
         inputAmount: undefined,
+        inputAmountIsMax: undefined,
         outputAmount: undefined,
         ...(isSameChain ? { to: undefined } : null),
       };

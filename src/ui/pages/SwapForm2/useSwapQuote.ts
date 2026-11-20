@@ -4,7 +4,7 @@ import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useQuotesV2 } from 'src/ui/shared/requests/useQuotes';
 import type { FungiblePosition } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
-import { resolveTokenValue } from 'src/ui/components/AmountInput/inputKind';
+import { resolveInputAmount } from 'src/ui/components/AmountInput/inputKind';
 import type { SwapFormState2 } from './types';
 import { isReceiverReadyForQuote } from './shared/getCrossEcosystemState';
 
@@ -29,11 +29,18 @@ export function useSwapQuote({
 
   const inputKind = formState.inputKind ?? 'token';
   const inputPrice = inputPosition?.fungible.meta.price ?? null;
+  const inputBalance = inputPosition?.amount.quantity ?? null;
 
   const resolvedInputAmount = useMemo(() => {
     if (!formState.inputAmount) return formState.inputAmount;
-    return resolveTokenValue(formState.inputAmount, inputKind, inputPrice);
-  }, [formState.inputAmount, inputKind, inputPrice]);
+    return resolveInputAmount({
+      rawValue: formState.inputAmount,
+      inputKind,
+      price: inputPrice,
+      balance: inputBalance,
+      isMax: formState.inputAmountIsMax === 'true',
+    });
+  }, [formState.inputAmount, formState.inputAmountIsMax, inputKind, inputPrice, inputBalance]);
 
   const quotesFormState = useMemo(() => {
     // Gas fields are local overrides only — they must never reach the quote
@@ -41,6 +48,7 @@ export function useSwapQuote({
     // `nonce` deliberately stay in the request.
     const {
       inputKind: _inputKind,
+      inputAmountIsMax: _inputAmountIsMax,
       networkFeeSpeed: _networkFeeSpeed,
       maxPriorityFee: _maxPriorityFee,
       maxFee: _maxFee,

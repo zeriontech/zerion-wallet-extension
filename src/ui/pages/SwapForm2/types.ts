@@ -10,6 +10,8 @@ export type SwapFormState2 = {
   inputAmount?: string;
   /** @description Whether inputAmount is interpreted as token quantity or fiat currency */
   inputKind?: 'token' | 'currency';
+  /** @description Whether inputAmount represents the full token balance (MAX) */
+  inputAmountIsMax?: 'true';
 
   /** @description Destination blockchain for bridge transactions */
   outputChain: string;

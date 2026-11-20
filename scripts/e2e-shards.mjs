@@ -71,6 +71,7 @@ const TESTS = [
   ['network-fee-swap.spec.ts', 'Classic Send on BSC prices Slow and Custom consistently', 5.3],
   ['network-fee-swap.spec.ts', 'Classic Swap on BSC prices Slow and Custom consistently', 5.2],
   ['network-fee-swap.spec.ts', 'Send Slow carries into Swap and another chain starts Fast', 4.3],
+  ['swap-max-currency.spec.ts', 'MAX in USD input mode uses the full balance', 4.0],
   ['network-fee.spec.ts', 'remembers the fee level per chain and flags non-Fast levels', 12.2],
   ['network-fee.spec.ts', 'keeps the acceleration fee UI unchanged', 5.3],
   ['network-fee.spec.ts', 'keeps custom fee values after switching to Fast', 5.5],

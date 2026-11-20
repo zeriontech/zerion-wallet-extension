@@ -106,6 +106,7 @@ function resetAfterBroadcast(state: Partial<SwapFormState2>): Partial<SwapFormSt
     ...state,
     ...CLEARED_NETWORK_FEE_OVERRIDES,
     inputAmount: '',
+    inputAmountIsMax: undefined,
     to: undefined,
     nonce: undefined,
     slippage: undefined,
@@ -117,6 +118,7 @@ const SWAP_FORM_SEARCH_PARAM_KEYS: (keyof SwapFormState2)[] = [
   'inputFungibleId',
   'inputAmount',
   'inputKind',
+  'inputAmountIsMax',
   'outputChain',
   'outputFungibleId',
   'to',
@@ -243,6 +245,7 @@ function SwapFormComponent({
         ...state,
         inputKind: 'token',
         inputAmount: '',
+        inputAmountIsMax: undefined,
       }));
     }
   }, [formState.inputKind, inputPosition, setUserFormState]);
