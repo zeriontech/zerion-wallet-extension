@@ -8,7 +8,6 @@ import { UIText } from 'src/ui/ui-kit/UIText';
 import { formatTokenValue } from 'src/shared/units/formatTokenValue';
 import { noValueDash } from 'src/shared/typography';
 import { NetworkFeeLevelLabel } from 'src/ui/shared/NetworkFeeLevelLabel';
-import * as helperStyles from 'src/ui/style/helpers.module.css';
 import { UnstyledButton } from 'src/ui/ui-kit/UnstyledButton';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { IncomingTransactionWithFrom } from 'src/modules/ethereum/types/IncomingTransaction';
@@ -19,6 +18,7 @@ import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-s
 import type { TransactionFee } from '../TransactionConfiguration/useTransactionFee';
 import { NetworkFeeDialog } from './NetworkFeeDialog';
 import { getNetworkFeeDisplayValue } from './getNetworkFeeDisplayValue';
+import * as styles from './NetworkFee.module.css';
 
 function getFeeTypeTitle(type: Exclude<keyof ChainGasPrice['fast'], 'eta'> | undefined) {
   if (!type) {
@@ -151,7 +151,7 @@ export function NetworkFee({
               <UnstyledButton
                 type="button"
                 aria-label="Network Fee"
-                className={disabled ? undefined : helperStyles.hoverUnderline}
+                className={disabled ? undefined : styles.feeButton}
                 style={{
                   color: disabled ? 'var(--black)' : 'var(--primary)',
                   cursor: !onChange ? 'auto' : undefined,
@@ -166,6 +166,7 @@ export function NetworkFee({
                     <NetworkFeeLevelLabel
                       speed={networkFeeConfiguration.speed}
                       separatorColor="var(--primary)"
+                      separatorClassName={styles.feeSeparator}
                     />
                   )}
                   {renderDisplayValue?.({ hintTitle, displayValue }) ?? (
