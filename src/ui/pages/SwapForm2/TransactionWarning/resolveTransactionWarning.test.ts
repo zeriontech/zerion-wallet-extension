@@ -633,9 +633,11 @@ describe('resolveTransactionWarning', () => {
       expectNoSentinel(r.warning);
     });
 
+    // Code 3 is owned by WLT-3351 (no wallet → enabled "Add wallet"), which
+    // returns no banner at all. Keeping it out of this table lets either PR
+    // land first without breaking the other.
     it.each([
       [0, 'zero-code message'],
-      [3, 'No wallet connected'],
       [5, "Token can't be transferred: Fee-On-Transfer (FoT) tokens aren't supported!"],
       [99, 'Some FUTURE error, with Mixed Case & punctuation?!'],
       [-1, 'negative code message'],
