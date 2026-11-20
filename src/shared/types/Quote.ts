@@ -140,6 +140,8 @@ export type ContractMetadata2 = {
 // TODO: rename to Quote when QuoteLegacy is removed
 export interface Quote2 {
   contractMetadata: ContractMetadata2;
+  /** @description Input amount the quote was built for */
+  inputAmount?: Amount;
   /** @description Expected output amount for the swap */
   outputAmount: Amount;
   /** @description Expected output amount for the swap after all fees are deducted */

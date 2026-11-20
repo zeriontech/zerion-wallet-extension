@@ -22,7 +22,7 @@ export type PriceImpact =
       ratio: number;
     };
 
-function ratioToPriceImpact(ratio: number | null): PriceImpact {
+export function ratioToPriceImpact(ratio: number | null): PriceImpact {
   // x > 0 => profit
   // x = 0 => no impact
   // -0.05 <= x < 0 => low loss
