@@ -36,7 +36,11 @@ export default defineConfig({
   workers: isCI ? 1 : undefined,
   // Reporter to use.
   // See https://playwright.dev/docs/test-reporters
-  reporter: [['html', { outputFolder: 'e2e-report' }]],
+  // CI also gets the `list` reporter: its `✓ … (Ns)` lines are the per-test
+  // durations used to rebalance `scripts/e2e-shards.mjs`.
+  reporter: isCI
+    ? [['html', { outputFolder: 'e2e-report' }], ['list']]
+    : [['html', { outputFolder: 'e2e-report' }]],
   use: {
     permissions: ['clipboard-read', 'clipboard-write'],
     // Collect trace when retrying the failed test.

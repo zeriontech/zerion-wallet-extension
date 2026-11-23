@@ -378,7 +378,7 @@ test('keeps the acceleration fee UI unchanged', async ({ context, page, extensio
   // `localTransactionsStore` is assigned to `window` while the popup bundle
   // evaluates. Wait for that fact instead of guessing how long the module
   // takes to run.
-  await page.waitForFunction(() => 'localTransactionsStore' in window);
+  await page.waitForFunction(() => Boolean(Reflect.get(window, 'localTransactionsStore')));
   await page.evaluate(
     ({ address }) => {
       const hash = `0x${'11'.repeat(32)}`;
