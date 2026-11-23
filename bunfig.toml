@@ -1,0 +1,6 @@
+# Bun test runner (spike/bun-test). The preload maps Vitest's `vi` and the
+# `globals: true` API from vite.config.ts onto `bun:test`.
+[test]
+preload = ["./test/bun/preload.mjs"]
+# e2e/** holds Playwright specs, not bun:test files.
+pathIgnorePatterns = ["e2e/**"]
