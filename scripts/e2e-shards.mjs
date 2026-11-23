@@ -6,8 +6,10 @@
  * Playwright's `--shard=i/n` splits by test *index*, which leaves our suite
  * lopsided (measured: 56s / 28s / 32s over three shards) because the heavy
  * onboarding tests sit next to each other in the same file. Instead, every
- * test carries a measured duration below and the shards are filled greedily
- * (longest processing time first), then selected with `--grep`.
+ * test carries a duration measured on CI (`list` reporter, 2 workers per
+ * shard, warm caches; refresh it from a shard log when tests change) and the
+ * shards are filled greedily (longest processing time first), then selected
+ * with `--grep`.
  *
  * `--verify` re-lists the suite and fails if a test is not covered by exactly
  * one shard, so adding or renaming a test cannot silently drop it from CI.
@@ -20,147 +22,147 @@
 import { execFileSync } from 'node:child_process';
 
 const TESTS = [
-  // file, full title path after `:line:col › `, measured seconds locally
-  ['confidential-balances.spec.ts', 'confidential balances: panel → reveal → unmasked', 7.9],
-  ['connect-ledger.spec.ts', 'Connect Ledger › Matches snapshot', 3.4],
-  ['forgot-password.spec.ts', 'Forgot Password › Matches snapshot', 3.3],
-  ['forgot-password.spec.ts', 'Forgot Password › Erasing all data requires typing ERASE', 3.4],
+  // file, full title path after `:line:col › `, measured seconds on CI
+  ['confidential-balances.spec.ts', 'confidential balances: panel → reveal → unmasked', 8.1],
+  ['connect-ledger.spec.ts', 'Connect Ledger › Matches snapshot', 4.9],
+  ['forgot-password.spec.ts', 'Forgot Password › Matches snapshot', 4.3],
+  ['forgot-password.spec.ts', 'Forgot Password › Erasing all data requires typing ERASE', 5.6],
   [
     'forgot-password.spec.ts',
     'Forgot Password › Closing and reopening the dialog clears the confirmation',
-    3.6,
+    4.5,
   ],
-  ['fonts.spec.ts', 'loads and renders the Aeonik Pro UI font', 2.5],
-  ['onboarding-assets.spec.ts', 'loads the onboarding welcome background image', 2.5],
-  ['get-started.spec.ts', 'Get Started › Onboarded with private key › Matches snapshot', 3.2],
-  ['hidden-assets.spec.ts', 'Hides and unhides a token from the asset page', 4.0],
-  ['hidden-assets.spec.ts', 'Hidden Assets persists, lists and unhides a token', 4.0],
+  ['fonts.spec.ts', 'loads and renders the Aeonik Pro UI font', 2.8],
+  ['onboarding-assets.spec.ts', 'loads the onboarding welcome background image', 2.0],
+  ['get-started.spec.ts', 'Get Started › Onboarded with private key › Matches snapshot', 4.7],
+  ['hidden-assets.spec.ts', 'Hides and unhides a token from the asset page', 5.7],
+  ['hidden-assets.spec.ts', 'Hidden Assets persists, lists and unhides a token', 5.1],
   [
     'get-started.spec.ts',
     'Get Started › Onboarded with private key › User can create a new wallet when there are no existing backups',
-    6.1,
+    6.8,
   ],
   [
     'get-started.spec.ts',
     'Get Started › Onboarded with recovery phrase › User can import wallets from existing backup',
-    10.3,
+    9.9,
   ],
   [
     'get-started.spec.ts',
     'Get Started › Onboarded with recovery phrase › User can create a new backup',
-    8.4,
+    8.8,
   ],
   [
     'get-started.spec.ts',
     'Get Started › Onboarded with recovery phrase › User can import existing wallet using private key',
-    7.4,
+    7.8,
   ],
   [
     'get-started.spec.ts',
     'Get Started › Onboarded with recovery phrase › User can import existing wallet using recovery phrase',
-    10.4,
+    10.7,
   ],
   [
     'get-started.spec.ts',
     'Get Started › Onboarded with recovery phrase › User can add watch address',
-    5.2,
+    6.2,
   ],
-  ['login.spec.ts', 'Login › Matches snapshot', 4.2],
-  ['manage-wallets.spec.ts', 'Manage Wallets › Matches snapshot', 3.3],
-  ['network-fee-swap.spec.ts', 'Swap on Ethereum keeps row, picker and custom form in sync', 6.5],
-  ['network-fee-swap.spec.ts', 'Classic Send on BSC prices Slow and Custom consistently', 5.3],
-  ['network-fee-swap.spec.ts', 'Classic Swap on BSC prices Slow and Custom consistently', 5.2],
-  ['network-fee-swap.spec.ts', 'Send Slow carries into Swap and another chain starts Fast', 4.3],
-  ['swap-max-currency.spec.ts', 'MAX in USD input mode uses the full balance', 4.0],
-  ['network-fee.spec.ts', 'remembers the fee level per chain and flags non-Fast levels', 12.2],
-  ['network-fee.spec.ts', 'keeps the acceleration fee UI unchanged', 5.3],
-  ['network-fee.spec.ts', 'keeps custom fee values after switching to Fast', 5.5],
-  ['manage-wallets.spec.ts', 'Manage Wallets › Action links are working', 3.6],
-  ['manage-wallets.spec.ts', 'Manage Wallets › User can erase all data', 5.1],
-  ['onboarding.spec.ts', 'Onboarding › Matches snapshot', 1.0],
-  ['onboarding.spec.ts', 'Onboarding › User can create a new wallet and skip backup', 4.2],
-  ['onboarding.spec.ts', 'Onboarding › User can create and backup a new wallet', 4.2],
+  ['login.spec.ts', 'Login › Matches snapshot', 5.9],
+  ['manage-wallets.spec.ts', 'Manage Wallets › Matches snapshot', 5.5],
+  ['network-fee-swap.spec.ts', 'Swap on Ethereum keeps row, picker and custom form in sync', 6.3],
+  ['network-fee-swap.spec.ts', 'Classic Send on BSC prices Slow and Custom consistently', 6.1],
+  ['network-fee-swap.spec.ts', 'Classic Swap on BSC prices Slow and Custom consistently', 5.4],
+  ['network-fee-swap.spec.ts', 'Send Slow carries into Swap and another chain starts Fast', 6.3],
+  ['swap-max-currency.spec.ts', 'MAX in USD input mode uses the full balance', 5.1],
+  ['network-fee.spec.ts', 'remembers the fee level per chain and flags non-Fast levels', 13.2],
+  ['network-fee.spec.ts', 'keeps the acceleration fee UI unchanged', 6.2],
+  ['network-fee.spec.ts', 'keeps custom fee values after switching to Fast', 6.7],
+  ['manage-wallets.spec.ts', 'Manage Wallets › Action links are working', 5.0],
+  ['manage-wallets.spec.ts', 'Manage Wallets › User can erase all data', 6.5],
+  ['onboarding.spec.ts', 'Onboarding › Matches snapshot', 2.2],
+  ['onboarding.spec.ts', 'Onboarding › User can create a new wallet and skip backup', 5.0],
+  ['onboarding.spec.ts', 'Onboarding › User can create and backup a new wallet', 4.6],
   [
     'onboarding.spec.ts',
     'Onboarding › User can import an existing wallet using recovery phrase',
-    4.9,
+    5.7,
   ],
   ['onboarding.spec.ts', 'Onboarding › User can import an existing wallet using private key', 3.1],
-  ['overview.spec.ts', 'Overview › Matches snapshot', 11.2],
+  ['overview.spec.ts', 'Overview › Matches snapshot', 4.5],
   [
     'recipient-picker.spec.ts',
     'Recipient picker › shows the Address Book name for a searched address',
-    6.0,
+    3.8,
   ],
-  ['settings.spec.ts', 'Settings › Matches snapshot', 3.3],
-  ['settings.spec.ts', 'Settings › User can lock and unlock wallet', 3.8],
+  ['settings.spec.ts', 'Settings › Matches snapshot', 5.0],
+  ['settings.spec.ts', 'Settings › User can lock and unlock wallet', 6.2],
 
   // Dapp suite. These run against the hosted zerion-test-dapp deployment by
   // default; DAPP_URL overrides it for a local dapp.
   [
     'connection.spec.ts',
     'Connection › EIP-6963 discovery exposes Zerion and connection returns the account',
-    8.0,
+    7.0,
   ],
   [
     'connection.spec.ts',
     'Connection › rejecting the connection leaves the dapp disconnected and allows a retry',
-    8.0,
+    7.7,
   ],
   [
     'connection.spec.ts',
     'Connection › clearing the active provider and selecting Zerion again reconnects without an approval window',
-    8.0,
+    10.4,
   ],
   [
     'networks.spec.ts',
     'Networks › wallet_switchEthereumChain switches the dapp and emits chainChanged',
-    8.0,
+    7.2,
   ],
   [
     'networks.spec.ts',
     'Networks › rejecting wallet_switchEthereumChain returns the rejection to the dapp',
-    8.0,
+    7.6,
   ],
   [
     'networks.spec.ts',
     'Networks › wallet_addEthereumChain surfaces the chain update and then switches',
-    10.0,
+    7.0,
   ],
   [
     'signatures.spec.ts',
     'Signatures › personal_sign approves a signature and a rejection reaches the dapp',
-    9.0,
+    9.7,
   ],
   [
     'signatures.spec.ts',
     'Signatures › eth_signTypedData_v4 signs typed data and reports rejection',
-    9.0,
+    13.5,
   ],
   [
     'signatures.spec.ts',
     'Signatures › SIWE and the PermitSingle fixture are signed as personal_sign and typed data',
-    9.0,
+    8.8,
   ],
   [
     'transactions.spec.ts',
     'Transactions › eth_sendTransaction opens the approval and surfaces the missing testnet balance',
-    10.0,
+    9.7,
   ],
   [
     'transactions.spec.ts',
     'Transactions › rejecting eth_sendTransaction returns error code 4001 to the dapp',
-    8.0,
+    9.1,
   ],
   [
     'unsupported-features.spec.ts',
     'Unsupported methods and malformed payloads › unsupported signing and transaction methods fail without an approval window',
-    10.0,
+    11.2,
   ],
   [
     'unsupported-features.spec.ts',
     'Unsupported methods and malformed payloads › malformed personal_sign params are rejected before an approval window',
-    8.0,
+    5.3,
   ],
 ].map(([file, title, seconds]) => ({ file, title, seconds }));
 
