@@ -9,8 +9,19 @@ async function shot(page: Page, name: string) {
   if (!SHOTS) {
     return;
   }
-  // let the dialog / crossfade animations settle before capturing
-  await page.waitForTimeout(600);
+  // Let dialog / crossfade animations settle before capturing: wait until no
+  // animation is running instead of sleeping for a guessed duration. A looping
+  // animation (spinner) never settles and is captured as-is after the cap.
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  try {
+    await page.waitForFunction(
+      () => !document.getAnimations().some((animation) => animation.playState === 'running'),
+      undefined,
+      { timeout: 2_000 },
+    );
+  } catch {
+    // A looping animation never settles.
+  }
   await page.screenshot({ path: `${SHOTS}/${name}.png` });
 }
 

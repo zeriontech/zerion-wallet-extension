@@ -21,13 +21,14 @@ export class LoginPage extends ExtensionPage {
   /**
    * The login view renders nothing while `account/getExistingUser` is in
    * flight and an error screen if that request fails, which happens right
-   * after locking when the service worker is restarting. Wait for the form and
-   * reload once if the page came up on the error screen.
+   * after locking when the service worker is restarting. Wait for the form or
+   * that error screen, and reload immediately when the screen shows instead of
+   * waiting out the form timeout.
    */
   async waitForUnlockForm() {
-    try {
-      await expect(this.passwordInput).toBeVisible({ timeout: 20_000 });
-    } catch {
+    const errorScreen = this.page.getByText('Unable to perform this action right now');
+    await expect(this.passwordInput.or(errorScreen)).toBeVisible({ timeout: 20_000 });
+    if (await errorScreen.isVisible()) {
       await this.page.reload();
       await expect(this.passwordInput).toBeVisible({ timeout: 20_000 });
     }
