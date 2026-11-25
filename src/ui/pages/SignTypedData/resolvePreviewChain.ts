@@ -4,8 +4,32 @@ import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 
-const HEX_CHAIN_ID = /^0x[0-9a-f]+$/i;
+const HEX_CHAIN_ID = /^0x[0-9a-fA-F]+$/;
 const DECIMAL_CHAIN_ID = /^\d+$/;
+
+/**
+ * Canonicalizes a domain chain id to this repo's chain-collection key (`0x1`).
+ * Dapps send the EIP-712 integer as a decimal string, a hex string with
+ * optional zero padding (`0x01`) or a number; ethers accepts all of them, so
+ * the preview must treat them as the same chain.
+ */
+function toCanonicalChainId(value: string | number): ChainId | null {
+  let numeric: bigint;
+  try {
+    numeric = BigInt(value);
+  } catch {
+    return null;
+  }
+  if (numeric <= 0n) {
+    return null;
+  }
+  try {
+    return normalizeChainId(numeric.toString(10));
+  } catch {
+    // Malformed values must keep the preview on the origin chain, never throw.
+    return null;
+  }
+}
 
 /**
  * The EIP-712 domain chain id of a canonical SafeTx, or null for anything
@@ -23,7 +47,7 @@ export function getSafeTxDomainChainId(typedData: TypedData): ChainId | null {
   }
   const chainId = typedData.domain?.chainId;
   if (typeof chainId === 'number') {
-    return Number.isSafeInteger(chainId) && chainId > 0 ? normalizeChainId(chainId) : null;
+    return Number.isSafeInteger(chainId) && chainId > 0 ? toCanonicalChainId(chainId) : null;
   }
   if (typeof chainId !== 'string') {
     return null;
@@ -32,12 +56,7 @@ export function getSafeTxDomainChainId(typedData: TypedData): ChainId | null {
   if (!HEX_CHAIN_ID.test(value) && !DECIMAL_CHAIN_ID.test(value)) {
     return null;
   }
-  try {
-    return normalizeChainId(value);
-  } catch {
-    // Malformed values must keep the preview on the origin chain, never throw.
-    return null;
-  }
+  return toCanonicalChainId(value);
 }
 
 /**

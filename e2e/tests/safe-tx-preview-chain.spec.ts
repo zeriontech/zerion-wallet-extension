@@ -127,6 +127,22 @@ test('a canonical SafeTx preview simulates on its domain chain', async ({
   expect(bodies.every((body) => body.chain === 'base')).toBe(true);
 });
 
+test('a zero-padded hex domain chain id resolves to the same chain', async ({
+  context,
+  extensionPopupUrl,
+  page,
+}) => {
+  const bodies = await recordSimulation(context);
+  await openPreview(page, extensionPopupUrl, {
+    ...safeTxTypedData,
+    domain: { ...safeTxTypedData.domain, chainId: '0x002105' },
+  });
+
+  expect(bodies.length).toBeGreaterThan(0);
+  expect(bodies[0]?.chain).toBe('base');
+  expect(bodies.every((body) => body.chain === 'base')).toBe(true);
+});
+
 test('a non-SafeTx payload keeps simulating on the origin chain', async ({
   context,
   extensionPopupUrl,

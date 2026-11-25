@@ -62,4 +62,24 @@ describe('signTypedData', () => {
     const signature = await signTypedData(sample.typedData, signer);
     expect(signature).toBe(sample.signature);
   });
+
+  // The preview resolves the SafeTx chain from domain.chainId. Ethers accepts
+  // the EIP-712 integer as a number, a decimal string or a padded hex string,
+  // so all of these spell the same signed payload.
+  test('signs padded hex domain chain ids as the same integer', async () => {
+    const key = decodeMasked(sample.sampleKey);
+    const signer = new ethers.Wallet(key);
+    const signatures = await Promise.all(
+      [1, '1', '0x1', '0x01', '0x0001'].map((chainId) =>
+        signTypedData(
+          {
+            ...sample.typedData,
+            domain: { ...sample.typedData.domain, chainId },
+          },
+          signer,
+        ),
+      ),
+    );
+    expect(new Set(signatures).size).toBe(1);
+  });
 });

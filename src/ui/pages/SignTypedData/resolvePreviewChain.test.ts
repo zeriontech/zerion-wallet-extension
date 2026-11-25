@@ -55,10 +55,10 @@ function safeTx(domain: Record<string, unknown>, primaryType = 'SafeTx'): TypedD
   };
 }
 
-function permit(): TypedData {
+function permit(chainId: string | number = 8453): TypedData {
   return {
     types: { Permit: [{ name: 'spender', type: 'address' }], EIP712Domain: [] },
-    domain: { chainId: 8453, verifyingContract: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
+    domain: { chainId, verifyingContract: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
     primaryType: 'Permit',
     message: { spender: '0x0000000000000000000000000000000000000001' },
   };
@@ -76,9 +76,11 @@ describe('resolvePreviewChain', () => {
   test.each([
     ['decimal string chain id', safeTx({ chainId: '8453' }), 'base'],
     ['hex chain id', safeTx({ chainId: '0x2105' }), 'base'],
+    ['zero-padded hex chain id', safeTx({ chainId: '0x002105' }), 'base'],
     ['numeric chain id', safeTx({ chainId: 8453 }), 'base'],
     ['padded chain id', safeTx({ chainId: ' 8453 ' }), 'base'],
     ['non-SafeTx payload with a domain chain id', permit(), 'ethereum'],
+    ['non-SafeTx payload with a hex domain chain id', permit('0x2105'), 'ethereum'],
     [
       'primaryType is not SafeTx even with a SafeTx type',
       safeTx({ chainId: 8453 }, 'Order'),
@@ -87,12 +89,28 @@ describe('resolvePreviewChain', () => {
     ['types.SafeTx is missing', { ...safeTx({ chainId: 8453 }), types: {} }, 'ethereum'],
     ['chain id is missing', safeTx({}), 'ethereum'],
     ['chain id is blank', safeTx({ chainId: '   ' }), 'ethereum'],
+    ['chain id is zero', safeTx({ chainId: 0 }), 'ethereum'],
+    ['hex chain id is zero', safeTx({ chainId: '0x0' }), 'ethereum'],
     ['chain id is malformed', safeTx({ chainId: 'not-a-chain' }), 'ethereum'],
     ['chain id has a non-standard prefix', safeTx({ chainId: '0X2105' }), 'ethereum'],
     ['chain id is unsupported', safeTx({ chainId: '999999' }), 'ethereum'],
+    ['padded hex chain id is unsupported', safeTx({ chainId: '0x000f423f' }), 'ethereum'],
   ])('%s resolves to %s', (_name, typedData, expected) => {
     expect(resolve(typedData)).toBe(expected);
   });
+
+  test.each([1, '1', '0x1', '0x01', '0x0001'])(
+    'chain id %s resolves to the same network as the canonical form',
+    (chainId) => {
+      expect(
+        resolvePreviewChain({
+          typedData: safeTx({ chainId }),
+          fallbackChain: createChain('base'),
+          networks,
+        }).toString(),
+      ).toBe('ethereum');
+    },
+  );
 });
 
 describe('getSafeTxDomainChainId', () => {
@@ -100,6 +118,11 @@ describe('getSafeTxDomainChainId', () => {
     expect(getSafeTxDomainChainId(safeTx({ chainId: '8453' }))).toBe('0x2105');
     expect(getSafeTxDomainChainId(safeTx({ chainId: '0x2105' }))).toBe('0x2105');
     expect(getSafeTxDomainChainId(safeTx({ chainId: 8453 }))).toBe('0x2105');
+    expect(getSafeTxDomainChainId(safeTx({ chainId: '1' }))).toBe('0x1');
+    expect(getSafeTxDomainChainId(safeTx({ chainId: '0x1' }))).toBe('0x1');
+    expect(getSafeTxDomainChainId(safeTx({ chainId: '0x01' }))).toBe('0x1');
+    expect(getSafeTxDomainChainId(safeTx({ chainId: '0x002105' }))).toBe('0x2105');
+    expect(getSafeTxDomainChainId(safeTx({ chainId: 1 }))).toBe('0x1');
   });
 
   test('rejects payloads that are not a canonical SafeTx', () => {
