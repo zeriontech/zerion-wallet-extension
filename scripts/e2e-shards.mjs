@@ -94,6 +94,13 @@ const TESTS = [
   ],
   ['settings.spec.ts', 'Settings › Matches snapshot', 3.3],
   ['settings.spec.ts', 'Settings › User can lock and unlock wallet', 3.8],
+  ['safe-tx-preview.spec.ts', 'a clean SafeTx shows the Gray note without Unverified', 4.0],
+  [
+    'safe-tx-preview.spec.ts',
+    'an Orange SafeTx warning and the Gray note keep their own styling',
+    4.0,
+  ],
+  ['safe-tx-preview.spec.ts', 'repeated warning titles do not produce duplicate-key warnings', 4.0],
 
   // Dapp suite. These run against the hosted zerion-test-dapp deployment by
   // default; DAPP_URL overrides it for a local dapp.
