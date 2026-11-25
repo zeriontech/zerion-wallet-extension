@@ -2,18 +2,18 @@ import React from 'react';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
 
-type Kind = 'danger' | 'warning' | 'info';
-const BORDER_COLOR: Record<Kind, string> = {
+export type TransactionWarningKind = 'danger' | 'warning' | 'info';
+const BORDER_COLOR: Record<TransactionWarningKind, string> = {
   danger: 'var(--negative-300)',
   warning: 'var(--notice-300)',
   info: 'var(--neutral-300)',
 };
-const BACKGROUND_GRADIENT: Record<Kind, string> = {
+const BACKGROUND_GRADIENT: Record<TransactionWarningKind, string> = {
   danger: 'linear-gradient(94deg, var(--negative-200) 0%, var(--negative-300) 100%)',
   warning: 'linear-gradient(94deg, var(--notice-200) 0%, var(--notice-300) 100%)',
   info: 'linear-gradient(94deg, var(--neutral-200) 0%, var(--neutral-300) 100%)',
 };
-const COLOR: Record<Kind, string> = {
+const COLOR: Record<TransactionWarningKind, string> = {
   danger: 'var(--negative-500)',
   warning: 'var(--notice-600)',
   info: 'var(--neutral-600)',
@@ -29,7 +29,7 @@ export function TransactionWarning({
   title?: string;
   message: React.ReactNode;
   footer?: React.ReactNode;
-  kind?: Kind;
+  kind?: TransactionWarningKind;
   style?: React.CSSProperties;
 }) {
   return (
