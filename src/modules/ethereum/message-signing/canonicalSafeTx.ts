@@ -28,8 +28,15 @@ const EIP712_DOMAIN_FIELDS = [
 ] as const;
 
 const ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/;
+const HEX_BYTES_PATTERN = /^0x[0-9a-fA-F]*$/;
 const HEX_QUANTITY_PATTERN = /^0x[0-9a-fA-F]+$/;
 const DECIMAL_QUANTITY_PATTERN = /^\d+$/;
+
+const UINT_QUANTITY_FIELDS = ['value', 'safeTxGas', 'baseGas', 'gasPrice', 'nonce'] as const;
+
+function isAddress(value: unknown): boolean {
+  return typeof value === 'string' && ADDRESS_PATTERN.test(value);
+}
 
 function hasExactlyKeys(value: object, expectedKeys: readonly string[]): boolean {
   const keys = Object.keys(value);
@@ -109,14 +116,16 @@ export function parseSafeTxChainId(value: unknown): ChainId | null {
 
 /**
  * Whether the typed data is the canonical SafeTx payload Safe wallets sign:
- * `primaryType` is `SafeTx`; the domain carries exactly `chainId` and an
- * address `verifyingContract`; the `SafeTx` type is the 10 Safe fields in
- * order with their documented types; `EIP712Domain`, when present, is the
- * canonical pair; and the message has exactly the ten field names. Anything
- * else is a lookalike and must keep the dapp's selected chain.
+ * `primaryType` is `SafeTx`; the domain carries exactly a positive `chainId`
+ * and an address `verifyingContract`; the `SafeTx` type is the 10 Safe fields
+ * in order with their documented types; `EIP712Domain`, when present, is the
+ * canonical pair; and the message has exactly the ten fields with their Safe
+ * value shapes. Anything else is a lookalike and keeps the dapp's chain.
  *
- * Message values stay tolerant on purpose: layer 4 reads them with
- * `parseSafeTxQuantity` instead of rejecting a hex or decimal encoding here.
+ * Encoding tolerance is limited to the chain id and the uint quantities,
+ * which may be numbers, decimal strings or 0x hex strings including zero
+ * padding. This is a deliberate divergence from the web decoder, which
+ * requires positive safe-integer numbers and would reject what dapps send.
  */
 export function isCanonicalSafeTx(typedData: TypedData): boolean {
   if (typedData.primaryType !== 'SafeTx') {
@@ -128,8 +137,8 @@ export function isCanonicalSafeTx(typedData: TypedData): boolean {
     !domain ||
     typeof domain !== 'object' ||
     !hasExactlyKeys(domain, SAFE_TX_DOMAIN_KEYS) ||
-    typeof domain.verifyingContract !== 'string' ||
-    !ADDRESS_PATTERN.test(domain.verifyingContract)
+    !isAddress(domain.verifyingContract) ||
+    parseSafeTxChainId(domain.chainId) == null
   ) {
     return false;
   }
@@ -146,12 +155,26 @@ export function isCanonicalSafeTx(typedData: TypedData): boolean {
   }
 
   const message = typedData.message;
-  return (
-    Boolean(message) &&
-    typeof message === 'object' &&
-    hasExactlyKeys(
+  if (
+    !message ||
+    typeof message !== 'object' ||
+    !hasExactlyKeys(
       message,
       SAFE_TX_FIELDS.map((field) => field.name),
     )
+  ) {
+    return false;
+  }
+
+  const fields: Record<string, unknown> = message;
+  return (
+    isAddress(fields.to) &&
+    isAddress(fields.gasToken) &&
+    isAddress(fields.refundReceiver) &&
+    typeof fields.data === 'string' &&
+    fields.data.length % 2 === 0 &&
+    HEX_BYTES_PATTERN.test(fields.data) &&
+    (fields.operation === 0 || fields.operation === 1) &&
+    UINT_QUANTITY_FIELDS.every((name) => parseSafeTxQuantity(fields[name]) != null)
   );
 }

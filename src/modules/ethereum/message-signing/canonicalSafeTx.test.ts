@@ -171,6 +171,24 @@ describe('isCanonicalSafeTx', () => {
     ],
     ['a missing message key', safeTx({ message: MESSAGE_WITHOUT_NONCE })],
     ['an extra message key', safeTx({ message: { ...SAFE_TX_MESSAGE, extra: '0' } })],
+    ['operation 2', safeTx({ message: { ...SAFE_TX_MESSAGE, operation: 2 } })],
+    ['a string operation', safeTx({ message: { ...SAFE_TX_MESSAGE, operation: '1' } })],
+    ['a non-address to', safeTx({ message: { ...SAFE_TX_MESSAGE, to: '0x1234' } })],
+    ['a non-address gasToken', safeTx({ message: { ...SAFE_TX_MESSAGE, gasToken: '0x1234' } })],
+    [
+      'a non-address refundReceiver',
+      safeTx({ message: { ...SAFE_TX_MESSAGE, refundReceiver: '0x1234' } }),
+    ],
+    ['data without 0x', safeTx({ message: { ...SAFE_TX_MESSAGE, data: 'abcd' } })],
+    ['odd-length data', safeTx({ message: { ...SAFE_TX_MESSAGE, data: '0xabc' } })],
+    ['an object quantity', safeTx({ message: { ...SAFE_TX_MESSAGE, value: {} } })],
+    ['an array quantity', safeTx({ message: { ...SAFE_TX_MESSAGE, value: [] } })],
+    ['a boolean quantity', safeTx({ message: { ...SAFE_TX_MESSAGE, value: true } })],
+    ['a negative quantity', safeTx({ message: { ...SAFE_TX_MESSAGE, value: -1 } })],
+    ['an empty-string quantity', safeTx({ message: { ...SAFE_TX_MESSAGE, value: '' } })],
+    ['a non-numeric quantity', safeTx({ message: { ...SAFE_TX_MESSAGE, value: 'abc' } })],
+    ['a zero chain id', safeTx({ domain: { chainId: 0, verifyingContract: SAFE_ADDRESS } })],
+    ['a negative chain id', safeTx({ domain: { chainId: -1, verifyingContract: SAFE_ADDRESS } })],
   ])('rejects %s', (_name, typedData) => {
     expect(isCanonicalSafeTx(typedData)).toBe(false);
   });
