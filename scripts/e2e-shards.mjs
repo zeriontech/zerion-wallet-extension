@@ -101,6 +101,17 @@ const TESTS = [
     4.0,
   ],
   ['safe-tx-preview.spec.ts', 'repeated warning titles do not produce duplicate-key warnings', 4.0],
+  ['safe-tx-preview.spec.ts', 'a SafeTx preview attributes the balance changes to the Safe', 4.0],
+  [
+    'safe-tx-preview.spec.ts',
+    'a reverted SafeTx keeps the Safe attribution and the Gray note',
+    4.0,
+  ],
+  [
+    'safe-tx-preview.spec.ts',
+    'an action for the signing wallet shows no Safe line and links to the wallet',
+    4.0,
+  ],
 
   // Dapp suite. These run against the hosted zerion-test-dapp deployment by
   // default; DAPP_URL overrides it for a local dapp.

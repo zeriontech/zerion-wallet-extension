@@ -259,3 +259,80 @@ test('repeated warning titles do not produce duplicate-key warnings', async ({
     consoleErrors.filter((text) => /Encountered two children with the same key/.test(text)),
   ).toEqual([]);
 });
+
+function assetLinks(page: Page) {
+  return page.locator('a[href*="/explore/asset/"]');
+}
+
+async function assetLinkHrefs(page: Page) {
+  return assetLinks(page).evaluateAll((anchors) =>
+    anchors.map((anchor) => anchor.getAttribute('href') || ''),
+  );
+}
+
+test('a SafeTx preview attributes the balance changes to the Safe', async ({
+  context,
+  extensionPopupUrl,
+  page,
+}) => {
+  await mockSimulation(context, successAction, [SAFE_NOTE]);
+  await page.goto(previewUrl(extensionPopupUrl));
+
+  await expect(page.getByText('Balance changes shown for Safe')).toBeVisible({
+    timeout: 30_000,
+  });
+
+  // The truncated address copies the full Safe address, not the signer's.
+  const safeCopy = page.getByRole('button', { name: SAFE_ADDRESS_SHORT });
+  await expect(safeCopy).toHaveAttribute('title', SAFE_ADDRESS);
+  await safeCopy.click();
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(SAFE_ADDRESS);
+
+  // Every previewed asset belongs to the Safe's portfolio, not the signer's.
+  const hrefs = await assetLinkHrefs(page);
+  expect(hrefs).toHaveLength(3);
+  for (const href of hrefs) {
+    expect(href).toContain(`address=${SAFE_ADDRESS}`);
+  }
+
+  // The Gray note stays visible next to the attribution.
+  await expect(warningCard(page, 'Safe transaction')).toBeVisible();
+});
+
+test('a reverted SafeTx keeps the Safe attribution and the Gray note', async ({
+  context,
+  extensionPopupUrl,
+  page,
+}) => {
+  await mockSimulation(context, revertAction, [SAFE_NOTE_ORANGE, SAFE_NOTE]);
+  await page.goto(previewUrl(extensionPopupUrl));
+
+  await expect(page.getByRole('button', { name: 'Risks Found' })).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(warningCard(page, 'Safe transaction')).toBeVisible();
+  await expect(page.getByText('Balance changes shown for Safe')).toBeVisible();
+  await expect(page.getByRole('button', { name: SAFE_ADDRESS_SHORT })).toHaveAttribute(
+    'title',
+    SAFE_ADDRESS,
+  );
+});
+
+test('an action for the signing wallet shows no Safe line and links to the wallet', async ({
+  context,
+  extensionPopupUrl,
+  page,
+  onboardingWallet,
+}) => {
+  await mockSimulation(context, { ...successAction, address: onboardingWallet.address }, []);
+  await page.goto(previewUrl(extensionPopupUrl));
+
+  await expect(assetLinks(page)).toHaveCount(3, { timeout: 30_000 });
+  await expect(page.getByText('Balance changes shown for Safe')).toHaveCount(0);
+
+  const hrefs = await assetLinkHrefs(page);
+  expect(hrefs).toHaveLength(3);
+  for (const href of hrefs) {
+    expect(href).toContain(`address=${onboardingWallet.address}`);
+  }
+});

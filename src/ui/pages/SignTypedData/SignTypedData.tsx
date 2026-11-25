@@ -64,6 +64,7 @@ import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { AddressActionNetworkFee } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
+import { getPreviewAccount, PreviewAccountLine } from './PreviewAccountLine';
 
 enum View {
   default = 'default',
@@ -127,6 +128,13 @@ function TypedDataDefaultView({
   const { globalPreferences } = useGlobalPreferences();
 
   const addressAction = interpretation?.data.action;
+  // The backend attributes a Safe transaction to the Safe, so the previewed
+  // balance changes and their asset links belong to the Safe, not to the
+  // owner signing here.
+  const previewAccount = getPreviewAccount({
+    signerAddress: wallet.address,
+    actionAddress: addressAction?.address,
+  });
 
   const title =
     addressAction?.type.displayValue || (isPermit(typedData) ? 'Permit' : 'Sign Message');
@@ -259,8 +267,12 @@ function TypedDataDefaultView({
         <VStack gap={16}>
           {addressAction ? (
             <VStack gap={4}>
+              <PreviewAccountLine
+                signerAddress={wallet.address}
+                actionAddress={addressAction.address}
+              />
               <AddressActionDetails
-                address={wallet.address}
+                address={previewAccount.address}
                 addressAction={addressAction}
                 network={network}
                 allowanceQuantityCommon={allowanceQuantityCommon || null}
