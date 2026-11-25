@@ -5,7 +5,7 @@ import type {
   WarningSeverity,
 } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import { WarningList } from './WarningList';
-import { getSecurityCheckView, getWarningKey, getWarningKind } from './warningPresentation';
+import { getSecurityCheckView, getWarningKind } from './warningPresentation';
 
 function warning(
   severity: WarningSeverity,
@@ -98,10 +98,18 @@ describe('WarningList', () => {
     expect(markup).toContain('var(--neutral-600)');
   });
 
-  test('keys stay unique when titles repeat', () => {
+  test('produces unique keys when titles repeat', () => {
     const first = warning('Red', 'Safe settings change', 'First change');
     const second = warning('Red', 'Safe settings change', 'Second change');
-    expect(getWarningKey(first, 0)).not.toBe(getWarningKey(second, 1));
+    // Call the component to inspect the children it really creates. The
+    // server renderer does not validate keys, so a markup-only assertion
+    // cannot catch `key={warning.title}`.
+    const list = WarningList({ warnings: [first, second] });
+    const children = list.props.children as React.ReactElement[];
+    expect(children).toHaveLength(2);
+    const keys = children.map((child) => child.key);
+    expect(keys.every(Boolean)).toBe(true);
+    expect(new Set(keys).size).toBe(keys.length);
     expect(render([first, second]).match(/Safe settings change/g)).toHaveLength(2);
   });
 });
