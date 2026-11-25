@@ -1,0 +1,1 @@
+export { SecurityCheckPage } from './SecurityCheckPage';

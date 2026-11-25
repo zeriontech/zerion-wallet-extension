@@ -64,6 +64,7 @@ import { TestModeDecoration } from '../features/testnet-mode/TestModeDecoration'
 import { DevMenu } from '../features/dev-menu';
 import { metaAppState } from '../shared/meta-app-state';
 import { Onboarding } from '../features/onboarding';
+import { SecurityCheckPage } from '../features/security-check';
 import { RevealPrivateKey } from '../pages/RevealPrivateKey';
 import { SelectConnectedWallet } from '../pages/SelectConnectedWallet/SelectConnectedWallet';
 import { urlContext } from '../../shared/UrlContext';
@@ -175,6 +176,7 @@ function PageLayoutViews() {
           </RequireAuth>
         }
       />
+      <Route path="/security-check" element={<SecurityCheckPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

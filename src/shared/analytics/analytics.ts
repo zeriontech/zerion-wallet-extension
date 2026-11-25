@@ -23,6 +23,8 @@ type MetabaseEvent =
   | 'hold_to_sign_prerefence'
   | 'keyboard_shortcut_to_sign_preference'
   | 'cloudflare_challenge_issued'
+  | 'cloudflare_challenge_solved'
+  | 'cloudflare_challenge_dismissed'
   | 'button_clicked'
   | 'network_fee_level_changed'
   | 'banner_clicked'

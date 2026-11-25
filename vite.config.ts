@@ -18,6 +18,7 @@ import { componentsAlias, parcelSchemePlugin, sourceAlias } from './scripts/vite
  */
 const BUILD_ENV_VARS = [
   'BACKEND_ENV',
+  'FEATURE_BACKGROUND_CLOUDFLARE_CHALLENGE',
   'FEATURE_LOYALTY_FLOW',
   'FEATURE_SOLANA',
   'GOOGLE_ANALYTICS_API_SECRET',

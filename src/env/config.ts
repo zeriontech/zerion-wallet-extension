@@ -26,6 +26,8 @@ export const RPC_PROXY_URL = process.env.RPC_PROXY_URL;
 export const MIXPANEL_TOKEN_PUBLIC = process.env.MIXPANEL_TOKEN_PUBLIC;
 export const FEATURE_LOYALTY_FLOW = process.env.FEATURE_LOYALTY_FLOW === 'on' ? 'on' : null; // avoid accidental false-positives for truthy "off"
 export const FEATURE_SOLANA = process.env.FEATURE_SOLANA === 'on' ? 'on' : null; // avoid accidental false-positives for truthy "off"
+export const FEATURE_BACKGROUND_CLOUDFLARE_CHALLENGE =
+  process.env.FEATURE_BACKGROUND_CLOUDFLARE_CHALLENGE === 'on' ? 'on' : null; // off unless explicitly enabled
 export const SLOW_MODE = false;
 export const GOOGLE_ANALYTICS_MEASUREMENT_ID = process.env.GOOGLE_ANALYTICS_MEASUREMENT_ID;
 export const GOOGLE_ANALYTICS_API_SECRET = process.env.GOOGLE_ANALYTICS_API_SECRET;

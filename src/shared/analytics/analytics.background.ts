@@ -884,12 +884,38 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on(
     'cloudflareChallengeIssued',
-    gated(async () => {
+    gated(async (data) => {
       const params = createParams({
         request_name: 'cloudflare_challenge_issued',
+        source: data.source,
+        surface: data.surface,
       });
       const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
       mixpanelTrack('General: Cloudflare Challenge Issued', mixpanelParams);
+    }),
+  );
+
+  emitter.on(
+    'cloudflareChallengeSolved',
+    gated(async (data) => {
+      const params = createParams({
+        request_name: 'cloudflare_challenge_solved',
+        surface: data.surface,
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Cloudflare Challenge Solved', mixpanelParams);
+    }),
+  );
+
+  emitter.on(
+    'cloudflareChallengeDismissed',
+    gated(async (data) => {
+      const params = createParams({
+        request_name: 'cloudflare_challenge_dismissed',
+        surface: data.surface,
+      });
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('General: Cloudflare Challenge Dismissed', mixpanelParams);
     }),
   );
 

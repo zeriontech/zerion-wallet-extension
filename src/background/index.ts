@@ -23,10 +23,13 @@ import { emitter } from './events';
 import * as userActivity from './user-activity';
 import { ContentScriptManager } from './ContentScriptManager';
 import { TransactionService } from './transactions/TransactionService';
+import { initializeCloudflareChallengeHandling } from './cloudflare';
 
 Object.assign(globalThis, { ethers });
 
 initializeSidepanel();
+// Listeners for cookies, tabs and runtime messages must be registered synchronously.
+initializeCloudflareChallengeHandling();
 
 globalThis.addEventListener('install', (_event) => {
   /** Seems to be recommended when clients always expect a service worker */

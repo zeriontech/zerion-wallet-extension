@@ -97,7 +97,12 @@ export type BackgroundEvents = {
   bannerClicked: (data: BannerClickedParams) => void;
   labelAddressCopied: (data: LabelAddressCopiedParams) => void;
   assetVisibilityChanged: (data: AssetVisibilityChangedParams) => void;
-  cloudflareChallengeIssued: () => void;
+  cloudflareChallengeIssued: (data: {
+    source: 'ui' | 'background';
+    surface: 'sheet' | 'page';
+  }) => void;
+  cloudflareChallengeSolved: (data: { surface: 'sheet' | 'page' }) => void;
+  cloudflareChallengeDismissed: (data: { surface: 'sheet' | 'page' }) => void;
   assetClicked: (data: AssetClickedParams) => void;
   passkeyLoginEnabled: () => void;
   passkeyLoginDisabled: () => void;
