@@ -67,6 +67,7 @@ import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 import { getPreviewAccount, PreviewAccountLine } from './PreviewAccountLine';
 import { resolvePreviewChain } from './resolvePreviewChain';
+import { SafeTxDetails } from './SafeTxDetails';
 
 enum View {
   default = 'default',
@@ -303,6 +304,7 @@ function TypedDataDefaultView({
               />
             </VStack>
           ) : null}
+          <SafeTxDetails origin={origin} wallet={wallet} typedData={typedData} network={network} />
           {showRawTypedData ? (
             <UnstyledButton
               onClick={() => dialogRef.current?.showModal()}

@@ -133,6 +133,11 @@ const TESTS = [
     'a non-SafeTx payload keeps simulating on the origin chain',
     4.0,
   ],
+  ['safe-tx-details.spec.ts', 'shows the decoded transfer and the three Ledger hashes', 4.0],
+  ['safe-tx-details.spec.ts', 'shows every inner call of a MultiSend batch', 3.0],
+  ['safe-tx-details.spec.ts', 'shows the refund row when a refund field is non-zero', 3.0],
+  ['safe-tx-details.spec.ts', 'stays visible when the simulation fails', 3.0],
+  ['safe-tx-details.spec.ts', 'is hidden for a non-device signer', 3.0],
 
   // Dapp suite. These run against the hosted zerion-test-dapp deployment by
   // default; DAPP_URL overrides it for a local dapp.
