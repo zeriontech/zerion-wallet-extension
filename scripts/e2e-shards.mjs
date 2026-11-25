@@ -122,6 +122,7 @@ const TESTS = [
     'a zero-padded hex domain chain id resolves to the same chain',
     4.0,
   ],
+  ['safe-tx-preview-chain.spec.ts', 'a lookalike SafeTx keeps the origin chain', 4.0],
   [
     'safe-tx-preview-chain.spec.ts',
     'a non-SafeTx payload keeps simulating on the origin chain',

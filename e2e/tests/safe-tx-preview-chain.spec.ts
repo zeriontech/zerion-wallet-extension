@@ -143,6 +143,18 @@ test('a zero-padded hex domain chain id resolves to the same chain', async ({
   expect(bodies.every((body) => body.chain === 'base')).toBe(true);
 });
 
+test('a lookalike SafeTx keeps the origin chain', async ({ context, extensionPopupUrl, page }) => {
+  const bodies = await recordSimulation(context);
+  await openPreview(page, extensionPopupUrl, {
+    ...safeTxTypedData,
+    domain: { ...safeTxTypedData.domain, salt: '0x00' },
+  });
+
+  expect(bodies.length).toBeGreaterThan(0);
+  expect(bodies[0]?.chain).toBe('ethereum');
+  expect(bodies.every((body) => body.chain === 'ethereum')).toBe(true);
+});
+
 test('a non-SafeTx payload keeps simulating on the origin chain', async ({
   context,
   extensionPopupUrl,
