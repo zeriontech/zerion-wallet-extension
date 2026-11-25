@@ -88,6 +88,7 @@ jobs:
           GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
           FEATURE_LOYALTY_FLOW: on
           FEATURE_SOLANA: on
+          FEATURE_BACKGROUND_CLOUDFLARE_CHALLENGE: on
         run: |
           npm run build:production
           npm run release:store-zips -- --tag=${{ steps.release.outputs.tag }}

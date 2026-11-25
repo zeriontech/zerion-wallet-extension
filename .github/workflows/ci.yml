@@ -116,6 +116,7 @@ jobs:
           GOOGLE_ANALYTICS_API_SECRET: ${{ secrets.GOOGLE_ANALYTICS_API_SECRET }}
           FEATURE_LOYALTY_FLOW: off
           FEATURE_SOLANA: on
+          FEATURE_BACKGROUND_CLOUDFLARE_CHALLENGE: on
         run: |
           npm run build:production
           mv dist zerion-wallet-extension-${{ github.sha }}

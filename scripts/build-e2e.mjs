@@ -80,6 +80,7 @@ const buildEnv = {
   GOOGLE_ANALYTICS_API_SECRET: '',
   FEATURE_LOYALTY_FLOW: 'off',
   FEATURE_SOLANA: 'on',
+  FEATURE_BACKGROUND_CLOUDFLARE_CHALLENGE: 'on',
 };
 
 // Defence in depth: never let the bypass secret reach the bundler. `buildEnv`
