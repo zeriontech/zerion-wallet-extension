@@ -65,6 +65,7 @@ import { PopoverToast } from '../Settings/PopoverToast';
 import { AddressActionNetworkFee } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 import { getPreviewAccount, PreviewAccountLine } from './PreviewAccountLine';
+import { resolvePreviewChain } from './resolvePreviewChain';
 
 enum View {
   default = 'default',
@@ -499,20 +500,32 @@ function SignTypedDataContent({
   });
 
   const { networks } = useNetworks(chain ? [chain.toString()] : undefined);
-  const chainId = chain && networks ? networks.getChainId(chain) : null;
-  const network = chain && networks ? networks.getByNetworkId(chain) : null;
+  // A canonical SafeTx belongs to the chain in its EIP-712 domain, which can
+  // differ from the chain the dapp has selected for its origin.
+  const previewChain =
+    chain && networks ? resolvePreviewChain({ typedData, fallbackChain: chain, networks }) : null;
+  const chainId = previewChain && networks ? networks.getChainId(previewChain) : null;
+  const network = previewChain && networks ? networks.getByNetworkId(previewChain) : null;
 
   const { preferences } = usePreferences();
   const source = preferences?.testnetMode?.on ? 'testnet' : 'mainnet';
 
   const { data: interpretation, ...interpretQuery } = useQuery({
-    queryKey: ['interpretSignature', wallet.address, chain, typedData, currency, origin, source],
+    queryKey: [
+      'interpretSignature',
+      wallet.address,
+      previewChain,
+      typedData,
+      currency,
+      origin,
+      source,
+    ],
     queryFn: () =>
-      chain
+      previewChain
         ? interpretSignature(
             {
               address: wallet.address,
-              chain: chain.toString(),
+              chain: previewChain.toString(),
               typedData,
               currency,
               origin,
@@ -536,10 +549,10 @@ function SignTypedDataContent({
     : null;
 
   const allowanceQuantityCommon =
-    maybeApproval?.fungible && chain
+    maybeApproval?.fungible && previewChain
       ? baseToCommon(
           allowanceQuantityBase || requestedAllowanceQuantityBase,
-          getDecimals({ asset: maybeApproval.fungible, chain }),
+          getDecimals({ asset: maybeApproval.fungible, chain: previewChain }),
         ).toFixed()
       : null;
 
