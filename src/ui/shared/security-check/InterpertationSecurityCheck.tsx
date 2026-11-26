@@ -17,7 +17,9 @@ import type {
   WarningSeverity,
 } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import { SecurityStatusButton } from './SecurityStatusButton';
-import type { SecurityButtonKind } from './SecurityStatusButton';
+import { WarningList } from './WarningList';
+import type { InterpretationMode } from './warningPresentation';
+import { getSecurityCheckView } from './warningPresentation';
 
 const WarningSeverityPriority: Record<WarningSeverity, number> = {
   Gray: 0,
@@ -45,8 +47,6 @@ export function hasCriticalWarning(warnings?: Warning[] | null) {
   const severity = sortWarnings(warnings)?.at(0)?.severity;
   return severity === 'Red' || severity === 'Orange';
 }
-
-type InterpretationMode = 'loading' | 'error' | 'success';
 
 function InterpretationDescritionDialog({ mode }: { mode: InterpretationMode }) {
   if (mode === 'loading') {
@@ -171,48 +171,24 @@ export function InterpretationSecurityCheck({
 
   const warnings = useMemo(() => sortWarnings(interpretation?.data.warnings), [interpretation]);
   const warningSeverity = warnings?.at(0)?.severity;
-
-  const securityButtonKind: SecurityButtonKind =
-    warningSeverity === 'Red' || warningSeverity === 'Orange'
-      ? 'danger'
-      : warningSeverity === 'Yellow'
-        ? 'warning'
-        : warningSeverity === 'Gray'
-          ? 'unknown'
-          : mode === 'loading'
-            ? 'loading'
-            : mode === 'success'
-              ? 'ok'
-              : 'unknown';
+  const securityCheckView = getSecurityCheckView(mode, warningSeverity);
 
   return (
     <>
       <div style={{ position: 'relative' }}>
         <SecurityStatusButton
-          kind={securityButtonKind}
+          kind={securityCheckView.kind}
           size="small"
           onClick={
-            mode === 'loading'
+            securityCheckView.dialog === 'loading'
               ? () => loadingDialogRef.current?.showModal()
-              : mode === 'error' || warningSeverity === 'Gray'
+              : securityCheckView.dialog === 'error'
                 ? () => errorDialogRef.current?.showModal()
-                : mode === 'success' && !warningSeverity
+                : securityCheckView.dialog === 'success'
                   ? () => successDialogRef.current?.showModal()
                   : undefined
           }
-          title={
-            warningSeverity === 'Red' ||
-            warningSeverity === 'Orange' ||
-            warningSeverity === 'Yellow'
-              ? 'Risks Found'
-              : warningSeverity === 'Gray'
-                ? 'Unverified'
-                : mode === 'loading'
-                  ? 'Simulating...'
-                  : mode === 'success'
-                    ? 'No Risks Found'
-                    : 'Unverified'
-          }
+          title={securityCheckView.title}
         />
         {mode === 'loading' ? (
           <ZStack
@@ -264,37 +240,8 @@ export function InterpretationSecurityCheck({
         </BottomSheetDialog>
       </PortalToRootNode>
       <Content name="transaction-warning-section">
-        {warnings?.length && warningSeverity !== 'Gray' ? (
-          <VStack gap={8}>
-            {warnings.map((warning) => (
-              <TransactionWarning
-                key={warning.title}
-                title={warning.title}
-                message={
-                  <div
-                    style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 5,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      width: '100%',
-                    }}
-                    title={warning.description}
-                  >
-                    {warning.description}
-                  </div>
-                }
-                kind={
-                  warningSeverity === 'Red' || warningSeverity === 'Orange'
-                    ? 'danger'
-                    : warningSeverity === 'Yellow'
-                      ? 'warning'
-                      : 'info'
-                }
-              />
-            ))}
-          </VStack>
+        {warnings?.length && (mode !== 'error' || warningSeverity !== 'Gray') ? (
+          <WarningList warnings={warnings} />
         ) : mode === 'error' ? (
           <TransactionWarning message="We were unable to simulate the transaction or complete all security checks. Please proceed with caution. " />
         ) : null}
