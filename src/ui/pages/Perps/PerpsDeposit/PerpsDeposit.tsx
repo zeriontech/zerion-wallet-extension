@@ -203,6 +203,8 @@ function DepositFormBody({
     context: 'Bridge',
     pathname,
     inputFiatValue,
+    inputFungible: inputPosition?.fungible,
+    outputFungible: usdcFungible,
   });
 
   const quote = pickPerpsDepositQuote(quotesQuery.quotes);

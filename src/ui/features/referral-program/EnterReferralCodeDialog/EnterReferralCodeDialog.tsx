@@ -1,6 +1,5 @@
 import React from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { walletPort } from 'src/ui/shared/channels';
 import { collectData } from 'src/ui/shared/form-data';
 import { Button } from 'src/ui/ui-kit/Button';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -11,6 +10,7 @@ import { VStack } from 'src/ui/ui-kit/VStack';
 import type { ReferrerData } from 'src/modules/zerion-api/requests/check-referral';
 import { HTTPError } from 'ky';
 import { getError } from 'src/shared/errors/getError';
+import { applyReferralCodeToAllWallets } from '../applyReferralCode';
 
 function requestErrorToMessage(error: unknown | Error, fallbackMessage: string) {
   return error instanceof HTTPError ? getError(error).message : fallbackMessage;
@@ -31,9 +31,7 @@ export function EnterReferralCodeDialog({
       if (myReferralCode === referralCode) {
         throw new Error('Can not apply your own referral code');
       }
-      return walletPort.request('uiApplyReferralCodeToAllWallets', {
-        referralCode,
-      });
+      return applyReferralCodeToAllWallets(referralCode);
     },
     onSuccess,
   });

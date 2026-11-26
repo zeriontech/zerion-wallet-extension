@@ -14,10 +14,7 @@ import { isTruthy } from 'src/shared/isTruthy';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks as NetworksModule } from 'src/modules/networks/Networks';
-import {
-  mainNetworksStore,
-  testenvNetworksStore,
-} from 'src/modules/networks/networks-store.client';
+import { updateNetworks } from 'src/modules/networks/networks-store.client';
 import { useNetworks } from 'src/modules/networks/useNetworks';
 import { invariant } from 'src/shared/invariant';
 import {
@@ -69,10 +66,6 @@ import { NetworkList } from './shared/NetworkList';
 import { NetworkForm } from './NetworkForm';
 import { PinNetworkButton, renderPinNetworkAction } from './shared/PinNetworkButton';
 import { PinnedNetworks } from './PinnedNetworks';
-
-async function updateNetworks() {
-  return Promise.all([mainNetworksStore.update(), testenvNetworksStore.update()]);
-}
 
 type SaveChainConfigParams = {
   chain: string;
@@ -394,7 +387,7 @@ function NetworksView({
 }) {
   const [params, setSearchParams] = useSearchParams();
   const searchRef = useRef<HTMLInputElement | null>(null);
-  const query = params.get('query');
+  const query = params.get('query')?.trim();
   const [inputValue, setInputValue] = useState(query || '');
   useBackgroundKind(whiteBackgroundKind);
   const debouncedSetSearchParams = useDebouncedCallback(

@@ -21,7 +21,6 @@ import type { WindowType } from 'src/shared/types/UrlContext';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { OrderPlaced } from 'src/shared/types/OrderPlaced';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
-import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import type { ConfidentialAnalyticsEvent } from 'src/shared/types/confidential-events';
 import type { TransactionFailure } from 'src/shared/analytics/transactionFailure';
 import type { State as GlobalPreferencesState } from './Wallet/GlobalPreferences';
@@ -39,6 +38,7 @@ export interface ScreenViewParams {
 
 export interface AssetClickedParams {
   assetId: string;
+  assetName?: string;
   pathname: string;
   section: string;
 }
@@ -64,7 +64,7 @@ export type BackgroundEvents = {
     failure: TransactionFailure,
     context: { mode: 'default' | 'testnet' } & TransactionContextParams,
   ) => void;
-  quoteError: (context: QuoteErrorContext, source: NetworksSource) => void;
+  quoteError: (context: QuoteErrorContext) => void;
   typedDataSigned: (data: { typedData: TypedData; address: string } & MessageContextParams) => void;
   messageSigned: (data: { message: string; address: string } & MessageContextParams) => void;
   userActivity: () => void;

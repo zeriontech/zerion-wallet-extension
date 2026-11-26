@@ -1,92 +1,9 @@
 import type { Account } from 'src/background/account/Account';
 import { INTERNAL_SYMBOL_CONTEXT } from 'src/background/constants';
 import { isReadonlyContainer } from 'src/shared/types/validators';
-import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
-import { normalizeAddress } from 'src/shared/normalizeAddress';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
-import type { PremiumPlan, WalletMeta } from 'src/modules/zerion-api/requests/wallet-get-meta';
-import { PREMIUM_PRIORITY } from 'src/modules/zerion-api/requests/wallet-get-meta';
-import type { Params, WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
 import { getProviderForMixpanel, getProviderNameFromGroup } from './getProviderNameFromGroup';
-import { omitNullParams } from './omitNullParams';
-
-async function queryWalletPortfolio(params: Params) {
-  return backgroundQueryClient.fetchQuery({
-    queryKey: ['walletGetPortfolio', params],
-    queryFn: () => ZerionAPI.walletGetPortfolio(params),
-    staleTime: 20000,
-  });
-}
-
-async function getPortfolio(addresses: string[]) {
-  try {
-    return await queryWalletPortfolio({ addresses, currency: 'usd' });
-  } catch {
-    return null;
-  }
-}
-
-async function getZerionStats({ ownedWalletsMeta }: { ownedWalletsMeta: WalletMeta[] }) {
-  const stats = {
-    zerion_premium_holder: false,
-    og_dna_premium_holder: false,
-    zerion_premium_plan: null as PremiumPlan | null,
-    zerion_premium_expiration_date: null as string | null,
-    dna_holder: false,
-    was_invited: false,
-  };
-
-  for (const walletMeta of ownedWalletsMeta) {
-    if (walletMeta.membership.premium?.plan != null) {
-      stats.zerion_premium_holder = true;
-      if (
-        !stats.zerion_premium_plan ||
-        PREMIUM_PRIORITY[stats.zerion_premium_plan] >
-          PREMIUM_PRIORITY[walletMeta.membership.premium.plan]
-      ) {
-        stats.zerion_premium_plan = walletMeta.membership.premium.plan;
-        stats.zerion_premium_expiration_date = walletMeta.membership.premium.expirationTime;
-      }
-    }
-
-    if (
-      walletMeta.membership.premium?.plan &&
-      walletMeta.membership.premium.expirationTime == null
-    ) {
-      stats.og_dna_premium_holder = true;
-    }
-
-    if (walletMeta.membership.tokens?.length) {
-      stats.dna_holder = true;
-    }
-
-    if (walletMeta.membership.referrer) {
-      stats.was_invited = true;
-    }
-  }
-  return omitNullParams(stats);
-}
-
-async function fetchWalletsMeta({ addresses }: { addresses: string[] }) {
-  return backgroundQueryClient.fetchQuery({
-    queryKey: ['ZerionAPI.getWalletsMeta', addresses],
-    queryFn: () => ZerionAPI.getWalletsMetaByChunks(addresses),
-    staleTime: 1000 * 60 * 60 * 12, // HALF A DAY
-  });
-}
-
-function getChainBreakdown(portfolio: WalletPortfolio | null) {
-  const chainBreakdown: Record<string, number> = {};
-  if (portfolio) {
-    for (const internalId in portfolio.positionsChainsDistribution) {
-      const key = `${internalId}_balance`;
-      chainBreakdown[key] = portfolio.positionsChainsDistribution[internalId];
-    }
-  }
-  return chainBreakdown;
-}
 
 export async function getUserProperties(account: Account) {
   const apiLayer = account.getCurrentWallet();
@@ -113,28 +30,9 @@ export async function getUserProperties(account: Account) {
   );
   const ownedAddressesCount = ownedAddresses?.length ?? 0;
 
-  const ownedWalletsMeta = ownedAddresses?.length
-    ? await fetchWalletsMeta({ addresses: ownedAddresses })
-    : null;
-  const readonlyWalletsMeta = readonlyAddresses?.length
-    ? await fetchWalletsMeta({ addresses: readonlyAddresses })
-    : null;
-
-  const eligibleOwnedAddresses =
-    ownedWalletsMeta
-      ?.filter((meta) => Boolean(meta.membership.retro))
-      .map((meta) => normalizeAddress(meta.address)) ?? [];
-  const eligibleReadonlyAddresses =
-    readonlyWalletsMeta
-      ?.filter((meta) => Boolean(meta.membership.retro))
-      .map((meta) => normalizeAddress(meta.address)) ?? [];
-
   const ownedWalletProviders = ownedGroups?.map((group) =>
     getProviderForMixpanel(getProviderNameFromGroup(group)),
   );
-
-  const portfolio = ownedAddresses?.length ? await getPortfolio(ownedAddresses) : null;
-  const zerionStats = ownedWalletsMeta ? await getZerionStats({ ownedWalletsMeta }) : null;
 
   const ownedSolanaAddressesCount = ownedAddresses?.filter((address) =>
     isSolanaAddress(address),
@@ -158,18 +56,8 @@ export async function getUserProperties(account: Account) {
     num_evm_wallets: ownedEvmAddressesCount ?? 0,
     num_watchlist_solana_wallets: readonlySolanaAddressesCount ?? 0,
     num_watchlist_evm_wallets: readonlyEvmAddressesCount ?? 0,
-    total_balance: portfolio?.data.totalValue ?? 0,
-    ...getChainBreakdown(portfolio?.data ?? null),
     currency: 'usd',
     language: 'en',
-    zerion_premium_holder: zerionStats?.zerion_premium_holder ?? false,
-    og_dna_premium_holder: zerionStats?.og_dna_premium_holder ?? false,
-    zerion_premium_plan: zerionStats?.zerion_premium_plan ?? null,
-    zerion_premium_expiration_date: zerionStats?.zerion_premium_expiration_date ?? null,
-    dna_holder: zerionStats?.dna_holder ?? false,
-    was_invited: zerionStats?.was_invited ?? false,
     wallet_providers: Array.from(new Set(ownedWalletProviders)),
-    num_zerion_wallets_eligible_for_xp_drop: eligibleOwnedAddresses.length,
-    num_readonly_wallets_eligible_for_xp_drop: eligibleReadonlyAddresses.length,
   };
 }

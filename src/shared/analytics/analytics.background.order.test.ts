@@ -63,12 +63,6 @@ vi.mock('src/modules/dna-service/dna.background', () => ({
 vi.mock('src/background/user-activity', () => ({
   estimateSessionExpiry: async () => null,
 }));
-vi.mock('src/modules/query-client/query-client.background', () => ({
-  backgroundQueryClient: { fetchQuery: async () => null },
-}));
-vi.mock('src/modules/zerion-api/zerion-api.background', () => ({
-  ZerionAPI: {},
-}));
 
 const { emitter } = await import('src/background/events');
 const { initialize } = await import('./analytics.background');

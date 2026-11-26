@@ -11,6 +11,9 @@ import { Wallet } from './Wallet';
 import { INTERNAL_ORIGIN } from 'src/background/constants';
 import { emitter } from 'src/background/events';
 import { Networks } from 'src/modules/networks/Networks';
+import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
+import * as rpcRequest from 'src/shared/custom-rpc/rpc-request';
+import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import { SolanaSigning } from 'src/modules/solana/signing';
 import { uint8ArrayToBase64 } from 'src/modules/crypto';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
@@ -18,10 +21,8 @@ import type { TransactionContextParams } from 'src/shared/types/SignatureContext
 import type { TransactionFailure } from 'src/shared/analytics/transactionFailure';
 
 /**
- * Drives the real Solana methods of `Wallet` with everything that reads wallet
- * state or talks to the network stubbed out, and asserts on the real background
- * emitter: which event is emitted, with which failure fields, and that the
- * caller still gets the original error object.
+ * Drives the real transaction methods of `Wallet` with wallet state and
+ * network calls stubbed out.
  */
 
 vi.mock('src/background/constants', () => import('src/background/constants.mock'));
@@ -115,10 +116,12 @@ vi.mock('src/modules/networks/networks-store.background', async (importOriginal)
   const actual = await importOriginal<Record<string, unknown>>();
   return {
     ...actual,
-    // Only the Solana network lookup is used by the broadcast path; the real
-    // store would fetch it over the network.
+    // Keep both transaction paths off the live network store.
     getNetworksStore: () => ({
       fetchNetworkById: async () => ({ id: 'solana' }),
+      loadNetworksByChainId: async () => ({
+        getNetworkById: () => ({ id: 'ethereum' }),
+      }),
     }),
   };
 });
@@ -164,6 +167,7 @@ type WalletInternals = {
   ensureRecord: (record: unknown) => void;
   getKeypairByAddress: (address: string) => unknown;
   assertNetworkMode: (options: unknown) => Promise<unknown>;
+  getSigner: () => Promise<{ sendTransaction: (transaction: unknown) => Promise<unknown> }>;
 };
 
 function createHarness() {
@@ -344,5 +348,78 @@ describe('Solana signing failures', () => {
       ...txContext,
       addressAction: null,
     });
+  });
+});
+
+describe('EVM dapp signing fees', () => {
+  test.each([
+    {
+      feeType: 'missing',
+      suppliedFees: {},
+      fallbackFee: '0x3b9aca00',
+    },
+    {
+      feeType: 'legacy',
+      suppliedFees: { type: 0, gasPrice: '0x7' },
+      fallbackFee: null,
+    },
+    {
+      feeType: 'EIP-1559',
+      suppliedFees: { type: 2, maxFeePerGas: '0x10', maxPriorityFeePerGas: '0x0' },
+      fallbackFee: null,
+    },
+  ])('signs with $feeType fees without ZPI', async ({ suppliedFees, fallbackFee }) => {
+    const wallet = new Wallet('test-wallet', null, {} as never);
+    const internals = wallet as unknown as WalletInternals;
+    const from = '0x0000000000000000000000000000000000000001';
+    const to = '0x0000000000000000000000000000000000000002';
+    const txHash = `0x${'a'.repeat(64)}`;
+    const sendTransaction = vi.fn(async () => ({
+      hash: txHash,
+      chainId: 1n,
+      gasLimit: 23_100n,
+      value: 0n,
+    }));
+    vi.spyOn(wallet, 'ensureCurrentAddress').mockReturnValue(from);
+    vi.spyOn(wallet, 'getChainIdForOrigin').mockResolvedValue('0x1' as ChainId);
+    vi.spyOn(internals, 'assertNetworkMode').mockResolvedValue({ mode: 'default' });
+    vi.spyOn(internals, 'getSigner').mockResolvedValue({ sendTransaction });
+    vi.spyOn(Networks, 'getNetworkRpcUrlInternal').mockReturnValue('https://rpc.test');
+    const zpiGas = vi
+      .spyOn(ZerionAPI, 'getGasPrices')
+      .mockRejectedValue(new Error('Unexpected ZPI'));
+    const nodeRpc = vi
+      .spyOn(rpcRequest, 'sendRpcRequest')
+      .mockImplementation(async (_url, request) => {
+        switch (request.method) {
+          case 'eth_estimateGas':
+            return { jsonrpc: '2.0', id: 1, result: '0x5208' };
+          case 'eth_gasPrice':
+            return { jsonrpc: '2.0', id: 2, result: '0x3b9aca00' };
+          default:
+            throw new Error(`Unexpected RPC method: ${request.method}`);
+        }
+      });
+
+    const transaction = { from, to, chainId: 1, nonce: 0, ...suppliedFees };
+    const result = await wallet.signAndSendTransaction({
+      params: [transaction, createTxContext({ chain: 'ethereum', initiator: 'https://dapp.test' })],
+      context: { origin: INTERNAL_ORIGIN },
+    });
+
+    expect(result.hash).toBe(txHash);
+    expect(sendTransaction).toHaveBeenCalledExactlyOnceWith({
+      type: undefined,
+      ...transaction,
+      gasLimit: 23_100,
+      ...(fallbackFee ? { gasPrice: fallbackFee } : {}),
+    });
+    expect(zpiGas).not.toHaveBeenCalled();
+    expect(nodeRpc.mock.calls.map(([url, { method }]) => [url, method])).toEqual(
+      (fallbackFee ? ['eth_estimateGas', 'eth_gasPrice'] : ['eth_estimateGas']).map((method) => [
+        'https://rpc.test',
+        method,
+      ]),
+    );
   });
 });

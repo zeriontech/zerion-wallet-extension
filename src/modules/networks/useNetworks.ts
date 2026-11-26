@@ -4,7 +4,6 @@ import { useQuery, hashQueryKey } from '@tanstack/react-query';
 import { queryClient } from 'src/ui/shared/requests/queryClient';
 import { emitter } from 'src/ui/shared/events';
 import {
-  getNetworksStore,
   mainNetworksStore,
   testenvNetworksStore,
 } from 'src/modules/networks/networks-store.client';
@@ -123,17 +122,18 @@ export function useMainnetNetwork({
 }
 
 export function useSearchNetworks({ query = '' }: { query?: string }) {
-  const { preferences } = usePreferences();
+  const networksStore = useNetworksStore();
+  const searchQuery = query.trim();
   const { data: queryData, ...queryResult } = useQuery({
-    enabled: Boolean(preferences),
-    queryKey: ['getNetworksBySearch', query, preferences?.testnetMode?.on],
+    enabled: Boolean(networksStore && searchQuery),
+    queryKey: ['getNetworksBySearch', searchQuery, networksStore?.source],
     queryFn: async () => {
-      const networksStore = await getNetworksStore();
+      invariant(networksStore, 'Enable query when networks store is ready');
       const data = await getNetworksBySearch({
-        query: query.trim().toLowerCase(),
+        query: searchQuery,
         apiClient: networksStore.apiClient,
         source: networksStore.source,
-        includeTestnets: Boolean(preferences?.testnetMode?.on),
+        includeTestnets: networksStore.source === 'testnet',
       });
       networksStore.pushConfigs(...data);
       emitter.emit('networksSearchResponse', query, data.length);

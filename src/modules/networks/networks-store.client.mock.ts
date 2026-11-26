@@ -123,3 +123,7 @@ export const networksStore = new NetworksStoreMock(
     source: 'mainnet',
   },
 );
+
+export async function updateNetworks() {
+  await networksStore.update();
+}

@@ -458,12 +458,13 @@ export class Wallet {
   }
 
   async uiApplyReferralCodeToAllWallets({
-    params: { referralCode },
+    params: { referralCode, eligibleAddresses },
     context,
-  }: WalletMethodParams<{ referralCode: string }>) {
+  }: WalletMethodParams<{ referralCode: string; eligibleAddresses: string[] }>) {
     this.verifyInternalOrigin(context);
     return referralProgramService.applyReferralCodeToAllWallets({
       referralCode,
+      eligibleAddresses,
     });
   }
 
@@ -1255,10 +1256,7 @@ export class Wallet {
     const txWithFee =
       initiator === INTERNAL_ORIGIN
         ? prepared
-        : await prepareGasAndNetworkFee(prepared, networks, {
-            source: mode === 'testnet' ? 'testnet' : 'mainnet',
-            apiClient: ZerionAPI,
-          });
+        : await prepareGasAndNetworkFee(prepared, networks, 'node');
     const transaction = await prepareNonce(txWithFee, network);
 
     const paymasterEligible = Boolean(transaction.customData?.paymasterParams);
@@ -1853,11 +1851,7 @@ export class Wallet {
 
   async quoteError({ context, params }: WalletMethodParams<QuoteErrorContext>) {
     this.verifyInternalOrigin(context);
-    invariant(params.inputChain, 'inputChain is required to report quoteError');
-    const { mode } = await this.assertNetworkMode({
-      id: createChain(params.inputChain),
-    });
-    emitter.emit('quoteError', params, mode === 'default' ? 'mainnet' : 'testnet');
+    emitter.emit('quoteError', params);
   }
 
   async uiReportOrderPlaced({

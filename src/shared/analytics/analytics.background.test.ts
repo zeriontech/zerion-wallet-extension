@@ -54,6 +54,7 @@ function createAccount() {
     getUser: () => ({ id: 'user' }),
     getCurrentWallet: () => ({
       readCurrentAddress: () => null,
+      getWalletGroupByAddressSync: () => null,
       getPreferences: async () => ({ enableHoldToSignButton: false }),
     }),
     on: (event: string, listener: () => void) => {
@@ -142,6 +143,45 @@ describe('labelAddressCopied', () => {
 
 const SOLANA_ADDRESS = 'So11111111111111111111111111111111111111112';
 const EVM_ADDRESS = '0x52908400098527886E0F7030069857D2E4169EE7';
+
+test('tracks a quote error even when no asset data was loaded', async () => {
+  emitter.events = {};
+  preferences.listeners.length = 0;
+  preferences.state = { analyticsEnabled: true };
+  vi.mocked(sendToMetabase).mockClear();
+  vi.mocked(mixpanelTrack).mockClear();
+  initialize({ account: createAccount() as unknown as Account });
+
+  emitter.emit('quoteError', {
+    message: 'No liquidity for this trade',
+    errorCode: 404,
+    context: 'Swap',
+    actionType: 'Trade',
+    type: 'Trade form error',
+    address: EVM_ADDRESS,
+    inputFungibleId: 'eth',
+    outputFungibleId: 'usdc',
+    inputAmount: '0.5',
+    inputChain: 'ethereum',
+    outputAmount: null,
+    outputChain: 'ethereum',
+    contractType: null,
+    pathname: '/swap',
+    slippage: null,
+  });
+  await flush();
+
+  const expected = expect.objectContaining({
+    message: 'No liquidity for this trade',
+    backend_response_code: 404,
+    asset_address_sent: ['eth'],
+    asset_address_received: ['usdc'],
+    asset_amount_sent: [0.5],
+    usd_amount_sent: undefined,
+  });
+  expect(sendToMetabase).toHaveBeenCalledWith('client_error', expected);
+  expect(mixpanelTrack).toHaveBeenCalledWith('General: Client Error', expected);
+});
 
 function createTransactionContext(chain: string) {
   return {
