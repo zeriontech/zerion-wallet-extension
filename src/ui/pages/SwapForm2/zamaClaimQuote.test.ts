@@ -131,8 +131,8 @@ describe('Zama claim quote returned for a dismissed claim', () => {
         priceImpactNeedsConfirmation: false,
       }).warning,
     ).toEqual({
-      variant: 'error',
-      title: 'Transaction will fail',
+      variant: 'neutral',
+      title: 'Error',
       description: 'The existing unshield proof is not ready; retry shortly',
     });
   });
