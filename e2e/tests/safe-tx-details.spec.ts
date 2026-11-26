@@ -172,10 +172,12 @@ test('shows the decoded transfer and the three Ledger hashes', async ({
   const details = page.getByText('Safe transaction details', { exact: true });
   await expect(details).toBeVisible({ timeout: 30_000 });
 
-  // Safe, network and nonce come from the typed data
+  // Safe and nonce come from the typed data. The domain case shows the
+  // page-level network row (icon plus name) exactly once; the details block
+  // deliberately omits its own Network row.
   await expect(page.getByText(BASE_SAFE, { exact: true })).toBeVisible();
-  await expect(page.getByText('Network', { exact: true })).toBeVisible();
-  await expect(page.getByText('Base', { exact: true })).toBeVisible();
+  await expect(page.getByText('Base', { exact: true })).toHaveCount(1);
+  await expect(page.getByText('Network', { exact: true })).toHaveCount(0);
   await expect(page.getByText('Nonce', { exact: true })).toBeVisible();
   await expect(page.getByText('78', { exact: true })).toBeVisible();
 
@@ -224,7 +226,9 @@ test('shows every inner call of a MultiSend batch', async ({
     timeout: 30_000,
   });
 
-  await expect(page.getByText('Ethereum', { exact: true })).toBeVisible();
+  // The page-level domain row is the only network display
+  await expect(page.getByText('Ethereum', { exact: true })).toHaveCount(1);
+  await expect(page.getByText('Network', { exact: true })).toHaveCount(0);
   await expect(page.getByText('3519', { exact: true })).toBeVisible();
   await expect(page.getByText('Contract call', { exact: true })).toHaveCount(2);
 
@@ -236,6 +240,32 @@ test('shows every inner call of a MultiSend batch', async ({
 
   await expect(page.getByText(ETHEREUM_SAFE_TX_HASH, { exact: true })).toBeVisible();
   await expect(page.getByText('Refund', { exact: true })).toHaveCount(0);
+  await expect(signButton(page)).toBeEnabled();
+});
+
+test('keeps the network row when the preview falls back', async ({
+  context,
+  extensionPopupUrl,
+  page,
+}) => {
+  await mockSimulation(context);
+  await importLedgerAccount(page, extensionPopupUrl);
+  // A canonical SafeTx on a chain the wallet does not know keeps the origin
+  // chain preview, so the page-level row is hidden and the details block must
+  // still name the transaction's domain chain.
+  const unsupportedChain = structuredClone(BASE_TYPED_DATA);
+  unsupportedChain.domain = { ...unsupportedChain.domain, chainId: 999999 };
+  await page.goto(previewUrl(extensionPopupUrl, unsupportedChain));
+
+  await expect(page.getByText('Safe transaction details', { exact: true })).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(page.getByText(BASE_SAFE, { exact: true })).toBeVisible();
+  await expect(page.getByText('Network', { exact: true })).toBeVisible();
+  await expect(page.getByText('Chain 999999', { exact: true })).toBeVisible();
+  await expect(page.getByText('Base', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Ethereum', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Token transfer', { exact: true })).toBeVisible();
   await expect(signButton(page)).toBeEnabled();
 });
 

@@ -183,20 +183,24 @@ function RefundSection({ refund }: { refund: NonNullable<DecodedSafeTx['refund']
 
 /**
  * The SafeTx details a Ledger owner can compare against the device: the Safe,
- * network and nonce, every decoded call, the refund and the three EIP-712
- * hashes. It is display-only and independent of the simulation: a canonical
- * SafeTx always renders it, and signing stays enabled.
+ * nonce, every decoded call, the refund and the three EIP-712 hashes. The
+ * network is shown here only when the page-level network row cannot show it.
+ * It is display-only and independent of the simulation: a canonical SafeTx
+ * always renders it, and signing stays enabled.
  */
 export function SafeTxDetails({
   origin,
   wallet,
   typedData,
   network,
+  showNetwork,
 }: {
   origin: string;
   wallet: ExternallyOwnedAccount;
   typedData: TypedData;
   network: NetworkInfo;
+  /** Whether the page already renders the resolved network name and icon. */
+  showNetwork: boolean;
 }) {
   const decoded = useMemo(
     () => (origin === SAFE_APP_ORIGIN ? decodeSafeTx(typedData) : null),
@@ -222,7 +226,7 @@ export function SafeTxDetails({
         <UIText kind="body/accent">Safe transaction details</UIText>
         <VStack gap={4}>
           <DetailRow label="Safe" value={decoded.safe} mono />
-          <DetailRow label="Network" value={networkLabel} />
+          {showNetwork ? null : <DetailRow label="Network" value={networkLabel} />}
           <DetailRow label="Nonce" value={decoded.nonce.toString()} />
         </VStack>
         <VStack gap={12}>

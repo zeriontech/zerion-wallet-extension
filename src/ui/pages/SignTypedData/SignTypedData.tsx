@@ -304,7 +304,13 @@ function TypedDataDefaultView({
               />
             </VStack>
           ) : null}
-          <SafeTxDetails origin={origin} wallet={wallet} typedData={typedData} network={network} />
+          <SafeTxDetails
+            origin={origin}
+            wallet={wallet}
+            typedData={typedData}
+            network={network}
+            showNetwork={showNetwork}
+          />
           {showRawTypedData ? (
             <UnstyledButton
               onClick={() => dialogRef.current?.showModal()}
