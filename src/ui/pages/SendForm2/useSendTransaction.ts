@@ -96,6 +96,7 @@ function toQuoteNetworkFee(
   }
   return {
     free: networkFee.free,
+    gasUsed: networkFee.gasUsed ?? null,
     amount: networkFee.amount ? { ...networkFee.amount, currency } : null,
     fungible: networkFee.fungible,
   };

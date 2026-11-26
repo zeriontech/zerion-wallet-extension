@@ -10,6 +10,7 @@ import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
 import type { Networks } from 'src/modules/networks/Networks';
 import { createChain } from 'src/modules/networks/Chain';
+import { getBaseAssetDecimals } from 'src/modules/networks/NetworkInfo';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import { usePreferences } from 'src/ui/features/preferences/usePreferences';
 import { HStack } from 'src/ui/ui-kit/HStack';
@@ -154,6 +155,8 @@ export function QuoteDetails({
   const customDefaults = useMemo(() => getCustomFormDefaults(quote), [quote]);
 
   const inputChain = createChain(formState.inputChain);
+  const inputNetwork = networks.getByNetworkId(inputChain);
+  const nativeDecimals = inputNetwork ? getBaseAssetDecimals(inputNetwork) : null;
   const inputChainName = networks.getChainName(inputChain);
   const inputChainIconUrl = networks.getByNetworkId(inputChain)?.iconUrl;
   const inputChainBaseAssetSymbol = networks.getByNetworkId(inputChain)?.baseAsset?.symbol;
@@ -469,6 +472,7 @@ export function QuoteDetails({
           gasPrices={gasPrices}
           baseFee={baseFee}
           fallbackSymbol={inputChainBaseAssetSymbol}
+          nativeDecimals={nativeDecimals}
         />
       ) : null}
     </MotionConfig>

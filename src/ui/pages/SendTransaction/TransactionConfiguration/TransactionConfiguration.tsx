@@ -21,7 +21,6 @@ import { formatCurrencyValueExtra } from 'src/shared/units/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
 import type { ActionFee } from 'src/modules/zerion-api/requests/wallet-get-actions';
-import type { InterpretResponse } from 'src/modules/zerion-api/requests/wallet-simulate-transaction';
 import { NetworkFee } from '../NetworkFee';
 import { NonceLine } from '../NonceLine';
 import { useTransactionFee } from './useTransactionFee';
@@ -99,22 +98,24 @@ function NetworkFeeLine({
   transaction,
   chain,
   onFeeValueCommonReady,
+  onFeeValueFiatReady,
   configuration,
   onConfigurationChange,
   paymasterPossible,
   paymasterEligible,
   keepPreviousData = false,
-  interpretation,
+  expectedGas,
 }: {
   transaction: IncomingTransactionWithFrom;
   chain: Chain;
   onFeeValueCommonReady: null | ((value: string) => void);
+  onFeeValueFiatReady?: (value: number | null) => void;
   configuration: CustomConfiguration;
   onConfigurationChange: null | ((value: CustomConfiguration) => void);
   paymasterPossible: boolean;
   paymasterEligible: boolean;
   keepPreviousData?: boolean;
-  interpretation?: InterpretResponse | null;
+  expectedGas?: number | null;
 }) {
   const { data: chainGasPrices = null } = useGasPrices(chain, {
     suspense: true,
@@ -127,6 +128,8 @@ function NetworkFeeLine({
     networkFeeConfiguration: configuration.networkFee,
     keepPreviousData,
     chainGasPrices,
+    expectedGas,
+    preserveTransactionMaxFee: true,
   });
 
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -172,7 +175,8 @@ function NetworkFeeLine({
             ? (networkFee) => onConfigurationChange({ ...configuration, networkFee })
             : null
         }
-        interpretation={interpretation}
+        expectedGas={expectedGas}
+        onFeeValueFiatReady={onFeeValueFiatReady}
       />
     </>
   );
@@ -189,29 +193,31 @@ export function TransactionConfiguration({
   from,
   chain,
   onFeeValueCommonReady,
+  onFeeValueFiatReady,
   configuration,
   onConfigurationChange,
   paymasterEligible,
   paymasterPossible,
   paymasterWaiting,
   keepPreviousData = false,
-  interpretation,
   interactiveNetworkFee,
   networkFee,
+  expectedGas,
 }: {
   transaction: IncomingTransaction;
   from: string;
   chain: Chain;
   onFeeValueCommonReady: null | ((value: string) => void);
+  onFeeValueFiatReady?: (value: number | null) => void;
   configuration: CustomConfiguration;
   onConfigurationChange: null | ((value: CustomConfiguration) => void);
   paymasterEligible: boolean;
   paymasterPossible: boolean;
   paymasterWaiting: boolean;
   keepPreviousData?: boolean;
-  interpretation?: InterpretResponse | null;
   interactiveNetworkFee: boolean;
   networkFee?: NetworkFeeType | null;
+  expectedGas?: number | null;
 }) {
   const { preferences } = usePreferences();
   const transactionWithFrom = useMemo(
@@ -264,7 +270,8 @@ export function TransactionConfiguration({
               onFeeValueCommonReady={onFeeValueCommonReady}
               paymasterPossible={paymasterPossible}
               paymasterEligible={paymasterEligible}
-              interpretation={interpretation}
+              expectedGas={expectedGas}
+              onFeeValueFiatReady={onFeeValueFiatReady}
             />
           ) : networkFee ? (
             <NetworkFeeLineInfo networkFee={networkFee} />
