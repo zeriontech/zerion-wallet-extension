@@ -3,7 +3,7 @@ import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import { toStoredPermit } from 'src/shared/confidential-balances/permits';
 import type { StoredPermit } from 'src/shared/types/ConfidentialPermit';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import { toTypedData } from './toTypedData';
+import { prepareTypedDataForSigning } from 'src/modules/ethereum/message-signing/prepareTypedDataForSigning';
 
 /** Produces one EIP-712 signature; software (background) or Ledger (device) */
 export type PermitSigner = (typedData: TypedData) => Promise<string>;
@@ -47,7 +47,7 @@ export async function signPermitBatch(
     onStep?.(index);
     let signature: string;
     try {
-      signature = await sign(toTypedData(permit.eip712));
+      signature = await sign(prepareTypedDataForSigning(permit.eip712));
     } catch (error) {
       throw new PermitSigningError(index, error);
     }
