@@ -311,7 +311,7 @@ export function createTradeAddressAction({
   explorerUrl,
   type = 'trade',
 }: {
-  transaction: MultichainTransaction;
+  transaction: MultichainTransaction | null;
   hash: string | null;
   spendAmount: Amount;
   spendFungible: Fungible;
@@ -370,7 +370,7 @@ export function createTradeAddressAction({
     fee: null,
     refund: null,
     local: true,
-    rawTransaction: transaction.evm
+    rawTransaction: transaction?.evm
       ? toActionTx(transaction.evm, network.id)
       : toEmptyActionTx(network.id),
   };
@@ -390,7 +390,7 @@ export function createBridgeAddressAction({
   receiverAddress,
 }: {
   address: string;
-  transaction: MultichainTransaction;
+  transaction: MultichainTransaction | null;
   hash: string | null;
   spendAmount: Amount;
   spendFungible: Fungible;
@@ -518,7 +518,7 @@ export function createBridgeAddressAction({
     fee: null,
     refund: null,
     local: true,
-    rawTransaction: transaction.evm
+    rawTransaction: transaction?.evm
       ? toActionTx(transaction.evm, inputNetwork.id)
       : toEmptyActionTx(inputNetwork.id),
   };

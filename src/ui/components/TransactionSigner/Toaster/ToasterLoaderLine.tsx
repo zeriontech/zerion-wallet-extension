@@ -32,6 +32,25 @@ function progressToLeftPct(p: number): number {
   return SWEEP_MIN_LEFT_PCT + p * (SWEEP_MAX_LEFT_PCT - SWEEP_MIN_LEFT_PCT);
 }
 
+/** The color the line settles into, or null while it keeps sweeping */
+function getEndColor(terminal: TerminalKind | null): string | null {
+  switch (terminal) {
+    case null:
+    case 'submitted':
+      return null;
+    case 'success':
+      return 'var(--positive-300, #99dbb4)';
+    case 'failed':
+      return 'var(--negative-300, #ffd0c9)';
+    case 'complete':
+      return 'var(--neutral-400, #c5c9d1)';
+    default: {
+      const exhaustive: never = terminal;
+      return exhaustive;
+    }
+  }
+}
+
 export function ToasterLoaderLine({ terminal }: { terminal: TerminalKind | null }) {
   const progress = useMotionValue(0);
   const blobLeft = useTransform(progress, (p) => `${progressToLeftPct(p)}%`);
@@ -47,10 +66,12 @@ export function ToasterLoaderLine({ terminal }: { terminal: TerminalKind | null 
 
   const [solidColor, setSolidColor] = useState<string | null>(null);
   const terminalRef = useRef<TerminalKind | null>(null);
+  const endColor = getEndColor(terminal);
+  const sweeping = endColor === null;
 
   // Sweep loop while in progress.
   useEffect(() => {
-    if (terminal !== null) return;
+    if (!sweeping) return;
     progress.set(0);
     const controls = animate(progress, 1, {
       duration: SWEEP_DURATION,
@@ -61,11 +82,11 @@ export function ToasterLoaderLine({ terminal }: { terminal: TerminalKind | null 
     return () => {
       controls.stop();
     };
-  }, [terminal, progress]);
+  }, [sweeping, progress]);
 
   // Terminal flip: capture position, stretch + recolor + hold + fade.
   useEffect(() => {
-    if (terminal === null) {
+    if (terminal === null || endColor === null) {
       terminalRef.current = null;
       return;
     }
@@ -87,9 +108,7 @@ export function ToasterLoaderLine({ terminal }: { terminal: TerminalKind | null 
       opacity: 0,
     });
 
-    setSolidColor(
-      terminal === 'success' ? 'var(--positive-300, #99dbb4)' : 'var(--negative-300, #ffd0c9)',
-    );
+    setSolidColor(endColor);
 
     let cancelled = false;
     void (async () => {
@@ -119,7 +138,7 @@ export function ToasterLoaderLine({ terminal }: { terminal: TerminalKind | null 
     return () => {
       cancelled = true;
     };
-  }, [terminal, progress, stretchControls, solidControls]);
+  }, [terminal, endColor, progress, stretchControls, solidControls]);
 
   return (
     <motion.div
@@ -131,7 +150,7 @@ export function ToasterLoaderLine({ terminal }: { terminal: TerminalKind | null 
         delay: ENTER_FADE_DELAY,
       }}
     >
-      {terminal === null ? (
+      {sweeping ? (
         <motion.div
           className={s.loaderBlob}
           style={{ left: blobLeft, right: blobRight, opacity: blobOpacity }}
