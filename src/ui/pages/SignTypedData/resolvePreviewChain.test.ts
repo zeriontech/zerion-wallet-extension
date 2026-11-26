@@ -206,6 +206,12 @@ describe('resolvePreviewChain', () => {
 
   test.each([
     ['a canonical domain chain', safeTx({ chainId: '0x002105' }), 'domain', 'base'],
+    [
+      'a canonical domain chain equal to the fallback chain',
+      safeTx({ chainId: 1 }),
+      'domain',
+      'ethereum',
+    ],
     ['a missing domain chain', safeTx({ domain: { chainId: undefined } }), 'fallback', 'ethereum'],
     ['a zero domain chain', safeTx({ chainId: 0 }), 'fallback', 'ethereum'],
     ['an unsupported domain chain', safeTx({ chainId: '999999' }), 'fallback', 'ethereum'],
