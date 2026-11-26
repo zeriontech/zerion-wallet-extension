@@ -8,7 +8,7 @@ import CheckIcon from 'jsx:src/ui/assets/check.svg';
 import { UIText } from 'src/ui/ui-kit/UIText';
 import { collectData } from 'src/ui/shared/form-data';
 import { useMutation } from '@tanstack/react-query';
-import { walletPort } from 'src/ui/shared/channels';
+import { applyReferralCodeToAllWallets } from 'src/ui/features/referral-program/applyReferralCode';
 import { Input } from 'src/ui/ui-kit/Input';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { ZStack } from 'src/ui/ui-kit/ZStack';
@@ -49,11 +49,8 @@ function ReferralCodeForm({ onSuccess }: { onSuccess: (pendingReferrer: Referrer
   const [referralCode, setReferralCode] = useState('');
 
   const { mutate: applyReferralCode, ...applyReferralCodeMutation } = useMutation({
-    mutationFn: ({ referralCode: rawReferralCode }: { referralCode: string }) => {
-      return walletPort.request('uiApplyReferralCodeToAllWallets', {
-        referralCode: rawReferralCode.trim(),
-      });
-    },
+    mutationFn: ({ referralCode }: { referralCode: string }) =>
+      applyReferralCodeToAllWallets(referralCode.trim()),
     onSuccess,
   });
 

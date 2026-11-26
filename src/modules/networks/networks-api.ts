@@ -68,6 +68,8 @@ export async function getNetworkByChainId(
 /**
  * Exact lookup by network id (slug). chain/list/v1 has no `ids` param and
  * `searchQuery` is a substring match, so the response is narrowed to the exact id.
+ * Explicit lookups include testnets even on the mainnet source: the mode guard
+ * needs to distinguish a known testnet from an unknown chain before switching.
  */
 export async function getNetworkById(
   id: string,

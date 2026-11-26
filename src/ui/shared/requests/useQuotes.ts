@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Quote2 } from 'src/shared/types/Quote';
 import type { SwapFormState } from 'src/shared/types/SwapFormState';
 import { createHeaders } from 'src/modules/zerion-api/shared';
+import type { Fungible } from 'src/modules/zerion-api/types/Fungible';
 import { invariant } from 'src/shared/invariant';
 import { useFirebaseConfig } from 'src/modules/remote-config/plugins/useFirebaseConfig';
 import { useStore } from 'src/shared/store/useStore';
@@ -14,6 +15,7 @@ import { walletPort } from '../channels';
 import type { QuotesError } from './QuotesError';
 import { useEventSource } from './useEventSource';
 import { createSwapQuotesV3Url } from './createSwapQuotesV3Url';
+import { getTrackedSwapAsset } from './getTrackedSwapAsset';
 export interface QuotesData<T> {
   quotes: T[] | null;
   isLoading: boolean;
@@ -37,6 +39,8 @@ export function useQuotesV2({
   context,
   pathname,
   inputFiatValue = null,
+  inputFungible,
+  outputFungible,
 }: {
   address: string;
   currency: string;
@@ -45,6 +49,8 @@ export function useQuotesV2({
   context: 'Swap' | 'Bridge';
   pathname: string;
   inputFiatValue?: number | null;
+  inputFungible?: Fungible | null;
+  outputFungible?: Fungible | null;
 }) {
   const [refetchHash, setRefetchHash] = useState(0);
   const { data: config } = useFirebaseConfig(['quotes_refetch_interval']);
@@ -107,6 +113,18 @@ export function useQuotesV2({
         inputFungibleId: requestParams.inputFungibleId,
         outputFungibleId: requestParams.outputFungibleId,
         inputAmount: requestParams.inputAmount,
+        inputAsset: getTrackedSwapAsset(
+          inputFungible,
+          requestParams.inputFungibleId,
+          requestParams.inputChain,
+          currency,
+        ),
+        outputAsset: getTrackedSwapAsset(
+          outputFungible,
+          requestParams.outputFungibleId,
+          requestParams.outputChain || requestParams.inputChain,
+          currency,
+        ),
         inputChain: requestParams.inputChain || null,
         outputAmount: null,
         outputChain: requestParams.outputChain || null,
@@ -115,7 +133,7 @@ export function useQuotesV2({
         slippage: requestParams.slippage ? Number(requestParams.slippage) : null,
       });
     },
-    [context, pathname],
+    [context, pathname, inputFungible, outputFungible, currency],
   );
 
   const {

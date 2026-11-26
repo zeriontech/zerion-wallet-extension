@@ -1,7 +1,6 @@
 import 'src/shared/polyfills';
 import browser from 'webextension-polyfill';
 import { ethers } from 'ethers';
-import { mainNetworksStore } from 'src/modules/networks/networks-store.background';
 import { SessionCacheService } from 'src/background/resource/sessionCacheService';
 import { openOnboarding } from 'src/shared/openOnboarding';
 import { userLifecycleStore } from 'src/shared/analytics/shared/UserLifecycle';
@@ -46,8 +45,6 @@ if (process.env.NODE_ENV === 'development') {
     path: icon.toString(),
   });
 }
-
-mainNetworksStore.load();
 
 function isOnboardingMode(port: RuntimePort) {
   if (!port.sender?.url) {

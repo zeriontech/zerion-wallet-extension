@@ -1,17 +1,6 @@
-import { beforeEach, describe, expect, test, vi } from 'vite-plus/test';
+import { describe, expect, test, vi } from 'vite-plus/test';
 import type { Account } from 'src/background/account/Account';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
-import type { WalletMeta } from 'src/modules/zerion-api/requests/wallet-get-meta';
-import type { WalletPortfolio } from 'src/modules/zerion-api/requests/wallet-get-portfolio';
-import type { ResponseBody } from 'src/modules/zerion-api/requests/ResponseBody';
 import { getUserProperties } from './getUserProperties';
-
-const PORTFOLIO = {
-  data: {
-    totalValue: 1500,
-    positionsChainsDistribution: { ethereum: 1000, solana: 500 },
-  },
-} as unknown as ResponseBody<WalletPortfolio>;
 
 vi.mock('src/background/constants', () => import('src/background/constants.mock'));
 
@@ -36,26 +25,21 @@ const account = {
   }),
 } as unknown as Account;
 
-const portfolioSpy = vi.spyOn(ZerionAPI, 'walletGetPortfolio');
-const activitySpy = vi.spyOn(ZerionAPI, 'walletCheckActivity');
-const metaSpy = vi.spyOn(ZerionAPI, 'getWalletsMetaByChunks');
-
-beforeEach(() => {
-  portfolioSpy.mockReset().mockResolvedValue(PORTFOLIO);
-  activitySpy.mockReset();
-  metaSpy
-    .mockReset()
-    .mockImplementation(async (addresses: string[]) =>
-      addresses.map((address) => ({ address, membership: {} }) as WalletMeta),
-    );
-});
-
 describe('getUserProperties', () => {
-  test('does not query wallet activity and sends no funded-wallet counts', async () => {
+  test('reports local wallet counts without inventing balances or membership', async () => {
     const properties = await getUserProperties(account);
 
-    expect(activitySpy).not.toHaveBeenCalled();
-    expect(properties.total_balance).toBe(1500);
+    expect(properties).toMatchObject({
+      num_wallets: 3,
+      num_my_wallets: 2,
+      num_wallet_groups: 2,
+      num_solana_wallets: 1,
+      num_evm_wallets: 1,
+      num_watchlist_evm_wallets: 1,
+    });
+    expect(properties).not.toHaveProperty('total_balance');
+    expect(properties).not.toHaveProperty('zerion_premium_holder');
+    expect(properties).not.toHaveProperty('num_zerion_wallets_eligible_for_xp_drop');
     expect(Object.keys(properties).filter((key) => key.includes('funded'))).toEqual([]);
   });
 });

@@ -62,6 +62,7 @@ import { useBackgroundKind } from 'src/ui/components/Background';
 import { PageBottom } from 'src/ui/components/PageBottom';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
+import { getTrackedSwapAsset } from 'src/ui/shared/requests/getTrackedSwapAsset';
 import { NetworkId } from 'src/modules/networks/NetworkId';
 import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
 import {
@@ -314,6 +315,7 @@ function SwapFormComponent({
   const shouldShowTopUpCTA =
     quote?.error?.code === 2 || (quote?.error?.code === 1 && hasZeroInputBalance);
 
+  const { currency } = useCurrency();
   const trackTransactionFormed = useEvent(() => {
     if (!quote) return;
     walletPort.request('trackUiEvent', {
@@ -321,6 +323,19 @@ function SwapFormComponent({
       data: {
         formState,
         quote,
+        inputTokenAmount: resolvedInputAmount,
+        inputAsset: getTrackedSwapAsset(
+          inputPosition?.fungible,
+          formState.inputFungibleId,
+          formState.inputChain,
+          currency,
+        ),
+        outputAsset: getTrackedSwapAsset(
+          outputPosition?.fungible,
+          formState.outputFungibleId,
+          formState.outputChain,
+          currency,
+        ),
         scope: isCrossChain ? 'Bridge' : 'Swap',
         warningWasShown: Boolean(showPriceImpactCallout),
         outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
@@ -349,7 +364,6 @@ function SwapFormComponent({
 
   const settingsDialog = useDialog2();
 
-  const { currency } = useCurrency();
   const { preferences, setPreferences } = usePreferences();
   const { globalPreferences } = useGlobalPreferences();
   const devForceShowOnboarding = useStore(swapOnboardingDevForceShowStore);

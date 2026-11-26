@@ -383,12 +383,13 @@ export function Search() {
    * In the onSelectedItemChange we also call navigate function to provide routing to the asset page
    */
   const handleFungibleClick = useCallback(
-    (fungibleId: string) => {
+    (fungibleId: string, assetName?: string) => {
       walletPort.request('addRecentSearch', { fungibleId });
       walletPort.request('trackUiEvent', {
         name: 'assetClicked',
         data: {
           assetId: fungibleId,
+          assetName,
           pathname,
           section: 'Search',
         },
@@ -414,7 +415,10 @@ export function Search() {
           navigate(`/perps/${encodeURIComponent(selectedItem.perpId)}`);
           return;
         }
-        handleFungibleClick(selectedItem.fungibleId);
+        handleFungibleClick(
+          selectedItem.fungibleId,
+          selectedItem.kind === 'result' ? selectedItem.fungible.name : undefined,
+        );
         navigate(`/asset/${selectedItem.fungibleId}`);
       },
       stateReducer: (state, actionAndChanges) => {
@@ -484,7 +488,7 @@ export function Search() {
             {...getItemProps({
               item,
               index,
-              onClick: () => handleFungibleClick(item.fungibleId),
+              onClick: () => handleFungibleClick(item.fungibleId, item.fungible.name),
             })}
           />
         ),

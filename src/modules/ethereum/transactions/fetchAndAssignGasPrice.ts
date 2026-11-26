@@ -10,7 +10,7 @@ import { assignGasPrice } from './gasPrices/assignGasPrice';
 import { hasNetworkFee } from './gasPrices/hasNetworkFee';
 import { getGas } from './getGas';
 import type { ChainGasPrice } from './gasPrices/types';
-import { fetchGasPrice } from './gasPrices/requests';
+import { fetchGasPrice, fetchGasPriceFromNode } from './gasPrices/requests';
 import { wrappedGetNetworkById } from './wrappedGetNetworkById';
 import { resolveChainId } from './resolveChainId';
 import { hexifyTxValues } from './gasPrices/hexifyTxValues';
@@ -68,14 +68,18 @@ export async function estimateGas(transaction: IncomingTransaction, networks: Ne
   return estimateGasForNetwork(transaction, network);
 }
 
+type GasPriceSource = { source: NetworksSource; apiClient: ZerionApiClient } | 'node';
+
 async function fetchGasPriceForTransaction(
   transaction: IncomingTransaction,
   networks: Networks,
-  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient },
+  gasPriceSource: GasPriceSource,
 ): Promise<ChainGasPrice> {
   const chainId = resolveChainId(transaction);
   const network = wrappedGetNetworkById(networks, chainId);
-  return fetchGasPrice({ network, source, apiClient });
+  return gasPriceSource === 'node'
+    ? fetchGasPriceFromNode(network)
+    : fetchGasPrice({ ...gasPriceSource, network });
 }
 
 export function hasGasEstimation(transaction: IncomingTransaction) {
@@ -84,14 +88,13 @@ export function hasGasEstimation(transaction: IncomingTransaction) {
 }
 
 /**
- * This method checks if gas and network-fee related fields are present,
- * and if necessary, makes eth_estimateGas and eth_gasPrice calls and
- * applies the results to the transaction
+ * Estimates the gas limit and fills in missing fees. The foreground uses ZPI fee
+ * presets with an RPC fallback; background signing uses the node's eth_gasPrice directly.
  */
 export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
   transaction: T,
   networks: Networks,
-  { source, apiClient }: { source: NetworksSource; apiClient: ZerionApiClient },
+  gasPriceSource: GasPriceSource,
 ) {
   const [gas, networkFeeInfo] = await Promise.all([
     hasGasEstimation(transaction)
@@ -102,10 +105,7 @@ export async function prepareGasAndNetworkFee<T extends IncomingTransaction>(
       : estimateGas(transaction, networks),
     hasNetworkFee(transaction)
       ? null
-      : fetchGasPriceForTransaction(transaction, networks, {
-          source,
-          apiClient,
-        }),
+      : fetchGasPriceForTransaction(transaction, networks, gasPriceSource),
   ]);
   return produce(transaction, (draft) => {
     if (gas && (getGas(transaction) == null || gas > Number(getGas(transaction)))) {

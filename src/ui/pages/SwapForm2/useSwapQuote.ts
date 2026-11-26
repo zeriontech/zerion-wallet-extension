@@ -87,6 +87,8 @@ export function useSwapQuote({
     context: 'Swap',
     pathname,
     inputFiatValue,
+    inputFungible: inputPosition?.fungible,
+    outputFungible: outputPosition?.fungible,
   });
 
   const quotes = useMemo(

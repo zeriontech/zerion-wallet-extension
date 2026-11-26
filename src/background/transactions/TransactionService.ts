@@ -19,7 +19,6 @@ import {
 import { normalizeChainId } from 'src/shared/normalizeChainId';
 import { getNetworkByChainId, getNetworkById } from 'src/modules/networks/networks-api';
 import { NetworkId } from 'src/modules/networks/NetworkId';
-import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import type { ChainId } from 'src/modules/ethereum/transactions/ChainId';
 import {
@@ -32,6 +31,7 @@ import type { Wallet } from 'src/shared/types/Wallet';
 import { invariant } from 'src/shared/invariant';
 import { ensureSolanaResult } from 'src/modules/shared/transactions/helpers';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
+import { INTERNAL_SYMBOL_CONTEXT } from '../constants';
 import { emitter } from '../events';
 import {
   toEthersV5Receipt,
@@ -186,13 +186,19 @@ export class TransactionService {
 
   /**
    * Whether the backend keeps history for the network behind {key}. Local
-   * entries don't record which mode they were created in, so both sources are
-   * asked: EIP-155 ids don't collide between them. Unknown networks and failed
-   * lookups answer `false`, so their entries are kept until a later check.
+   * entries don't record which mode they were created in. When testnet mode
+   * is on, try that source too. Keep entries whose history cannot be confirmed.
    */
   private async networkHasHistory(key: TransactionNetworkKey) {
-    const sources: NetworksSource[] = ['mainnet', 'testnet'];
-    for (const source of sources) {
+    for (const source of ['mainnet', 'testnet'] as const) {
+      if (source === 'testnet') {
+        const preferences = await this.options?.getWallet().getPreferences({
+          context: INTERNAL_SYMBOL_CONTEXT,
+        });
+        if (!preferences?.testnetMode?.on) {
+          break;
+        }
+      }
       try {
         const network =
           key === NetworkId.Solana

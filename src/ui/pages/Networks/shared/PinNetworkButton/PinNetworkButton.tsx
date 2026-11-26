@@ -1,9 +1,6 @@
 import React from 'react';
 import { useMutation } from '@tanstack/react-query';
-import {
-  mainNetworksStore,
-  testenvNetworksStore,
-} from 'src/modules/networks/networks-store.client';
+import { updateNetworks } from 'src/modules/networks/networks-store.client';
 import { createChain } from 'src/modules/networks/Chain';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import { Networks } from 'src/modules/networks/Networks';
@@ -15,10 +12,6 @@ import UnpinIcon from 'jsx:src/ui/assets/unpin.svg';
 import * as styles from './styles.module.css';
 
 export const pinButtonStyles = styles;
-
-async function updateNetworks() {
-  return Promise.all([mainNetworksStore.update(), testenvNetworksStore.update()]);
-}
 
 export function usePinNetworkMutation() {
   return useMutation({

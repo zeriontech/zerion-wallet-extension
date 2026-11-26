@@ -11,11 +11,6 @@ import { dnaServiceEmitter } from 'src/modules/dna-service/dna.background';
 import { estimateSessionExpiry } from 'src/background/user-activity';
 import { ensureSolanaResult, getTxSender } from 'src/modules/shared/transactions/helpers';
 import { getGas } from 'src/modules/ethereum/transactions/getGas';
-import { backgroundQueryClient } from 'src/modules/query-client/query-client.background';
-import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
-import type { Params as FungibleFullInfoParams } from 'src/modules/zerion-api/requests/asset-get-fungible-full-info';
-import type { Params as WalletGetSimplePositionsParams } from 'src/modules/zerion-api/requests/wallet-get-simple-positions';
-import type { NetworksSource } from 'src/modules/zerion-api/shared';
 import { WalletOrigin } from '../WalletOrigin';
 import { isMnemonicContainer, isPrivateKeyContainer } from '../types/validators';
 import { getError } from '../errors/getError';
@@ -25,7 +20,6 @@ import { onIdle } from '../onIdle';
 import type { TransactionContextParams } from '../types/SignatureContextParams';
 import type { SignTransactionResult } from '../types/SignTransactionResult';
 import type { OrderPlaced } from '../types/OrderPlaced';
-import { invariant } from '../invariant';
 import { normalizeAddress } from '../normalizeAddress';
 import { getAddressType } from '../wallet/classifiers';
 import { CONFIDENTIAL_EVENT_NAMES } from '../types/confidential-events';
@@ -57,28 +51,6 @@ function queryWalletProvider(account: Account, address: string) {
     context: INTERNAL_SYMBOL_CONTEXT,
   });
   return getProviderNameFromGroup(group);
-}
-
-function queryFungibleInfo(payload: FungibleFullInfoParams) {
-  const { currency, fungibleId } = payload;
-
-  return backgroundQueryClient.fetchQuery({
-    queryKey: ['assetGetFungibleFullInfo', fungibleId, currency],
-    queryFn: async () => ZerionAPI.assetGetFungibleFullInfo({ fungibleId, currency }),
-    staleTime: 20000,
-  });
-}
-
-/** Simple Positions: the balance reported is the one on the input chain */
-async function queryWalletSimplePositions(
-  payload: WalletGetSimplePositionsParams,
-  source: NetworksSource,
-) {
-  return backgroundQueryClient.fetchQuery({
-    queryKey: ['ZerionAPI.walletGetSimplePositions', payload, source],
-    queryFn: () => ZerionAPI.walletGetSimplePositions(payload, { source }),
-    staleTime: 10000,
-  });
 }
 
 function trackAppEvents({ account }: { account: Account }) {
@@ -308,18 +280,13 @@ function trackAppEvents({ account }: { account: Account }) {
   emitter.on(
     'assetClicked',
     gated(async (data) => {
-      const { assetId, pathname, section } = data;
-
-      const assetData = await queryFungibleInfo({
-        fungibleId: assetId,
-        currency: 'usd',
-      });
+      const { assetId, assetName, pathname, section } = data;
 
       const params = createParams({
         request_name: 'asset_clicked',
         screen_name: pathname,
         asset_id: assetId,
-        asset_name: assetData.data.fungible.name,
+        asset_name: assetName,
         section_id: section,
       });
       const event_name = 'General: Asset Clicked';
@@ -478,31 +445,11 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on(
     'quoteError',
-    gated(async (quoteErrorContext, source) => {
-      const [inputTokenPositions, inputAssetData, outputAssetData] = await Promise.all([
-        queryWalletSimplePositions({ address: quoteErrorContext.address, currency: 'usd' }, source),
-        quoteErrorContext.inputFungibleId
-          ? queryFungibleInfo({
-              fungibleId: quoteErrorContext.inputFungibleId,
-              currency: 'usd',
-            })
-          : null,
-        quoteErrorContext.outputFungibleId
-          ? queryFungibleInfo({
-              fungibleId: quoteErrorContext.outputFungibleId,
-              currency: 'usd',
-            })
-          : null,
-      ]);
-      const inputAsset = inputAssetData?.data?.fungible;
-      const outputAsset = outputAssetData?.data?.fungible;
-      invariant(inputAsset, 'Unable to fetch input asset data for quoteError event');
-      invariant(outputAsset, 'Unable to fetch output asset data for quoteError event');
-      const inputPosition = inputTokenPositions.data.find(
-        (position) =>
-          position.fungible.id === quoteErrorContext.inputFungibleId &&
-          position.chain.id === quoteErrorContext.inputChain,
-      );
+    gated((quoteErrorContext) => {
+      const { inputAsset, outputAsset } = quoteErrorContext;
+      const inputAmount = Number(quoteErrorContext.inputAmount);
+      const outputAmount =
+        quoteErrorContext.outputAmount == null ? null : Number(quoteErrorContext.outputAmount);
 
       const params = createParams({
         request_name: 'client_error',
@@ -519,28 +466,25 @@ function trackAppEvents({ account }: { account: Account }) {
 
         asset_address_sent: [quoteErrorContext.inputFungibleId],
         asset_address_received: [quoteErrorContext.outputFungibleId],
-        asset_name_sent: toMaybeArr([inputAsset.name]),
-        asset_name_received: toMaybeArr([outputAsset.name]),
+        asset_name_sent: toMaybeArr([inputAsset?.name]),
+        asset_name_received: toMaybeArr([outputAsset?.name]),
         input_chain: quoteErrorContext.inputChain,
         output_chain: quoteErrorContext.outputChain,
         contract_type: quoteErrorContext.contractType || null,
         slippage: quoteErrorContext.slippage,
 
-        asset_market_cap_sent: inputAsset.meta.marketCap,
-        asset_market_cap_received: outputAsset.meta.marketCap,
-        asset_fdv_sent: inputAsset.meta.fullyDilutedValuation,
-        asset_fdv_received: outputAsset.meta.fullyDilutedValuation,
-        usd_amount_sent: Number(quoteErrorContext.inputAmount) * (inputAsset.meta.price || 0),
-        asset_amount_sent: toMaybeArr([Number(quoteErrorContext.inputAmount)]),
+        asset_market_cap_sent: inputAsset?.usdMarketCap,
+        asset_market_cap_received: outputAsset?.usdMarketCap,
+        asset_fdv_sent: inputAsset?.usdFdv,
+        asset_fdv_received: outputAsset?.usdFdv,
+        usd_amount_sent:
+          inputAsset?.usdPrice == null ? undefined : inputAmount * inputAsset.usdPrice,
+        asset_amount_sent: toMaybeArr([inputAmount]),
         usd_amount_received:
-          quoteErrorContext.outputAmount != null
-            ? Number(quoteErrorContext.outputAmount) * (outputAsset.meta.price || 0)
-            : null,
-        asset_amount_received:
-          quoteErrorContext.outputAmount != null
-            ? toMaybeArr([Number(quoteErrorContext.outputAmount)])
-            : null,
-        wallet_token_balance: inputPosition?.amount.quantity ?? null,
+          outputAmount == null || outputAsset?.usdPrice == null
+            ? undefined
+            : outputAmount * outputAsset.usdPrice,
+        asset_amount_received: toMaybeArr([outputAmount]),
       });
       sendToMetabase('client_error', params);
       const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
@@ -550,46 +494,19 @@ function trackAppEvents({ account }: { account: Account }) {
 
   emitter.on(
     'transactionFormed',
-    gated(async (context) => {
-      const { formState, quote, enoughBalance, warningWasShown, outputAmountColor, scope } =
-        context;
-
-      // We query fungible info for input and output assets
-      // to provide fdv_asset_sent and fdv_asset_received
-      const inputAssetData = formState.inputFungibleId
-        ? await queryFungibleInfo({
-            fungibleId: formState.inputFungibleId,
-            currency: 'usd',
-          })
-        : null;
-      const inputAsset = inputAssetData?.data?.fungible;
-      const outputAssetData = formState.outputFungibleId
-        ? await queryFungibleInfo({
-            fungibleId: formState.outputFungibleId,
-            currency: 'usd',
-          })
-        : null;
-      const outputAsset = outputAssetData?.data?.fungible;
-      invariant(inputAsset, 'Unable to fetch input asset data for transactionFormed event');
-      invariant(outputAsset, 'Unable to fetch output asset data for transactionFormed event');
-
-      // Resolve the actual on-chain contract address for the relevant chain,
-      // matching the logic used by getTransferAssetAddress in
-      // addressActionToAnalytics so the Swap Form Filled Out and Transaction
-      // Signed events report the same asset addresses (not the fungible id).
-      const getFungibleAddress = (
-        fungible: typeof inputAsset,
-        chain: string | null | undefined,
-      ): string | null => {
-        const implementations = fungible.implementations;
-        if (chain && implementations[chain]?.address) {
-          return implementations[chain].address;
-        }
-        return Object.values(implementations).find((impl) => impl.address)?.address ?? null;
-      };
-      const outputChain = formState.outputChain ?? formState.inputChain;
-      const assetAddressSent = getFungibleAddress(inputAsset, formState.inputChain);
-      const assetAddressReceived = getFungibleAddress(outputAsset, outputChain);
+    gated((context) => {
+      const {
+        formState,
+        quote,
+        inputAsset,
+        outputAsset,
+        inputTokenAmount,
+        enoughBalance,
+        warningWasShown,
+        outputAmountColor,
+        scope,
+      } = context;
+      const inputAmount = inputTokenAmount == null ? null : Number(inputTokenAmount);
 
       const params = createParams({
         request_name: 'swap_form_filled_out',
@@ -599,13 +516,16 @@ function trackAppEvents({ account }: { account: Account }) {
 
         usd_amount_received: quote.outputAmount.usdValue ?? undefined,
         asset_amount_received: toMaybeArr([Number(quote.outputAmount.quantity)]),
-        asset_name_received: toMaybeArr([outputAsset.name]),
-        asset_address_received: toMaybeArr([assetAddressReceived]),
+        asset_name_received: toMaybeArr([outputAsset?.name]),
+        asset_address_received: toMaybeArr([outputAsset?.address]),
 
-        usd_amount_sent: Number(formState.inputAmount) * (inputAsset.meta.price || 0),
-        asset_amount_sent: toMaybeArr([Number(formState.inputAmount)]),
-        asset_name_sent: toMaybeArr([inputAsset.name]),
-        asset_address_sent: toMaybeArr([assetAddressSent]),
+        usd_amount_sent:
+          inputAmount == null || inputAsset?.usdPrice == null
+            ? undefined
+            : inputAmount * inputAsset.usdPrice,
+        asset_amount_sent: toMaybeArr([inputAmount]),
+        asset_name_sent: toMaybeArr([inputAsset?.name]),
+        asset_address_sent: toMaybeArr([inputAsset?.address]),
 
         gas: quote.transactionSwap?.evm ? Number(getGas(quote.transactionSwap.evm)) : undefined,
         network_fee: quote.networkFee?.amount?.usdValue ?? undefined,
@@ -621,8 +541,8 @@ function trackAppEvents({ account }: { account: Account }) {
         autoslippage: quote.autoSlippage ?? undefined,
         contract_type: quote.contractMetadata.name,
 
-        fdv_asset_sent: inputAsset.meta.fullyDilutedValuation ?? undefined,
-        fdv_asset_received: outputAsset.meta.fullyDilutedValuation ?? undefined,
+        fdv_asset_sent: inputAsset?.usdFdv ?? undefined,
+        fdv_asset_received: outputAsset?.usdFdv ?? undefined,
 
         enough_balance: enoughBalance,
         enough_allowance: Boolean(quote.transactionSwap),

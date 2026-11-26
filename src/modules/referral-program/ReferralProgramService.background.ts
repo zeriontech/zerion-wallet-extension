@@ -1,16 +1,16 @@
 import { ethers } from 'ethers';
 import { emitter } from 'src/background/events';
-import { isBareWallet, isSignerContainer } from 'src/shared/types/validators';
+import { isSignerContainer } from 'src/shared/types/validators';
 import type { Wallet } from 'src/shared/types/Wallet';
 import type { WalletContainer } from 'src/shared/types/WalletContainer';
 import { invariant } from 'src/shared/invariant';
 import { ZerionAPI } from 'src/modules/zerion-api/zerion-api.background';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
-import type { BareWallet } from 'src/shared/types/BareWallet';
 import { INTERNAL_ORIGIN, INTERNAL_SYMBOL_CONTEXT } from 'src/background/constants';
 import { getError } from 'src/shared/errors/getError';
 import { isSolanaAddress } from 'src/modules/solana/shared';
 import { isEthereumAddress } from 'src/shared/isEthereumAddress';
+import { getReferralSignerAddresses } from './getReferralSignerAddresses';
 import { readSavedReferrerData, saveReferrerData } from './storage';
 
 interface Options {
@@ -115,7 +115,13 @@ class ReferralProgramService {
     }
   }
 
-  async applyReferralCodeToAllWallets({ referralCode }: { referralCode: string }) {
+  async applyReferralCodeToAllWallets({
+    referralCode,
+    eligibleAddresses,
+  }: {
+    referralCode: string;
+    eligibleAddresses: string[];
+  }) {
     invariant(this.options, "Options aren't expected to become null");
     const walletFacade = this.options.getWallet();
 
@@ -127,30 +133,13 @@ class ReferralProgramService {
       context: INTERNAL_SYMBOL_CONTEXT,
     });
 
-    const signerWalletGroups = walletGroups?.filter((group) =>
-      isSignerContainer(group.walletContainer),
+    const eligible = new Set(eligibleAddresses.map(normalizeAddress));
+    const ownedEligibleAddresses = getReferralSignerAddresses(walletGroups).filter((address) =>
+      eligible.has(normalizeAddress(address)),
     );
-    const ownedBareWallets =
-      signerWalletGroups?.flatMap(
-        (group) => group.walletContainer.wallets.filter(isBareWallet) as BareWallet[],
-      ) || [];
-    const ownedAddresses = ownedBareWallets.map((wallet) => wallet.address);
-
-    const walletsMetaResponse =
-      ownedAddresses.length > 0
-        ? await ZerionAPI.getWalletsMeta({ identifiers: ownedAddresses })
-        : null;
-    const walletsMeta = walletsMetaResponse?.data || [];
-
-    const eligibleAddresses = walletsMeta
-      .filter(
-        (meta) =>
-          meta.membership.referrer === null && meta.membership.referralCode !== referralCode,
-      )
-      .map((meta) => meta.address);
 
     await Promise.allSettled(
-      eligibleAddresses.map((address) =>
+      ownedEligibleAddresses.map((address) =>
         this.signAndSendReferWalletMessage({ address, referralCode }),
       ),
     );

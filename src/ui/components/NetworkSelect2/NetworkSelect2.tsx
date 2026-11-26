@@ -19,10 +19,7 @@ import { Networks } from 'src/modules/networks/Networks';
 import { NetworkSelectValue } from 'src/modules/networks/NetworkSelectValue';
 import { useNetworks, useSearchNetworks } from 'src/modules/networks/useNetworks';
 import { createChain } from 'src/modules/networks/Chain';
-import {
-  mainNetworksStore,
-  testenvNetworksStore,
-} from 'src/modules/networks/networks-store.client';
+import { updateNetworks } from 'src/modules/networks/networks-store.client';
 import type { BlockchainType } from 'src/shared/wallet/classifiers';
 import { walletPort } from 'src/ui/shared/channels';
 import { useAddressParams } from 'src/ui/shared/user-address/useAddressParams';
@@ -46,10 +43,6 @@ import * as styles from './styles.module.css';
 const ROW_HEIGHT = 48;
 const SECTION_HEADER_HEIGHT = 28;
 const ALL_ROW_KEY = `__all__:${NetworkSelectValue.All}`;
-
-async function updateNetworks() {
-  return Promise.all([mainNetworksStore.update(), testenvNetworksStore.update()]);
-}
 
 type ListItem =
   | { kind: 'all'; key: string; selected: boolean }
@@ -279,7 +272,7 @@ function NetworkSelect2Content({
   const [searchValue, setSearchValue] = useState('');
   const [query, setQuery] = useState('');
   const debouncedSetQuery = useDebouncedCallback(
-    useCallback((value: string) => setQuery(value), []),
+    useCallback((value: string) => setQuery(value.trim()), []),
     200,
   );
 

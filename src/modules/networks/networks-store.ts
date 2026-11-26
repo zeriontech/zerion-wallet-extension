@@ -26,20 +26,21 @@ function mergeNetworkInfos(prevConfigs: NetworkInfo[], nextConfigs: NetworkInfo[
 
 type OtherNetworkData = {
   ethereumChainConfigs: EthereumChainConfig[];
-  visitedChains: string[] | null;
-  pinnedChains: string[] | null;
+  visitedChains?: string[] | null;
+  pinnedChains?: string[] | null;
 };
 
 export class NetworksStore extends Store<State> {
   private isReady = false;
   private networkConfigs: NetworkInfo[] = [];
-  private customNetworkConfigs: NetworkInfo[] = [];
+  // A local fallback for a backend ID must not suppress an explicit lookup.
+  private synthesizedBackendIds = new Set<string>();
   private loaderPromises: Record<string, Promise<Networks>> = {};
   /**
    * Slugs the backend has answered "not found" for in this session, per store
    * (so per source). Pinned and visited ids are never dropped from storage,
-   * so without this each unresolvable id would cost a search request on
-   * every load and update. Rejected requests are not recorded, so an outage
+   * so without this each unresolvable id could cost a search request on
+   * every explicit load. Rejected requests are not recorded, so an outage
    * does not hide a real network for the session.
    */
   private unresolvedSlugs = new Set<string>();
@@ -77,41 +78,60 @@ export class NetworksStore extends Store<State> {
     return this.source;
   }
 
-  private async updateNetworks() {
-    const chainConfigs = await this.getOtherNetworkData?.();
-    const savedChainConfigs = chainConfigs?.ethereumChainConfigs;
-    const visitedChains = chainConfigs?.visitedChains;
-    const pinnedChains = chainConfigs?.pinnedChains;
+  private async updateNetworks(chainConfigs?: OtherNetworkData) {
+    const localData = chainConfigs ?? (await this.getOtherNetworkData?.());
+    const savedChainConfigs = localData?.ethereumChainConfigs ?? [];
+    const customNetworkConfigs: NetworkInfo[] = [];
+    this.synthesizedBackendIds.clear();
+    if (savedChainConfigs.length) {
+      const knownIds = new Set(this.networkConfigs.map(({ id }) => id));
+      for (const { id, value } of savedChainConfigs) {
+        if (!knownIds.has(id)) {
+          customNetworkConfigs.push(toNetworkInfo(value, id));
+          if (!isCustomNetworkId(id)) {
+            this.synthesizedBackendIds.add(id);
+          }
+        }
+      }
+    }
     const networks = new Networks({
-      networks: mergeNetworkInfos(this.networkConfigs, this.customNetworkConfigs),
-      ethereumChainConfigs: savedChainConfigs || [],
-      visitedChains: visitedChains || [],
-      pinnedChains: pinnedChains || [],
+      networks: [...this.networkConfigs, ...customNetworkConfigs],
+      ethereumChainConfigs: savedChainConfigs,
+      visitedChains: localData?.visitedChains ?? [],
+      pinnedChains: localData?.pinnedChains ?? [],
     });
     this.setState({ networks });
     return networks;
   }
 
-  private async fetchNetworks({ chains = [], update }: { chains?: string[]; update?: boolean }) {
-    const existingNetworksCollection = this.getState().networks?.getNetworksCollection();
-    const shouldUpdateNetworksInfo =
-      update || chains.some((id) => !existingNetworksCollection?.[id]);
+  private async fetchNetworks(chains: string[] = []) {
     const existingNetworks = this.getState().networks;
-    if (!shouldUpdateNetworksInfo && existingNetworks) {
+    const existingNetworksCollection = existingNetworks?.getNetworksCollection();
+    const hydrate = !this.isReady;
+    if (
+      !hydrate &&
+      existingNetworks &&
+      chains.every(
+        (id) =>
+          (existingNetworksCollection?.[id] || this.unresolvedSlugs.has(id)) &&
+          !this.synthesizedBackendIds.has(id),
+      )
+    ) {
       return existingNetworks;
     }
 
     const chainConfigs = await this.getOtherNetworkData?.();
-    const savedChainConfigs = chainConfigs?.ethereumChainConfigs || [];
-    const visitedChains = chainConfigs?.visitedChains || [];
-    const pinnedChains = chainConfigs?.pinnedChains || [];
+    const savedChainConfigs = chainConfigs?.ethereumChainConfigs ?? [];
+    const requestedIds = new Set(chains);
+    if (hydrate) {
+      chainConfigs?.visitedChains?.forEach((id) => requestedIds.add(id));
+      chainConfigs?.pinnedChains?.forEach((id) => requestedIds.add(id));
+    }
     const params = { apiClient: this.apiClient, source: this.source };
 
-    const commonNetworkConfigs = update
-      ? []
-      : await getSupportedNetworks(params).catch(() => [] as NetworkInfo[]);
-    const knownNetworkConfigs = mergeNetworkInfos(this.networkConfigs, commonNetworkConfigs);
-    const knownIdSet = new Set(knownNetworkConfigs.map(({ id }) => id));
+    const commonNetworkConfigs = await getSupportedNetworks(params).catch((): NetworkInfo[] => []);
+    this.networkConfigs = mergeNetworkInfos(this.networkConfigs, commonNetworkConfigs);
+    const knownIdSet = new Set(this.networkConfigs.map(({ id }) => id));
 
     /**
      * chain/list/v1 has no `ids` param, so chains outside the supported list
@@ -119,10 +139,11 @@ export class NetworksStore extends Store<State> {
      * requested, visited and pinned slugs through an exact-match search.
      */
     const savedConfigsToFetch = savedChainConfigs.filter(
-      (config) => !isCustomNetworkId(config.id) && !knownIdSet.has(config.id),
+      ({ id }) =>
+        (hydrate || requestedIds.has(id)) && !isCustomNetworkId(id) && !knownIdSet.has(id),
     );
     const savedIdsToFetch = new Set(savedConfigsToFetch.map(({ id }) => id));
-    const slugsToFetch = Array.from(new Set([...chains, ...visitedChains, ...pinnedChains])).filter(
+    const slugsToFetch = [...requestedIds].filter(
       (id) =>
         !isCustomNetworkId(id) &&
         !knownIdSet.has(id) &&
@@ -143,11 +164,9 @@ export class NetworksStore extends Store<State> {
       result.status === 'fulfilled' && result.value ? [result.value] : [],
     );
 
-    this.networkConfigs = mergeNetworkInfos(knownNetworkConfigs, extraNetworkConfigs);
-    const fulfilledNetworkIdSet = new Set(this.networkConfigs.map(({ id }) => id));
-    this.customNetworkConfigs = savedChainConfigs
-      .filter((config) => !fulfilledNetworkIdSet.has(config.id))
-      .map((config) => toNetworkInfo(config.value, config.id));
+    if (extraNetworkConfigs.length) {
+      this.networkConfigs = mergeNetworkInfos(this.networkConfigs, extraNetworkConfigs);
+    }
 
     return this.updateNetworks();
   }
@@ -156,11 +175,11 @@ export class NetworksStore extends Store<State> {
     if (!this.isReady) {
       await this.load();
     }
-    const shouldUpdateNetworksInfo = this.getState()
-      .networks?.getEvmNetworks()
-      .every((network) => Networks.getChainId(network) !== chainId);
     const existingNetworks = this.getState().networks;
-    if (!shouldUpdateNetworksInfo && existingNetworks) {
+    if (
+      existingNetworks?.hasNetworkById(chainId) &&
+      !this.synthesizedBackendIds.has(existingNetworks.getNetworkById(chainId).id)
+    ) {
       return existingNetworks;
     }
     const network = await getNetworkByChainId(chainId, {
@@ -181,7 +200,7 @@ export class NetworksStore extends Store<State> {
   async load({ chains }: { chains?: string[] } = {}) {
     const key = JSON.stringify(chains || []);
     if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworks({ chains }).finally(() => {
+      this.loaderPromises[key] = this.fetchNetworks(chains).finally(() => {
         delete this.loaderPromises[key];
         this.isReady = true;
       });
@@ -213,32 +232,10 @@ export class NetworksStore extends Store<State> {
     return network;
   }
 
-  async update() {
-    /**
-     * A store that was never loaded has nothing to refresh: its first load()
-     * fetches the supported list plus every saved, visited and pinned chain
-     * anyway. Without this, update() on a cold store skips the bulk list and
-     * searches each slug one by one. The testnet store is cold for every
-     * non-testnet user on every service-worker wakeup and popup open, which
-     * turned each chainConfigStore change into N requests to the testnet host.
-     */
-    if (!this.isReady) {
-      return (
-        this.getState().networks ??
-        new Networks({
-          networks: [],
-          ethereumChainConfigs: [],
-          visitedChains: [],
-          pinnedChains: [],
-        })
-      );
+  /** Rebuild the view from local edits without discovering any networks remotely. */
+  async update(chainConfigs?: OtherNetworkData) {
+    if (this.getState().networks) {
+      return this.updateNetworks(chainConfigs);
     }
-    const key = 'update';
-    if (!this.loaderPromises[key]) {
-      this.loaderPromises[key] = this.fetchNetworks({ update: true }).finally(() => {
-        delete this.loaderPromises[key];
-      });
-    }
-    return this.loaderPromises[key];
   }
 }

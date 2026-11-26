@@ -6,18 +6,15 @@ import { NetworksStore } from './networks-store';
 import type { NetworkInfo } from './NetworkInfo';
 import type { Chain } from './Chain';
 
+async function getOtherNetworkData() {
+  await chainConfigStore.ready();
+  return chainConfigStore.getState();
+}
+
 export const mainNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getOtherNetworkData: async () => {
-      await chainConfigStore.ready();
-      const {
-        ethereumChainConfigs,
-        visitedChains = null,
-        pinnedChains = null,
-      } = chainConfigStore.getState();
-      return { ethereumChainConfigs, visitedChains, pinnedChains };
-    },
+    getOtherNetworkData,
     getApiClient: () => ZerionAPI,
     source: 'mainnet',
   },
@@ -26,15 +23,7 @@ export const mainNetworksStore = new NetworksStore(
 export const testenvNetworksStore = new NetworksStore(
   { networks: null },
   {
-    getOtherNetworkData: async () => {
-      await chainConfigStore.ready();
-      const {
-        ethereumChainConfigs,
-        visitedChains = null,
-        pinnedChains = null,
-      } = chainConfigStore.getState();
-      return { ethereumChainConfigs, visitedChains, pinnedChains };
-    },
+    getOtherNetworkData,
     getApiClient: () => ZerionAPI,
     source: 'testnet',
   },
@@ -100,7 +89,7 @@ export async function fetchNetworkByChainId({
   }
 }
 
-chainConfigStore.on('change', () => {
-  mainNetworksStore.update();
-  testenvNetworksStore.update();
+chainConfigStore.on('change', (chainConfigs) => {
+  mainNetworksStore.update(chainConfigs);
+  testenvNetworksStore.update(chainConfigs);
 });

@@ -500,6 +500,7 @@ export function PositionList({
                       name: 'assetClicked',
                       data: {
                         assetId: position.asset.id,
+                        assetName: position.asset.name,
                         pathname,
                         section: 'Overview',
                       },

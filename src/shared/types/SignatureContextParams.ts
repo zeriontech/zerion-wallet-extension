@@ -1,6 +1,7 @@
 import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction';
 import type { SwapFormState } from './SwapFormState';
 import type { Quote2 } from './Quote';
+import type { TrackedSwapAsset } from './QuoteErrorContext';
 
 type ClientScope = string | 'Swap' | 'Bridge' | 'Send' | 'Zerion DNA' | 'External Dapp';
 
@@ -57,6 +58,9 @@ export type TransactionFormedContext = {
   formState: SwapFormState;
   slippagePercent?: number;
   quote: Quote2;
+  inputAsset?: TrackedSwapAsset;
+  outputAsset?: TrackedSwapAsset;
+  inputTokenAmount: string | null;
   enoughBalance: boolean;
   warningWasShown: boolean;
   outputAmountColor: 'red' | 'grey';

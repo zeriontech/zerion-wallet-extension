@@ -406,7 +406,7 @@ function AddressNetworkList({
   const [searchValue, setSearchValue] = useState('');
   const [query, setQuery] = useState('');
   const debouncedSetSearchParams = useDebouncedCallback(
-    useCallback((value: string) => setQuery(value), []),
+    useCallback((value: string) => setQuery(value.trim()), []),
     300,
   );
 
