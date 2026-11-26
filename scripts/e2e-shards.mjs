@@ -112,6 +112,27 @@ const TESTS = [
     'an action for the signing wallet shows no Safe line and links to the wallet',
     4.0,
   ],
+  [
+    'safe-tx-preview-chain.spec.ts',
+    'a canonical SafeTx preview simulates on its domain chain',
+    4.0,
+  ],
+  [
+    'safe-tx-preview-chain.spec.ts',
+    'an unsupported domain chain keeps the origin chain and hides the network',
+    4.0,
+  ],
+  [
+    'safe-tx-preview-chain.spec.ts',
+    'a zero-padded hex domain chain id resolves to the same chain',
+    4.0,
+  ],
+  ['safe-tx-preview-chain.spec.ts', 'a lookalike SafeTx keeps the origin chain', 4.0],
+  [
+    'safe-tx-preview-chain.spec.ts',
+    'a non-SafeTx payload keeps simulating on the origin chain',
+    4.0,
+  ],
 
   // Dapp suite. These run against the hosted zerion-test-dapp deployment by
   // default; DAPP_URL overrides it for a local dapp.
