@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import browser from 'webextension-polyfill';
 import Logo from 'jsx:src/ui/assets/zerion-full-logo.svg';
 import CheckmarkIcon from 'jsx:src/ui/assets/checkmark-checked.svg';
@@ -14,7 +14,7 @@ import { notifyChallengeSolved } from '../turnstile/helpers';
 const WIDGET_WIDTH = 300;
 const WIDGET_HEIGHT = 88;
 const RESULT_TIMEOUT_MS = 60 * 1000;
-const CLOSE_DELAY_MS = 1500;
+const CLOSE_COUNTDOWN_SECONDS = 3;
 
 type Status = 'loading' | 'checking' | 'success' | 'error';
 
@@ -34,7 +34,7 @@ async function closeCurrentTab() {
 export function SecurityCheckPage() {
   const [status, setStatus] = useState<Status>('loading');
   const [attempt, setAttempt] = useState(0);
-  const closeTimerRef = useRef<number | undefined>(undefined);
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
   useEffect(() => {
     document.title = SECURITY_CHECK_DOCUMENT_TITLE;
@@ -47,19 +47,21 @@ export function SecurityCheckPage() {
   }, [status, attempt]);
 
   useEffect(() => {
-    return () => {
-      if (closeTimerRef.current != null) {
-        window.clearTimeout(closeTimerRef.current);
-      }
-    };
-  }, []);
+    if (status !== 'success' || secondsLeft == null) return;
+    if (secondsLeft <= 0) {
+      void closeCurrentTab();
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setSecondsLeft((current) => (current == null ? null : current - 1));
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [status, secondsLeft]);
 
   const handleToken = useCallback(() => {
     setStatus((current) => (current === 'success' ? current : 'success'));
+    setSecondsLeft((current) => current ?? CLOSE_COUNTDOWN_SECONDS);
     notifyChallengeSolved('page');
-    closeTimerRef.current = window.setTimeout(() => {
-      void closeCurrentTab();
-    }, CLOSE_DELAY_MS);
   }, []);
 
   const handleLoad = useCallback(() => {
@@ -69,6 +71,7 @@ export function SecurityCheckPage() {
   const handleRetry = useCallback(() => {
     setAttempt((current) => current + 1);
     setStatus('loading');
+    setSecondsLeft(null);
   }, []);
 
   const showFrame = status === 'loading' || status === 'checking';
@@ -120,6 +123,11 @@ export function SecurityCheckPage() {
                 <UIText kind="body/accent" color="var(--neutral-900)">
                   You’re all set
                 </UIText>
+                {secondsLeft != null && secondsLeft > 0 ? (
+                  <UIText kind="small/regular" color="var(--neutral-500)">
+                    Closing in {secondsLeft}…
+                  </UIText>
+                ) : null}
               </VStack>
             ) : null}
 
