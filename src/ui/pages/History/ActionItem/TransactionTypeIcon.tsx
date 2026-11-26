@@ -200,7 +200,11 @@ function TransferIcon({
   );
 }
 
-export function TransactionItemIcon({ addressAction }: { addressAction: AnyAddressAction }) {
+export function TransactionItemIcon({
+  addressAction,
+}: {
+  addressAction: Pick<AnyAddressAction, 'content' | 'type'>;
+}) {
   const approvals = addressAction.content?.approvals;
   const incomingTransfers = useMemo(
     () => addressAction.content?.transfers?.filter((t) => t.direction === 'in'),

@@ -226,7 +226,7 @@ async function setupRoutes({ context }: { context: BrowserContext }) {
     });
   });
 
-  await context.route('**/transaction/stream-swap-quotes/v2*', async (route: Route) => {
+  await context.route('**/transaction/stream-swap-quotes/v3*', async (route: Route) => {
     const chain = inputChainParam(route.request().url());
     const classic = chain === BSC_CHAIN;
     await route.fulfill({

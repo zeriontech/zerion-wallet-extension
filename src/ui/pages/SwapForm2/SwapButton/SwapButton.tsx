@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { Quote2 } from 'src/shared/types/Quote';
-import { toMultichainTransaction } from 'src/shared/types/Quote';
+import { isExecutableQuote, toMultichainTransaction } from 'src/shared/types/Quote';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
@@ -96,7 +96,7 @@ function isDisabled({
   if (isCrossEcosystem && !formState.to) return true;
   if (isCrossEcosystem && receiverEcosystemMismatch) return true;
   if (!quote) return true;
-  if (quote.error) return true;
+  if (!isExecutableQuote(quote)) return true;
   return false;
 }
 

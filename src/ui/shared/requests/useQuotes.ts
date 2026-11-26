@@ -3,8 +3,6 @@ import { isNumeric } from 'src/shared/isNumeric';
 import { getSlippageOptions } from 'src/ui/shared/forms/trading/getSlippageOptions';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Quote2 } from 'src/shared/types/Quote';
-import { ZERION_API_URL } from 'src/env/config';
-import { createUrl } from 'src/shared/createUrl';
 import type { SwapFormState } from 'src/shared/types/SwapFormState';
 import { createHeaders } from 'src/modules/zerion-api/shared';
 import { invariant } from 'src/shared/invariant';
@@ -15,6 +13,7 @@ import { applyPriceImpactOverride } from 'src/ui/features/dev-menu/applyPriceImp
 import { walletPort } from '../channels';
 import type { QuotesError } from './QuotesError';
 import { useEventSource } from './useEventSource';
+import { createSwapQuotesV3Url } from './createSwapQuotesV3Url';
 export interface QuotesData<T> {
   quotes: T[] | null;
   isLoading: boolean;
@@ -29,46 +28,6 @@ const QUOTES_EVENT_CODE_TO_MESSAGE = {
   404: 'No liquidity for this trade',
   400: 'Incorrect trade parameters',
 };
-
-function createSwapQuotesV2Url({
-  address,
-  currency,
-  formState,
-}: {
-  address: string;
-  currency: string;
-  formState: SwapFormState;
-}) {
-  const searchParams = new URLSearchParams();
-  searchParams.set('currency', currency);
-  if (formState.inputChain) {
-    searchParams.set('inputChain', formState.inputChain);
-  }
-  if (formState.outputChain) {
-    searchParams.set('outputChain', formState.outputChain);
-  }
-  searchParams.set('from', address);
-  if (formState.to) {
-    searchParams.set('to', formState.to);
-  }
-  if (formState.inputFungibleId) {
-    searchParams.set('inputFungibleId', formState.inputFungibleId);
-  }
-  if (formState.outputFungibleId) {
-    searchParams.set('outputFungibleId', formState.outputFungibleId);
-  }
-  if (formState.inputAmount) {
-    searchParams.set('inputAmount', formState.inputAmount);
-  }
-  if (formState.slippage) {
-    searchParams.set('slippage', formState.slippage);
-  }
-  return createUrl({
-    base: ZERION_API_URL,
-    pathname: '/transaction/stream-swap-quotes/v2',
-    searchParams,
-  }).toString();
-}
 
 export function useQuotesV2({
   address,
@@ -112,7 +71,7 @@ export function useQuotesV2({
     if (!chain) {
       return null;
     }
-    return createSwapQuotesV2Url({
+    return createSwapQuotesV3Url({
       address,
       currency,
       formState: { ...formState, slippage: slippage ?? undefined },

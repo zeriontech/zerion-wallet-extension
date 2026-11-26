@@ -400,6 +400,11 @@ class LocalDate {
     return relativeTime(this.date.getTime(), withoutSuffix);
   }
 
+  /** Relative to `now` rather than the wall clock, so a rendered label can follow an injected clock. */
+  from(now: number, withoutSuffix = false) {
+    return relativeTime(this.date.getTime(), withoutSuffix, now);
+  }
+
   valueOf() {
     return this.date.getTime();
   }
