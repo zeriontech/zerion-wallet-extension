@@ -63,6 +63,7 @@ import { useGlobalPreferences } from 'src/ui/features/preferences/usePreferences
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
 import { AddressActionNetworkFee } from '../SendTransaction/TransactionConfiguration/TransactionConfiguration';
+import { NetworkIcon } from 'src/ui/components/NetworkIcon';
 import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 import { getPreviewAccount, PreviewAccountLine } from './PreviewAccountLine';
 import { resolvePreviewChain } from './resolvePreviewChain';
@@ -92,6 +93,7 @@ function TypedDataDefaultView({
   clientScope: clientScopeParam,
   wallet,
   network,
+  showNetwork,
   typedDataRaw,
   typedData,
   interpretQuery,
@@ -107,6 +109,7 @@ function TypedDataDefaultView({
   clientScope: string | null;
   wallet: ExternallyOwnedAccount;
   network: NetworkInfo;
+  showNetwork: boolean;
   typedDataRaw: string;
   typedData: TypedData;
   interpretQuery: {
@@ -266,6 +269,12 @@ function TypedDataDefaultView({
           </HStack>
         </VStack>
         <VStack gap={16}>
+          {showNetwork ? (
+            <HStack gap={8} alignItems="center">
+              <NetworkIcon size={20} src={network.iconUrl} name={network.name} />
+              <UIText kind="small/regular">{network.name}</UIText>
+            </HStack>
+          ) : null}
           {addressAction ? (
             <VStack gap={4}>
               <PreviewAccountLine
@@ -501,9 +510,12 @@ function SignTypedDataContent({
 
   const { networks } = useNetworks(chain ? [chain.toString()] : undefined);
   // A canonical SafeTx belongs to the chain in its EIP-712 domain, which can
-  // differ from the chain the dapp has selected for its origin.
-  const previewChain =
+  // differ from the chain the dapp has selected for its origin. Only a domain
+  // chain is shown as the transaction's network; a fallback keeps today's
+  // origin-chain preview without adding a network row.
+  const preview =
     chain && networks ? resolvePreviewChain({ typedData, fallbackChain: chain, networks }) : null;
+  const previewChain = preview?.chain ?? null;
   const chainId = previewChain && networks ? networks.getChainId(previewChain) : null;
   const network = previewChain && networks ? networks.getByNetworkId(previewChain) : null;
 
@@ -576,6 +588,7 @@ function SignTypedDataContent({
             clientScope={clientScope}
             wallet={wallet}
             network={network}
+            showNetwork={preview?.source === 'domain'}
             typedDataRaw={typedDataRaw}
             typedData={typedData}
             interpretQuery={interpretQuery}

@@ -121,7 +121,7 @@ function resolve(typedData: TypedData) {
     typedData,
     fallbackChain: FALLBACK_CHAIN,
     networks,
-  }).toString();
+  }).chain.toString();
 }
 
 describe('resolvePreviewChain', () => {
@@ -199,8 +199,25 @@ describe('resolvePreviewChain', () => {
           typedData: safeTx({ chainId }),
           fallbackChain: createChain('base'),
           networks,
-        }).toString(),
+        }).chain.toString(),
       ).toBe('ethereum');
     },
   );
+
+  test.each([
+    ['a canonical domain chain', safeTx({ chainId: '0x002105' }), 'domain', 'base'],
+    ['a missing domain chain', safeTx({ domain: { chainId: undefined } }), 'fallback', 'ethereum'],
+    ['a zero domain chain', safeTx({ chainId: 0 }), 'fallback', 'ethereum'],
+    ['an unsupported domain chain', safeTx({ chainId: '999999' }), 'fallback', 'ethereum'],
+    ['a non-Safe payload with a domain chain', permit(), 'fallback', 'ethereum'],
+    ['a lookalike SafeTx', safeTx({ domain: { salt: '0x00' } }), 'fallback', 'ethereum'],
+  ])('%s reports %s provenance', (_name, typedData, source, chain) => {
+    const result = resolvePreviewChain({
+      typedData,
+      fallbackChain: FALLBACK_CHAIN,
+      networks,
+    });
+    expect(result.source).toBe(source);
+    expect(result.chain.toString()).toBe(chain);
+  });
 });

@@ -6,8 +6,21 @@ import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
 import type { Chain } from 'src/modules/networks/Chain';
 import type { Networks } from 'src/modules/networks/Networks';
 
+export type PreviewChainSource = 'domain' | 'fallback';
+
+export interface ResolvedPreviewChain {
+  chain: Chain;
+  /**
+   * `domain` when the chain came from a canonical SafeTx's EIP-712 domain;
+   * `fallback` when the preview keeps the chain the dapp has selected for its
+   * origin. Only a domain chain may be shown as the transaction's network.
+   */
+  source: PreviewChainSource;
+}
+
 /**
- * The chain a signature preview should render and simulate on.
+ * The chain a signature preview should render and simulate on, plus where it
+ * came from.
  *
  * A canonical SafeTx belongs to the chain in its EIP-712 domain, which can
  * differ from the chain the dapp currently has selected for its origin (for
@@ -23,13 +36,13 @@ export function resolvePreviewChain({
   typedData: TypedData;
   fallbackChain: Chain;
   networks: Pick<Networks, 'hasNetworkById' | 'getChainById'>;
-}): Chain {
+}): ResolvedPreviewChain {
   if (!isCanonicalSafeTx(typedData)) {
-    return fallbackChain;
+    return { chain: fallbackChain, source: 'fallback' };
   }
   const chainId = parseSafeTxChainId(typedData.domain.chainId);
   if (chainId == null || !networks.hasNetworkById(chainId)) {
-    return fallbackChain;
+    return { chain: fallbackChain, source: 'fallback' };
   }
-  return networks.getChainById(chainId);
+  return { chain: networks.getChainById(chainId), source: 'domain' };
 }

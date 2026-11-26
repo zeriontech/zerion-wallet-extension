@@ -125,6 +125,26 @@ test('a canonical SafeTx preview simulates on its domain chain', async ({
   expect(bodies.length).toBeGreaterThan(0);
   expect(bodies[0]?.chain).toBe('base');
   expect(bodies.every((body) => body.chain === 'base')).toBe(true);
+
+  await expect(page.getByText('Base', { exact: true })).toBeVisible();
+  await expect(page.getByText('Ethereum', { exact: true })).toHaveCount(0);
+});
+
+test('an unsupported domain chain keeps the origin chain and hides the network', async ({
+  context,
+  extensionPopupUrl,
+  page,
+}) => {
+  const bodies = await recordSimulation(context);
+  await openPreview(page, extensionPopupUrl, {
+    ...safeTxTypedData,
+    domain: { ...safeTxTypedData.domain, chainId: 999999 },
+  });
+
+  expect(bodies.length).toBeGreaterThan(0);
+  expect(bodies[0]?.chain).toBe('ethereum');
+  await expect(page.getByText('Base', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Ethereum', { exact: true })).toHaveCount(0);
 });
 
 test('a zero-padded hex domain chain id resolves to the same chain', async ({
@@ -166,4 +186,6 @@ test('a non-SafeTx payload keeps simulating on the origin chain', async ({
   expect(bodies.length).toBeGreaterThan(0);
   expect(bodies[0]?.chain).toBe('ethereum');
   expect(bodies.every((body) => body.chain === 'ethereum')).toBe(true);
+  await expect(page.getByText('Base', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Ethereum', { exact: true })).toHaveCount(0);
 });
