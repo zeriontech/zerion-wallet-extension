@@ -43,6 +43,8 @@ import {
 } from 'src/ui/features/pending-transactions/getLocalPendingActions';
 import { withTransactionIdentity } from 'src/ui/features/pending-transactions/lookupTransactionIdentity';
 import { useReadyClock } from 'src/ui/features/pending-transactions/useReadyClock';
+import { reconcileBroadcastLocks } from 'src/ui/features/pending-transactions/broadcastLockStore';
+import type { PendingAction } from 'src/modules/zerion-api/requests/wallet-get-actions';
 import { ActionsList } from './ActionsList';
 import { ActionSearch } from './ActionSearch';
 import { isMatchForAllWords } from './matchSearcQuery';
@@ -51,12 +53,20 @@ import * as styles from './styles.module.css';
 import { getHistoryActionsParams } from './getHistoryActionsParams';
 import { mergeHistoryActions } from './mergeHistoryActions';
 import { useHistoryFilterParams, HistoryFiltersButton } from './HistoryFilters';
+import { PendingActionButtons } from './PendingActionButtons';
 
 const HistoryRefetchContext = createContext<() => void>(() => {});
 
 /** Re-fetches History's first page together with its pending lists. */
 export function useRefetchHistory(): () => void {
   return useContext(HistoryRefetchContext);
+}
+
+function PendingRowActions({ item, nowMs }: { item: PendingAction; nowMs: number }) {
+  const refetchHistory = useRefetchHistory();
+  return (
+    <PendingActionButtons item={item} nowMs={nowMs} placement="row" onSettled={refetchHistory} />
+  );
 }
 
 function useMinedAndPendingAddressActions({
@@ -188,14 +198,22 @@ function useMinedAndPendingAddressActions({
   const hiddenIds = useStore(hiddenPendingActionsStore);
 
   const [pendingRows, setPendingRows] = useState<LocalAddressAction[]>([]);
-  const { actions, pending, unsigned, queryData, refetch } = useWalletActions(
-    requestParams,
-    { source },
-    {
-      enabled: isSupportedByBackend && isWalletGroupFetched,
-      localPending: pendingRows,
-    },
-  );
+  const { actions, pending, unsigned, pendingListsAvailable, queryData, refetch } =
+    useWalletActions(
+      requestParams,
+      { source },
+      {
+        enabled: isSupportedByBackend && isWalletGroupFetched,
+        localPending: pendingRows,
+      },
+    );
+
+  const listsUnfiltered = !requestParams.chain && !hasContentFilter(requestParams);
+  useEffect(() => {
+    if (listsUnfiltered && pendingListsAvailable && pending && unsigned) {
+      reconcileBroadcastLocks({ pending, unsigned });
+    }
+  }, [listsUnfiltered, pendingListsAvailable, pending, unsigned]);
 
   const merged = useMemo(() => {
     if (!localAddressActions) {
@@ -457,6 +475,7 @@ export function HistoryList({
           actions={actions ?? []}
           pendingEntries={pendingEntries}
           nowMs={nowMs}
+          renderPendingActions={(item) => <PendingRowActions item={item} nowMs={nowMs} />}
           contentRequests={contentRequests}
           hasMore={Boolean(queryData.hasNextPage)}
           isLoading={isLoading}
