@@ -87,7 +87,6 @@ function isExtensionUiContext(context: ChallengeContextInfo): boolean {
 interface ActiveChallenge {
   createdAt: number;
   dismissedAt: number | null;
-  cooldownUntil: number | null;
   issuedSurface: ChallengeSurface | null;
   presentedSurface: ChallengeSurface | null;
   presenting: Promise<void> | null;
@@ -146,7 +145,6 @@ export class ChallengeCoordinator {
       this.active = {
         createdAt: this.now(),
         dismissedAt: null,
-        cooldownUntil: null,
         issuedSurface: null,
         presentedSurface: null,
         presenting: null,
@@ -226,7 +224,12 @@ export class ChallengeCoordinator {
         this.markIssued(active, 'page');
         return;
       }
-      await this.deps.setStoredTabId(null);
+      if (!tab) {
+        // A challenge can wake the worker before the tab removal event arrives.
+        await this.onTabRemoved(storedTabId);
+      } else {
+        await this.deps.setStoredTabId(null);
+      }
     }
 
     // An open extension UI gets the sheet even during the page cooldown: the
@@ -238,8 +241,8 @@ export class ChallengeCoordinator {
       return;
     }
 
-    const now = this.now();
-    if (active.dismissedAt != null && active.cooldownUntil != null && now < active.cooldownUntil) {
+    const dismissedAt = active.dismissedAt ?? (await this.deps.getDismissedAt());
+    if (dismissedAt != null && this.now() < dismissedAt + this.cooldownMs) {
       await this.deps.setBadge();
       return;
     }
@@ -254,7 +257,6 @@ export class ChallengeCoordinator {
     if (tabId == null) return;
     this.awaitingFocus = false;
     active.dismissedAt = null;
-    active.cooldownUntil = null;
     await this.deps.setDismissedAt(null);
     await this.deps.setStoredTabId(tabId);
     this.markIssued(active, 'page');
@@ -270,10 +272,10 @@ export class ChallengeCoordinator {
   async onTabRemoved(tabId: number): Promise<void> {
     const storedTabId = await this.deps.getStoredTabId();
     if (storedTabId !== tabId) return;
+    // A tracked page can be closed while the worker is stopped. Record the
+    // dismissal before discarding the tab ID so a concurrent challenge sees it.
+    await this.markDismissed('page');
     await this.deps.setStoredTabId(null);
-    if (this.active && this.active.presentedSurface === 'page') {
-      await this.markDismissed('page');
-    }
   }
 
   async markSolved(surface: ChallengeSurface): Promise<void> {
@@ -310,11 +312,11 @@ export class ChallengeCoordinator {
   }
 
   async markDismissed(surface: ChallengeSurface): Promise<void> {
+    if (!this.active && !(await this.deps.getPending())) return;
     const active = this.active;
-    if (!active || active.dismissedAt != null) return;
+    if (active?.dismissedAt != null) return;
     const now = this.now();
-    active.dismissedAt = now;
-    active.cooldownUntil = now + this.cooldownMs;
+    if (active) active.dismissedAt = now;
     await this.deps.setDismissedAt(now);
     await this.deps.setBadge();
     this.deps.trackDismissed(surface);

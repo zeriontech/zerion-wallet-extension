@@ -11,5 +11,6 @@ Consequences:
 - The rule must never match web pages. `tabIds: [TAB_ID_NONE]` plus the extension initiator is the boundary; a page request from `app.zerion.io` cannot match.
 - The full Cookie header is required because `set` replaces an existing header. `src/background/cloudflare/cookies.ts` builds it from all cookies applicable to the host, one value per name, using the freshest `cf_clearance` across partitions.
 - Settings can invalidate a still-unexpired clearance (Cloudflare Precursor). A challenged call then starts a new resolution; the flow does not assume the cookie is sufficient.
+- The 30-minute Security check tab cooldown uses the dismissal timestamp in Chrome session storage. It survives worker suspension, including when closing the tab is what wakes the worker. It does not block the sheet in an open extension UI.
 - Firefox is not built. It has a background page rather than a service worker, no `chrome.runtime.getContexts`, and different cookie partitioning; the feature flag is gated to Chrome.
 - Chrome 119+ is required for `partitionKey` in `chrome.cookies.getAll` and `chrome.runtime.getContexts`.

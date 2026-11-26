@@ -193,8 +193,8 @@ describe('ChallengeCoordinator surfaces', () => {
     expect(deps.createCheckTab).toHaveBeenCalledTimes(1);
   });
 
-  it('does not reopen the page for 30 minutes after the user closes it', async () => {
-    const { deps, setTime } = setup({ createTabId: 7 });
+  it('keeps the 30-minute cooldown across a service-worker restart after dismissal', async () => {
+    const { deps, setTime } = setup({ createTabId: 7, now: 1000 });
     const instance = coordinator(deps);
 
     await instance.handleChallenge({ endpoint: '/first' });
@@ -208,12 +208,38 @@ describe('ChallengeCoordinator surfaces', () => {
       surface: 'page',
     });
 
-    await instance.handleChallenge({ endpoint: '/during-cooldown' });
+    const restarted = coordinator(deps);
+    setTime(1000 + 30 * 60 * 1000 - 1);
+    await restarted.handleChallenge({ endpoint: '/during-cooldown' });
     expect(deps.createCheckTab).toHaveBeenCalledTimes(1);
 
-    setTime(30 * 60 * 1000 + 1);
-    await instance.handleChallenge({ endpoint: '/after-cooldown' });
+    setTime(1000 + 30 * 60 * 1000);
+    await restarted.handleChallenge({ endpoint: '/after-cooldown' });
     expect(deps.createCheckTab).toHaveBeenCalledTimes(2);
+  });
+
+  it('starts the cooldown when closing the page wakes a stopped service worker', async () => {
+    const { deps, setTime } = setup({ createTabId: 7 });
+    await coordinator(deps).handleChallenge({ endpoint: '/first' });
+
+    const restarted = coordinator(deps);
+    setTime(1000);
+    await restarted.onTabRemoved(7);
+
+    expect(deps.setBadge).toHaveBeenCalled();
+    expect(deps.trackDismissed).toHaveBeenCalledWith('page');
+    await restarted.handleChallenge({ endpoint: '/after-close' });
+    expect(deps.createCheckTab).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not reopen a closed page if a challenge arrives before the tab removal event', async () => {
+    const { deps } = setup({ storedTabId: 7, pending: true });
+    vi.mocked(deps.getTab).mockResolvedValue(null);
+
+    await coordinator(deps).handleChallenge({ endpoint: '/first-after-close' });
+
+    expect(deps.setBadge).toHaveBeenCalled();
+    expect(deps.createCheckTab).not.toHaveBeenCalled();
   });
 
   it('shows the sheet when the popup asks about a challenge persisted by a restarted worker', async () => {
