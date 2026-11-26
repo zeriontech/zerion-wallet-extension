@@ -19,6 +19,7 @@ interface SetupOptions {
   pending?: boolean;
   dismissedAt?: number | null;
   now?: number;
+  offscreenSolve?: false | (() => Promise<boolean>);
 }
 
 function setup(initial: SetupOptions = {}) {
@@ -28,6 +29,7 @@ function setup(initial: SetupOptions = {}) {
   let now = initial.now ?? 0;
   const focused = initial.focused ?? true;
   const contexts = initial.contexts ?? [];
+  const offscreenSolve = initial.offscreenSolve ?? false;
   const createTabId = initial.createTabId === undefined ? 42 : initial.createTabId;
   const order: string[] = [];
 
@@ -72,6 +74,10 @@ function setup(initial: SetupOptions = {}) {
       order.push('refresh-clearance');
       return { hasClearance: true };
     }),
+    attemptOffscreenSolve:
+      typeof offscreenSolve === 'function'
+        ? vi.fn(offscreenSolve)
+        : vi.fn(async () => offscreenSolve),
     trackIssued: vi.fn(),
     trackSolved: vi.fn(),
     trackDismissed: vi.fn(),
@@ -206,6 +212,7 @@ describe('ChallengeCoordinator surfaces', () => {
       pending: true,
       dismissed: true,
       surface: 'page',
+      silent: false,
     });
 
     const restarted = coordinator(deps);
@@ -248,12 +255,76 @@ describe('ChallengeCoordinator surfaces', () => {
       pending: true,
       dismissed: false,
       surface: null,
+      silent: false,
     });
     expect(deps.trackIssued).toHaveBeenCalledWith('sheet');
   });
 });
 
 describe('ChallengeCoordinator resolution', () => {
+  it('solves silently in the offscreen document without showing any UI', async () => {
+    const { deps } = setup({ offscreenSolve: async () => true });
+    const instance = coordinator(deps);
+
+    await instance.handleChallenge({ endpoint: '/wallet' });
+
+    expect(deps.attemptOffscreenSolve).toHaveBeenCalledTimes(1);
+    expect(deps.notifySheet).not.toHaveBeenCalled();
+    expect(deps.createCheckTab).not.toHaveBeenCalled();
+    expect(deps.refreshClearance).toHaveBeenCalled();
+    expect(deps.trackIssued).not.toHaveBeenCalled();
+    expect(deps.trackSolved).toHaveBeenCalledWith('offscreen');
+    expect(await instance.waitForSolve(false)).toBe(true);
+  });
+
+  it('falls back to the visible surface when the offscreen attempt fails', async () => {
+    const { deps } = setup({ offscreenSolve: async () => false });
+    const instance = coordinator(deps);
+
+    await instance.handleChallenge({ endpoint: '/wallet' });
+
+    expect(deps.attemptOffscreenSolve).toHaveBeenCalledTimes(1);
+    expect(deps.createCheckTab).toHaveBeenCalledTimes(1);
+    expect(deps.trackIssued).toHaveBeenCalledWith('page');
+  });
+
+  it('reports a silent attempt in state so the UI does not open the sheet yet', async () => {
+    let finishOffscreen!: (solved: boolean) => void;
+    const { deps } = setup({
+      offscreenSolve: () =>
+        new Promise<boolean>((resolve) => {
+          finishOffscreen = resolve;
+        }),
+    });
+    const instance = coordinator(deps);
+    const handling = instance.handleChallenge({ endpoint: '/wallet' });
+    await Promise.resolve();
+
+    expect(await instance.getState()).toMatchObject({ pending: true, silent: true });
+    finishOffscreen(false);
+    await handling;
+    expect(await instance.getState()).toMatchObject({ pending: true, silent: false });
+  });
+
+  it('stops the fallback when a visible surface solves during the silent attempt', async () => {
+    let finishOffscreen!: (solved: boolean) => void;
+    const { deps } = setup({
+      offscreenSolve: () =>
+        new Promise<boolean>((resolve) => {
+          finishOffscreen = resolve;
+        }),
+    });
+    const instance = coordinator(deps);
+    const handling = instance.handleChallenge({ endpoint: '/wallet' });
+    await Promise.resolve();
+    await instance.markSolved('sheet');
+    finishOffscreen(false);
+    await handling;
+
+    expect(deps.createCheckTab).not.toHaveBeenCalled();
+    expect(deps.notifySheet).not.toHaveBeenCalled();
+  });
+
   it('wakes every waiter after a solve', async () => {
     const { deps, order } = setup({ createTabId: 11 });
     const instance = coordinator(deps);

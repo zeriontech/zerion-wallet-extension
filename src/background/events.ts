@@ -18,6 +18,7 @@ import type {
 import type { NetworkFeeLevelChangedParams } from 'src/shared/types/network-fee-events';
 import type { LabelAddressCopiedParams } from 'src/shared/types/label-events';
 import type { WindowType } from 'src/shared/types/UrlContext';
+import type { SolveSurface } from 'src/shared/cloudflareChallenge';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { OrderPlaced } from 'src/shared/types/OrderPlaced';
 import type { QuoteErrorContext } from 'src/shared/types/QuoteErrorContext';
@@ -101,7 +102,7 @@ export type BackgroundEvents = {
     source: 'ui' | 'background';
     surface: 'sheet' | 'page';
   }) => void;
-  cloudflareChallengeSolved: (data: { surface: 'sheet' | 'page' }) => void;
+  cloudflareChallengeSolved: (data: { surface: SolveSurface }) => void;
   cloudflareChallengeDismissed: (data: { surface: 'sheet' | 'page' }) => void;
   assetClicked: (data: AssetClickedParams) => void;
   passkeyLoginEnabled: () => void;

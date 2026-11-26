@@ -61,6 +61,7 @@
     "alarms",
     "cookies",
     "declarativeNetRequestWithHostAccess",
+    "offscreen",
     "scripting",
     "sidePanel",
     "storage",

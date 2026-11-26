@@ -30,6 +30,7 @@ export const PAGE_ENTRIES = {
   popup: 'ui/popup.html',
   ledger: 'ui/hardware-wallet/ledger.html',
   sidepanel: 'ui/sidepanel.html',
+  offscreen: 'ui/offscreen.html',
 };
 
 export function buildManifest({ source, platform, emitted, outDir }) {
