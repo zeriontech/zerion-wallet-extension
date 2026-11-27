@@ -97,9 +97,9 @@ describe('Hyperliquid referral prompt', () => {
       await expect(page.getByText('Save 4% on Hyperliquid fees')).toBeVisible({
         timeout: 30_000,
       });
-      await expect(page.getByText('Zerion earns')).toBeVisible();
-      await expect(page.getByText('10% of your fees, paid by Hyperliquid')).toBeVisible();
+      await expect(page.getByText('4% of trading fees')).toBeVisible();
       await expect(page.getByText('One message, no funds move')).toBeVisible();
+      await expect(page.getByText(/Zerion earns|10% of your fees/i)).toHaveCount(0);
       await expect(page.getByText(/can't be changed later/i)).toBeVisible();
 
       await page.getByRole('button', { name: /Apply code/i }).click();

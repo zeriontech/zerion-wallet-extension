@@ -169,10 +169,6 @@ export function HyperliquidReferralPrompt({
                 <VStack gap={0}>
                   <DisclosureRow label="Your discount" value="4% of trading fees" />
                   <DisclosureRow label="Applies to" value="Hyperliquid trading fees" />
-                  <DisclosureRow
-                    label="Zerion earns"
-                    value="10% of your fees, paid by Hyperliquid"
-                  />
                   <DisclosureRow label="What you sign" value="One message, no funds move" />
                 </VStack>
               </Frame>
