@@ -94,6 +94,11 @@ const TESTS = [
   ],
   ['settings.spec.ts', 'Settings › Matches snapshot', 3.3],
   ['settings.spec.ts', 'Settings › User can lock and unlock wallet', 3.8],
+  [
+    'settings.spec.ts',
+    'Settings › Extra Fee Protection is on by default and can be turned off',
+    3.5,
+  ],
   ['safe-tx-preview.spec.ts', 'a clean SafeTx shows the Gray note without Unverified', 4.0],
   [
     'safe-tx-preview.spec.ts',
@@ -139,6 +144,21 @@ const TESTS = [
   ['safe-tx-details.spec.ts', 'shows the refund row when a refund field is non-zero', 3.0],
   ['safe-tx-details.spec.ts', 'stays visible when the simulation fails', 3.0],
   ['safe-tx-details.spec.ts', 'is hidden for a non-device signer', 3.0],
+  [
+    'hyperliquid-signatures.spec.ts',
+    'Hyperliquid signatures › blocks a non-zero builder-fee approval on the official origin',
+    4.0,
+  ],
+  [
+    'hyperliquid-signatures.spec.ts',
+    'Hyperliquid signatures › shows a malformed fee as blocked',
+    3.5,
+  ],
+  [
+    'hyperliquid-signatures.spec.ts',
+    'Hyperliquid signatures › renders Enable trading in plain words and keeps the payload',
+    4.0,
+  ],
 
   // Dapp suite. These run against the hosted zerion-test-dapp deployment by
   // default; DAPP_URL overrides it for a local dapp.
