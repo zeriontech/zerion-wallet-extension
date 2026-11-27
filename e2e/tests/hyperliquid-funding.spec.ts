@@ -129,10 +129,12 @@ describe('Hyperliquid funding sheet', () => {
       await expect(page).toHaveURL(/.*\/perps\/deposit\?.*inputChain=ethereum.*/);
 
       await page.getByRole('button', { name: 'Dismiss onboarding' }).click();
-      await expect(page.getByText('Test Bridge')).toBeVisible({ timeout: 20_000 });
-      await expect(page.getByText('Network fee')).toBeVisible();
-      await expect(page.getByText('Bridge fee')).toBeVisible();
-      await expect(page.getByText('$2.50')).toBeVisible();
+      await expect(page.getByText('Network Fee')).toBeVisible({ timeout: 20_000 });
+      await page.getByText('Details', { exact: true }).click();
+      await expect(page.getByText('Provider')).toBeVisible();
+      await expect(page.getByText('Test Bridge')).toBeVisible();
+      await expect(page.getByText('Zerion Fee')).toBeVisible();
+      await expect(page.getByText('Free')).toBeVisible();
     },
   );
 
