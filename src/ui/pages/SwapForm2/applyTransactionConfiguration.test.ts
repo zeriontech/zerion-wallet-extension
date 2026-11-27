@@ -61,7 +61,7 @@ const PRESET_FAST: CustomConfiguration = {
 };
 
 describe('applyTransactionConfiguration', () => {
-  test('swap price change scales the approve by one effective-price ratio', () => {
+  test('swap price change gives a same-shape approve the swap fees', () => {
     const swapEvm = makeEvm({
       gas: hex(256),
       maxFee: hex(200),
@@ -93,11 +93,9 @@ describe('applyTransactionConfiguration', () => {
     // No custom gas limit → swap gas unchanged.
     expect(Number(result.transactionSwap?.evm?.gas)).toBe(256);
 
-    // Approve mirrors the swap's effective-price ratio (200/100 = 2):
-    //   maxFee:   300 * 2 = 600
-    //   priority: 20  * 2 = 40
-    expect(Number(result.transactionApprove?.evm?.maxFee)).toBe(600);
-    expect(Number(result.transactionApprove?.evm?.maxPriorityFee)).toBe(40);
+    // Approve copies the swap's configured fees.
+    expect(Number(result.transactionApprove?.evm?.maxFee)).toBe(400);
+    expect(Number(result.transactionApprove?.evm?.maxPriorityFee)).toBe(110);
     // gasLimitRatio === 1 (no custom limit) → approve gas unchanged.
     expect(Number(result.transactionApprove?.evm?.gas)).toBe(128);
 
@@ -128,9 +126,7 @@ describe('applyTransactionConfiguration', () => {
     expect(Number(result.transactionApprove?.evm?.gasPrice)).toBe(100);
   });
 
-  test('approve maxFee follows the swap effective-price ratio', () => {
-    // The approve's own maxFee magnitude is irrelevant — it scales by the swap's
-    // effective price change (100 → 95), regardless of its headroom.
+  test('approve maxFee is the swap maxFee regardless of its own headroom', () => {
     const swapEvm = makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) });
     const approveEvm = makeEvm({
       gas: hex(128),
@@ -150,20 +146,19 @@ describe('applyTransactionConfiguration', () => {
 
     const result = applyTransactionConfiguration(quote, PRESET_FAST, gasPrices);
 
-    expect(Number(result.transactionApprove?.evm?.maxFee)).toBe(950);
-    expect(Number(result.transactionApprove?.evm?.maxPriorityFee)).toBe(19);
+    expect(Number(result.transactionApprove?.evm?.maxFee)).toBe(100);
+    expect(Number(result.transactionApprove?.evm?.maxPriorityFee)).toBe(5);
   });
 
-  test('one ratio keeps the approve tip at or below its max fee', () => {
+  test('the approve tip stays at or below its max fee', () => {
     const swapEvm = makeEvm({ maxFee: hex(1000), maxPriorityFee: hex(10) });
     const approveEvm = makeEvm({ maxFee: hex(200), maxPriorityFee: hex(10) });
     const quote = makeQuote({
       transactionSwap: { evm: swapEvm, solana: null },
       transactionApprove: { evm: approveEvm, solana: null },
     });
-    // Old effective min(1000, 100) = 100; new effective min(100, 190) = 100.
-    // The old per-field ratios (0.1 maxFee, 10 priority) would have produced
-    // approve tip 100 > maxFee 20.
+    // Per-field ratios (0.1 maxFee, 10 priority) would have produced approve
+    // tip 100 > maxFee 20.
     const gasPrices = makeGasPrices({
       maxFee: 100,
       priorityFee: 100,
@@ -174,8 +169,8 @@ describe('applyTransactionConfiguration', () => {
     const maxFee = Number(result.transactionApprove?.evm?.maxFee);
     const tip = Number(result.transactionApprove?.evm?.maxPriorityFee);
     expect(tip).toBeLessThanOrEqual(maxFee);
-    expect(maxFee).toBe(200);
-    expect(tip).toBe(10);
+    expect(maxFee).toBe(100);
+    expect(tip).toBe(100);
   });
 
   test('custom gas limit scales the approve gas (gasLimitRatio)', () => {
@@ -275,5 +270,103 @@ describe('applyTransactionConfiguration', () => {
       baseFee: 90,
     });
     expect(applyTransactionConfiguration(quote, PRESET_FAST, gasPrices)).toBe(quote);
+  });
+});
+
+describe('same-shape approve fees equal the swap fees', () => {
+  test('production reproduction: approve does not drift 1 wei below the swap', () => {
+    const quoted = { maxFee: '0x8f0d1803', maxPriorityFee: '0x2faf0801' };
+    const quote = makeQuote({
+      transactionSwap: { evm: makeEvm({ gas: hex(300000), ...quoted }), solana: null },
+      transactionApprove: { evm: makeEvm({ gas: hex(60000), ...quoted }), solana: null },
+    });
+    const gasPrices = makeGasPrices({
+      maxFee: 2496980274,
+      priorityFee: 832326758,
+      baseFee: 1664653516,
+    });
+
+    const result = applyTransactionConfiguration(quote, PRESET_FAST, gasPrices);
+
+    for (const evm of [result.transactionSwap?.evm, result.transactionApprove?.evm]) {
+      expect(evm?.maxFee).toBe('0x94d4e532');
+      expect(evm?.maxPriorityFee).toBe('0x319c4c66');
+      expect(evm?.gasPrice).toBeNull();
+    }
+  });
+
+  function mulberry32(seed: number) {
+    let a = seed;
+    return () => {
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  type Kind = 'fast' | 'average' | 'custom1559' | 'customClassic';
+  const KINDS: Kind[] = ['fast', 'average', 'custom1559', 'customClassic'];
+
+  test('holds for 1200 seeded random cases across preset and custom configurations', () => {
+    const random = mulberry32(3972);
+    const int = (min: number, max: number) => min + Math.floor(random() * (max - min + 1));
+    const fees = () => {
+      const maxFee = int(1, 5e11);
+      return { maxFee, priorityFee: int(0, maxFee) };
+    };
+
+    for (let i = 0; i < 1200; i++) {
+      const kind = KINDS[i % KINDS.length];
+      const baseFee = int(1, 4e11);
+      const configured = fees();
+      const classicShape = kind === 'customClassic' || (kind !== 'custom1559' && random() < 0.5);
+      const speed = {
+        classic: classicShape ? int(1, 5e11) : null,
+        eip1559: classicShape ? null : { ...configured, baseFee },
+        optimistic: null,
+        eta: null,
+      };
+      const gasPrices: ChainGasPrice = { fast: speed, average: speed };
+
+      const quotedLeg = (gas: number) => {
+        if (classicShape) {
+          return makeEvm({ type: '0x0', gas: hex(gas), gasPrice: hex(int(1, 5e11)) });
+        }
+        const quoted = fees();
+        return makeEvm({
+          gas: hex(gas),
+          maxFee: hex(quoted.maxFee),
+          maxPriorityFee: hex(quoted.priorityFee),
+        });
+      };
+      const quote = makeQuote({
+        transactionSwap: { evm: quotedLeg(int(21000, 2e6)), solana: null },
+        transactionApprove: { evm: quotedLeg(int(21000, 2e5)), solana: null },
+      });
+
+      const config: CustomConfiguration = {
+        nonce: null,
+        slippage: null,
+        networkFee: {
+          speed: kind === 'fast' || kind === 'average' ? kind : 'custom',
+          custom1559GasPrice:
+            kind === 'custom1559'
+              ? { maxFee: configured.maxFee, priorityFee: configured.priorityFee }
+              : null,
+          customClassicGasPrice: kind === 'customClassic' ? int(1, 5e11) : null,
+          gasLimit: null,
+        },
+      };
+
+      const result = applyTransactionConfiguration(quote, config, gasPrices);
+      const swap = result.transactionSwap?.evm;
+      const approve = result.transactionApprove?.evm;
+      const label = `case ${i} (${kind})`;
+      expect(swap, label).not.toBe(quote.transactionSwap?.evm);
+      expect(approve?.maxFee, label).toBe(swap?.maxFee);
+      expect(approve?.maxPriorityFee, label).toBe(swap?.maxPriorityFee);
+      expect(approve?.gasPrice, label).toBe(swap?.gasPrice);
+    }
   });
 });

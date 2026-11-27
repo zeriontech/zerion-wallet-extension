@@ -148,14 +148,46 @@ function scaleApproveTx(
   return updated;
 }
 
+function hasSameFeeShape(approve: TransactionEVM, swap: TransactionEVM): boolean {
+  if (swap.gasPrice != null) {
+    return approve.gasPrice != null && approve.maxFee == null && approve.maxPriorityFee == null;
+  }
+  if (swap.maxFee != null || swap.maxPriorityFee != null) {
+    return approve.maxFee != null || approve.maxPriorityFee != null;
+  }
+  return false;
+}
+
+/**
+ * transaction-service rejects a batch whose legs carry different fees, so a
+ * same-shape approve takes the swap's configured fee fields verbatim.
+ */
+function copySwapFeesToApproveTx(
+  evm: TransactionEVM,
+  swapEvm: TransactionEVM,
+  gasLimitRatio: number,
+): TransactionEVM {
+  const updated: TransactionEVM = {
+    ...evm,
+    maxFee: swapEvm.maxFee,
+    maxPriorityFee: swapEvm.maxPriorityFee,
+    gasPrice: swapEvm.gasPrice,
+  };
+  const gas = hexToBn(evm.gas);
+  if (gas != null && gasLimitRatio !== 1) {
+    updated.gas = bnToHex(gas.multipliedBy(gasLimitRatio));
+  }
+  return updated;
+}
+
 /**
  * Apply a network-fee configuration to a quote's transactions, returning a new
  * quote with only `transactionSwap` and `transactionApprove` changed (the
  * displayed `networkFee` is scaled separately — it is left untouched here).
  *
- * The swap tx gets the configured price directly. The approve tx (if present)
- * follows the swap's per-field relative change (maxFee, priorityFee, gasPrice)
- * plus the gas-limit change.
+ * The swap tx gets the configured price directly. An approve tx of the same fee
+ * shape copies the swap's fee fields; a mixed-shape approve follows the swap's
+ * effective-price ratio. Either way its gas follows the gas-limit change.
  *
  * Pass-through (returns the quote unchanged) when: gasPrices is null, the swap
  * tx isn't EVM, or the configuration can't be resolved to a price.
@@ -226,7 +258,9 @@ export function applyTransactionConfiguration(
   if (transactionApprove?.evm) {
     result.transactionApprove = {
       ...transactionApprove,
-      evm: scaleApproveTx(transactionApprove.evm, priceRatio, gasLimitRatio),
+      evm: hasSameFeeShape(transactionApprove.evm, newSwapEvm)
+        ? copySwapFeesToApproveTx(transactionApprove.evm, newSwapEvm, gasLimitRatio)
+        : scaleApproveTx(transactionApprove.evm, priceRatio, gasLimitRatio),
     };
   }
 
