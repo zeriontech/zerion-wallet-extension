@@ -35,19 +35,27 @@ export function WebAppMessageHandler({
   callbackFn,
   hidden,
   style,
+  iframeRef,
+  onLoad,
+  onError,
+  title,
 }: {
   pathname: string;
   callbackName: WebAppCallbackMethod;
   callbackFn: (params?: unknown) => void | Promise<void>;
   hidden?: boolean;
   style?: React.CSSProperties;
+  iframeRef?: React.MutableRefObject<HTMLIFrameElement | null>;
+  onLoad?: () => void;
+  onError?: () => void;
+  title?: string;
 }) {
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const internalRef = useRef<HTMLIFrameElement | null>(null);
   const iframeUrl = new URL(pathname, ZERION_WEB_APP_URL);
 
   useEffect(() => {
-    invariant(iframeRef.current, 'Iframe should be mounted');
-    const webAppWindow = iframeRef.current.contentWindow;
+    invariant(internalRef.current, 'Iframe should be mounted');
+    const webAppWindow = internalRef.current.contentWindow;
 
     const handler = (event: MessageEvent) => {
       if (!isWebAppMessage(event, { expectedSource: webAppWindow })) return;
@@ -63,9 +71,17 @@ export function WebAppMessageHandler({
   return (
     <iframe
       sandbox="allow-same-origin allow-scripts"
-      ref={iframeRef}
+      ref={(node) => {
+        internalRef.current = node;
+        if (iframeRef) {
+          iframeRef.current = node;
+        }
+      }}
       src={iframeUrl.toString()}
+      title={title}
       hidden={hidden}
+      onLoad={onLoad}
+      onError={onError}
       style={style}
     />
   );

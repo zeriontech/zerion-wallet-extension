@@ -40,6 +40,7 @@ jobs:
       PROXY_URL: https://proxy.zerion.io/
       FEATURE_LOYALTY_FLOW: on
       FEATURE_SOLANA: on
+      FEATURE_BACKGROUND_CLOUDFLARE_CHALLENGE: on
       # Fourth manifest version part: every run is a new store version.
       BETA_VERSION_SUFFIX: ${{ github.run_number }}
     steps:

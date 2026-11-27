@@ -56,6 +56,15 @@
       "matches": ["<all_urls>"]
     }
   ],
-  "permissions": ["activeTab", "alarms", "scripting", "sidePanel", "storage", "unlimitedStorage"],
+  "permissions": [
+    "activeTab",
+    "alarms",
+    "cookies",
+    "declarativeNetRequestWithHostAccess",
+    "scripting",
+    "sidePanel",
+    "storage",
+    "unlimitedStorage"
+  ],
   "host_permissions": ["http://*/*", "https://*/*"]
 }
