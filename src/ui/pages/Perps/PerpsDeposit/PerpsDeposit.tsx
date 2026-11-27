@@ -46,6 +46,17 @@ import { getHardwareError } from '@zeriontech/hardware-wallet-connection';
 import { ErrorMessage } from 'src/ui/shared/error-display/ErrorMessage';
 import { InputPosition } from 'src/ui/pages/SwapForm2/InputPosition';
 import type { SwapFormState2 } from 'src/ui/pages/SwapForm2/types';
+import { QuoteDetails } from 'src/ui/pages/SwapForm2/QuoteDetails';
+import { applyTransactionConfiguration } from 'src/ui/pages/SwapForm2/applyTransactionConfiguration';
+import { useNetworkFeePreference } from 'src/ui/shared/useNetworkFeePreference';
+import { toConfiguration } from 'src/ui/shared/forms/networkFeeConfiguration';
+import { useGasPrices } from 'src/ui/shared/requests/useGasPrices';
+import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
+import {
+  getBaseFee,
+  getNetworkFeeRatioForConfiguration,
+  scaleNetworkFee,
+} from 'src/ui/components/NetworkFeeDialog2/getNetworkFeeForSpeed';
 import { HoldableButton } from 'src/ui/components/HoldToSignButton';
 import { PERPS_SCREEN } from 'src/shared/types/perps-events';
 import { emitter } from 'src/ui/shared/events';
@@ -57,7 +68,7 @@ import { pickPerpsDepositQuote } from './pickPerpsDepositQuote';
 
 const HYPERCORE_CHAIN_ID = 'hypercore';
 const HYPERCORE_USDC_FUNGIBLE_ID = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
-const PERPS_DEPOSIT_SLIPPAGE = '0.5';
+const PERPS_DEPOSIT_SLIPPAGE = '0.005';
 
 const ARBITRUM_CHAIN_ID = 'arbitrum';
 const ETHEREUM_CHAIN_ID = 'ethereum';
@@ -152,6 +163,35 @@ function DepositFormBody({
     [inputChain, inputFungibleId, userFormState.inputAmount, userFormState.inputKind, address],
   );
 
+  const { savedNetworkFee, saveNetworkFee } = useNetworkFeePreference(formState.inputChain || null);
+  const [configurationOverride, setConfigurationOverride] = useState<CustomConfiguration | null>(
+    null,
+  );
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
+  const defaultConfiguration = useMemo(
+    () => toConfiguration(formState, savedNetworkFee),
+    [formState, savedNetworkFee],
+  );
+  const configuration = configurationOverride ?? defaultConfiguration;
+  const quoteSlippage = configuration.slippage != null ? String(configuration.slippage) : 'auto';
+  const quoteFormState = useMemo<SwapFormState2>(
+    () => ({ ...formState, slippage: quoteSlippage }),
+    [formState, quoteSlippage],
+  );
+  const inputChainForGas = useMemo(
+    () => (formState.inputChain ? createChain(formState.inputChain) : null),
+    [formState.inputChain],
+  );
+  const { data: gasPrices } = useGasPrices(inputChainForGas, {
+    refetchInterval: 20000,
+    keepPreviousData: true,
+  });
+
+  useEffect(() => {
+    setConfigurationOverride(null);
+    setSelectedQuoteId(null);
+  }, [formState.inputChain]);
+
   const inputPosition = useMemo(() => {
     return (
       positions.find(
@@ -183,9 +223,9 @@ function DepositFormBody({
   const usdcFungible = usdcFungibles?.data?.[0] ?? null;
 
   const quotesFormState = useMemo(() => {
-    const { inputKind: _ik, ...rest } = formState;
+    const { inputKind: _ik, ...rest } = quoteFormState;
     return { ...rest, inputAmount: resolvedInputAmount ?? '' };
-  }, [formState, resolvedInputAmount]);
+  }, [quoteFormState, resolvedInputAmount]);
 
   const inputFiatValue = useMemo(() => {
     if (!resolvedInputAmount || inputPrice == null) return null;
@@ -205,7 +245,7 @@ function DepositFormBody({
     inputFiatValue,
   });
 
-  const quote = pickPerpsDepositQuote(quotesQuery.quotes);
+  const quote = pickPerpsDepositQuote(quotesQuery.quotes, selectedQuoteId);
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -221,6 +261,22 @@ function DepositFormBody({
       invariant(resolvedInputAmount, 'Input amount must be defined');
       invariant(quote.transactionSwap, 'Quote must have a swap transaction');
       invariant(inputNetwork, 'Input network must be defined');
+
+      const configuredQuote = applyTransactionConfiguration(
+        quote,
+        configuration,
+        gasPrices ?? null,
+      );
+      const baseFee = getBaseFee(gasPrices ?? null);
+      const feeRatio = getNetworkFeeRatioForConfiguration(
+        quote,
+        configuration.networkFee,
+        gasPrices ?? null,
+        baseFee,
+      );
+      const displayedNetworkFee =
+        quote.networkFee != null ? scaleNetworkFee(quote.networkFee, feeRatio) : null;
+      const feeValueCommon = displayedNetworkFee?.amount?.quantity || '0';
 
       const spendAmount = {
         currency,
@@ -264,8 +320,8 @@ function DepositFormBody({
       };
 
       const steps: SignStep[] = [];
-      if (quote.transactionApprove) {
-        const approveTx = quote.transactionApprove;
+      if (configuredQuote.transactionApprove) {
+        const approveTx = configuredQuote.transactionApprove;
         invariant(approveTx.evm, 'Approve transaction must be EVM');
         const approveMultichain = toMultichainTransaction(approveTx);
         steps.push({
@@ -275,7 +331,7 @@ function DepositFormBody({
             chain: formState.inputChain,
             initiator: INTERNAL_ORIGIN,
             clientScope: 'Swap',
-            feeValueCommon: quote.networkFee?.amount?.quantity || '0',
+            feeValueCommon,
             addressAction: createApproveAddressAction({
               transaction: toIncomingTransaction(approveTx.evm),
               hash: null,
@@ -296,7 +352,8 @@ function DepositFormBody({
         });
       }
 
-      const swapTx = quote.transactionSwap;
+      const swapTx = configuredQuote.transactionSwap;
+      invariant(swapTx, 'Quote must have a swap transaction');
       const swapMultichain = toMultichainTransaction(swapTx);
 
       steps.push({
@@ -306,7 +363,7 @@ function DepositFormBody({
           chain: formState.inputChain,
           initiator: INTERNAL_ORIGIN,
           clientScope: 'Bridge',
-          feeValueCommon: quote.networkFee?.amount?.quantity || '0',
+          feeValueCommon,
           addressAction: createBridgeAddressAction({
             address,
             transaction: toMultichainTransaction(swapTx),
@@ -322,7 +379,7 @@ function DepositFormBody({
             outputNetwork: inputNetwork as any,
             receiverAddress: address,
           }),
-          quote,
+          quote: configuredQuote,
           outputChain: HYPERCORE_CHAIN_ID,
           warningWasShown: false,
           outputAmountColor: 'grey',
@@ -465,6 +522,23 @@ function DepositFormBody({
             </div>
           </div>
         </div>
+
+        {networks ? (
+          <QuoteDetails
+            quote={quote}
+            quotesQuery={quotesQuery}
+            formState={quoteFormState}
+            networks={networks}
+            address={address}
+            configuration={configuration}
+            gasPrices={gasPrices ?? null}
+            onConfigurationChange={(value) => {
+              setConfigurationOverride(value);
+              saveNetworkFee(value.networkFee);
+            }}
+            onProviderChange={setSelectedQuoteId}
+          />
+        ) : null}
 
         <UIText kind="caption/regular" color="var(--neutral-600)" className={s.disclosure}>
           Funds may take a few minutes to settle on Hyperliquid.

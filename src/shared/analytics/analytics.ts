@@ -42,6 +42,7 @@ type MetabaseEvent =
   | 'perps_position_action'
   | 'hyperliquid_referral_prompt'
   | 'hyperliquid_account_card'
+  | 'hyperliquid_funding_prompt'
   | 'confidential_balances';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };

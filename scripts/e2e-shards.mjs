@@ -180,6 +180,16 @@ const TESTS = [
     5.0,
   ],
   ['hyperliquid-account-card.spec.ts', 'Hyperliquid account card › Stay here hides the card', 4.0],
+  [
+    'hyperliquid-funding.spec.ts',
+    'Hyperliquid funding sheet › ranks balances, shows actual fees and opens the deposit route',
+    6.0,
+  ],
+  [
+    'hyperliquid-funding.spec.ts',
+    'Hyperliquid funding sheet › opens after Enable trading only when nothing is withdrawable',
+    6.0,
+  ],
 
   // Dapp suite. These run against the hosted zerion-test-dapp deployment by
   // default; DAPP_URL overrides it for a local dapp.

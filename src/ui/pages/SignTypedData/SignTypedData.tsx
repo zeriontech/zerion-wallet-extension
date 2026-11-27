@@ -71,6 +71,7 @@ import { SafeTxDetails } from './SafeTxDetails';
 import {
   getExtraFeeProtectionDecision,
   getHyperliquidSignatureSummary,
+  isOfficialHyperliquidOrigin,
 } from 'src/modules/hyperliquid/security/hyperliquidTypedData';
 import {
   getHyperliquidActionLabel,
@@ -614,7 +615,20 @@ function SignTypedDataContent({
     refetchOnWindowFocus: false,
   });
 
-  const handleSignSuccess = (signature: string) => windowPort.confirm(windowId, signature);
+  const handleSignSuccess = (signature: string) => {
+    const summary = getHyperliquidSignatureSummary(typedData);
+    if (isOfficialHyperliquidOrigin(origin) && summary?.kind === 'approveAgent') {
+      walletPort
+        .request('maybeOfferHyperliquidFunding', {
+          origin,
+          signatureType: 'approveAgent',
+        })
+        .catch(() => {
+          // The funding offer must never block returning the signature.
+        });
+    }
+    windowPort.confirm(windowId, signature);
+  };
   const handleReject = () => windowPort.reject(windowId);
 
   const maybeApproval = interpretation?.data.action

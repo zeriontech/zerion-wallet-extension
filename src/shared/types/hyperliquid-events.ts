@@ -26,3 +26,13 @@ export interface HyperliquidAccountCardParams {
   /** `active_tab` when app.hyperliquid.xyz is the active tab. */
   source: 'active_tab' | 'account';
 }
+
+export type HyperliquidFundingPromptAction = 'shown' | 'clicked_deposit' | 'dismissed';
+
+export interface HyperliquidFundingPromptParams {
+  action: HyperliquidFundingPromptAction;
+  selected_chain?: string | null;
+  selected_symbol?: string | null;
+  amount_usd?: number | null;
+  fees_usd?: number | null;
+}

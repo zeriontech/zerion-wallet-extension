@@ -25,6 +25,15 @@ describe('pickPerpsDepositQuote', () => {
     ).toBe(onChainQuote);
   });
 
+  test('picks the selected provider quote when it is executable', () => {
+    const secondOnChain = makeQuote('relay', {
+      transactionSwap: { evm: SWAP_TX_EVM, solana: null },
+      quoteId: 'q-relay',
+    });
+    expect(pickPerpsDepositQuote([onChainQuote, secondOnChain], 'q-relay')).toBe(secondOnChain);
+    expect(pickPerpsDepositQuote([onChainQuote, secondOnChain], 'missing')).toBe(onChainQuote);
+  });
+
   test('picks nothing when only intent and error quotes arrive', () => {
     expect(pickPerpsDepositQuote([intentQuote, errorQuote, intentQuoteWithoutId])).toBeNull();
   });

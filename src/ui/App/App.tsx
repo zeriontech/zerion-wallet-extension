@@ -82,6 +82,7 @@ import { useRedirectToRestorePage } from '../pages/RestoreData/useRedirectToRest
 import { SwapForm2 } from '../pages/SwapForm2/SwapForm2';
 import { Deposit } from '../pages/Deposit';
 import { PerpPage, PerpsDeposit, PerpsTrade, PerpsWithdraw } from '../pages/Perps';
+import { HyperliquidFunding } from '../pages/HyperliquidFunding/HyperliquidFunding';
 import { RouteRestoration, registerPersistentRoute } from './RouteRestoration';
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -254,6 +255,14 @@ function Views({ initialRoute }: { initialRoute?: string }) {
           element={
             <RequireAuth>
               <PerpsDeposit />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/hyperliquid/fund"
+          element={
+            <RequireAuth>
+              <HyperliquidFunding />
             </RequireAuth>
           }
         />
