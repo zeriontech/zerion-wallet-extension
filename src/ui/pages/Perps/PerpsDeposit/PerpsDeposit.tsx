@@ -68,7 +68,7 @@ import { pickPerpsDepositQuote } from './pickPerpsDepositQuote';
 
 const HYPERCORE_CHAIN_ID = 'hypercore';
 const HYPERCORE_USDC_FUNGIBLE_ID = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
-const PERPS_DEPOSIT_SLIPPAGE = '0.5';
+const PERPS_DEPOSIT_SLIPPAGE = '0.005';
 
 const ARBITRUM_CHAIN_ID = 'arbitrum';
 const ETHEREUM_CHAIN_ID = 'ethereum';
