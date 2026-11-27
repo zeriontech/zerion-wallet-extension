@@ -46,7 +46,7 @@ import {
   getProviderNameFromGroup,
 } from './shared/getProviderNameFromGroup';
 import { addressActionToAnalytics, toMaybeArr } from './shared/addressActionToAnalytics';
-import { mixpanelTrack, mixpanelIdentify } from './mixpanel';
+import { mixpanelTrack, mixpanelIdentify, mixpanelSetUserProperties } from './mixpanel';
 import { getUserProperties } from './shared/getUserProperties';
 import { omitNullParams } from './shared/omitNullParams';
 import { gaCollect, prepareGaParams } from './google-analytics';
@@ -55,6 +55,13 @@ import { getAssetVisibilityEvent } from './shared/assetVisibilityEvent';
 import { whenAnalyticsEnabled } from './shared/whenAnalyticsEnabled';
 import { redactAddresses } from './transactionFailure';
 import type { TransactionFailure } from './transactionFailure';
+import type { TypedData } from 'src/modules/ethereum/message-signing/TypedData';
+import { getHyperliquidSignedMessageProperties } from './shared/hyperliquidSignature';
+import { reportHyperliquidReferralStatus } from './shared/hyperliquidReferralStatus';
+import {
+  HYPERLIQUID_USER_SIGNED_DOMAIN_NAME,
+  isOfficialHyperliquidOrigin,
+} from 'src/modules/hyperliquid/security/hyperliquidTypedData';
 
 const toEcosystemProperty = (value: 'evm' | 'solana') =>
   value === 'evm' ? 'EVM' : value === 'solana' ? 'Solana' : value;
@@ -713,11 +720,13 @@ function trackAppEvents({ account }: { account: Account }) {
 
   async function handleSign({
     type,
+    typedData,
     initiator,
     address,
     clientScope,
   }: {
     type: 'typedDataSigned' | 'messageSigned';
+    typedData?: TypedData;
     initiator: string;
     address: string;
     clientScope: string | null;
@@ -760,18 +769,29 @@ function trackAppEvents({ account }: { account: Account }) {
       address,
       dapp_domain: isInternalOrigin ? null : origin,
       hold_sign_button: Boolean(preferences.enableHoldToSignButton),
+      ...getHyperliquidSignedMessageProperties(typedData),
     });
     sendToMetabase('signed_message', params);
     const gaParams = await prepareGaParams(params);
     gaCollect('signed_message', gaParams);
     const mixpanelParams = omit(params, ['request_name', 'wallet_address', 'address']);
     mixpanelTrack('Transaction: Signed Message', mixpanelParams);
+
+    if (
+      typedData?.domain?.name === HYPERLIQUID_USER_SIGNED_DOMAIN_NAME &&
+      isOfficialHyperliquidOrigin(origin)
+    ) {
+      void reportHyperliquidReferralStatus({
+        address,
+        setUserProperties: mixpanelSetUserProperties,
+      });
+    }
   }
 
   emitter.on(
     'typedDataSigned',
     gated(async ({ typedData, ...rest }) => {
-      handleSign({ type: 'typedDataSigned', ...rest });
+      handleSign({ type: 'typedDataSigned', typedData, ...rest });
     }),
   );
   emitter.on(

@@ -89,6 +89,10 @@ export class SettingsPage extends ExtensionPage {
           - img
           - text: Hidden Assets
           - img
+        - link "Hyperliquid":
+          - img
+          - text: Hyperliquid
+          - img
         - link "Privacy":
           - img
           - text: Privacy

@@ -4,8 +4,9 @@ import { emitter, UI_ANALYTICS_EVENTS } from 'src/background/events';
 import type { LabelAddressCopiedParams } from 'src/shared/types/label-events';
 import type { StringBase64 } from 'src/shared/types/StringBase64';
 import { initialize } from './analytics.background';
-import { mixpanelIdentify, mixpanelTrack } from './mixpanel';
+import { mixpanelIdentify, mixpanelSetUserProperties, mixpanelTrack } from './mixpanel';
 import { sendToMetabase } from './analytics';
+import { perpReferral } from 'src/modules/hyperliquid/api/requests/perp-referral.client';
 
 type Preferences = { analyticsEnabled: boolean };
 
@@ -42,7 +43,14 @@ vi.mock('./google-analytics', () => ({
 }));
 vi.mock('./analyticsId', () => ({}));
 vi.mock('./shared/getUserProperties', () => ({}));
-vi.mock('./mixpanel', () => ({ mixpanelIdentify: vi.fn(), mixpanelTrack: vi.fn() }));
+vi.mock('./mixpanel', () => ({
+  mixpanelIdentify: vi.fn(),
+  mixpanelTrack: vi.fn(),
+  mixpanelSetUserProperties: vi.fn(),
+}));
+vi.mock('src/modules/hyperliquid/api/requests/perp-referral.client', () => ({
+  perpReferral: vi.fn(),
+}));
 vi.mock('src/background/Wallet/GlobalPreferences', () => ({
   globalPreferences: preferences.globalPreferences,
   getWalletNameFlagsChange: vi.fn(),
@@ -55,6 +63,7 @@ function createAccount() {
     getCurrentWallet: () => ({
       readCurrentAddress: () => null,
       getPreferences: async () => ({ enableHoldToSignButton: false }),
+      getWalletGroupByAddressSync: () => null,
     }),
     on: (event: string, listener: () => void) => {
       listeners.set(event, [...(listeners.get(event) ?? []), listener]);
@@ -298,5 +307,96 @@ describe('transaction sign analytics', () => {
     await flushTransaction();
 
     expect(mixpanelTrack).toHaveBeenCalledTimes(0);
+  });
+});
+
+describe('hyperliquid signed-message analytics', () => {
+  const hyperliquidTypedData = {
+    domain: { name: 'HyperliquidSignTransaction', version: '1', chainId: 42161 },
+    types: {},
+    primaryType: 'HyperliquidTransaction:ApproveBuilderFee',
+    message: {
+      hyperliquidChain: 'Mainnet',
+      maxFeeRate: '0.1%',
+      builder: '0x7a1e00000000000000000000000000000000c3f0',
+      nonce: 1,
+    },
+  };
+
+  beforeEach(() => {
+    vi.mocked(mixpanelTrack).mockClear();
+    vi.mocked(mixpanelSetUserProperties).mockClear();
+    vi.mocked(perpReferral).mockReset();
+    preferences.state = { analyticsEnabled: true };
+    preferences.listeners.length = 0;
+    emitter.events = {};
+    Object.defineProperty(globalThis, 'location', {
+      value: new URL('https://extension.test'),
+      configurable: true,
+    });
+    initialize({ account: createAccount() as unknown as Account });
+  });
+
+  test('adds Hyperliquid action properties without the wallet address', async () => {
+    vi.mocked(perpReferral).mockResolvedValue({ referredBy: null });
+    emitter.emit('typedDataSigned', {
+      typedData: hyperliquidTypedData,
+      address: EVM_ADDRESS,
+      initiator: 'https://app.hyperliquid.xyz',
+      clientScope: 'External Dapp',
+    });
+    await flushTransaction();
+
+    const params = lastMixpanelParams();
+    expect(params).toMatchObject({
+      typed_data_primary_type: 'HyperliquidTransaction:ApproveBuilderFee',
+      hl_builder: '0x7a1e00000000000000000000000000000000c3f0',
+      hl_max_fee_rate: '0.1%',
+      dapp_domain: 'https://app.hyperliquid.xyz',
+    });
+    expect(params).not.toHaveProperty('address');
+    expect(params).not.toHaveProperty('wallet_address');
+  });
+
+  test('stores referredBy as a user property only for the official origin', async () => {
+    vi.mocked(perpReferral).mockResolvedValue({
+      referredBy: { referrer: '0xreferrer', code: 'ZERION' },
+    });
+    emitter.emit('typedDataSigned', {
+      typedData: hyperliquidTypedData,
+      address: '0x2222222222222222222222222222222222222222',
+      initiator: 'https://app.hyperliquid.xyz/trade',
+      clientScope: 'External Dapp',
+    });
+    await flushTransaction();
+
+    expect(mixpanelSetUserProperties).toHaveBeenCalledWith({
+      hyperliquid_referred: true,
+      hyperliquid_referrer_code: 'ZERION',
+    });
+
+    vi.mocked(mixpanelSetUserProperties).mockClear();
+    vi.mocked(perpReferral).mockClear();
+    emitter.emit('typedDataSigned', {
+      typedData: hyperliquidTypedData,
+      address: '0x2222222222222222222222222222222222222222',
+      initiator: 'https://app.hyperliquid.xyz.evil.test',
+      clientScope: 'External Dapp',
+    });
+    await flushTransaction();
+    expect(perpReferral).not.toHaveBeenCalled();
+    expect(mixpanelSetUserProperties).not.toHaveBeenCalled();
+  });
+
+  test('a failed referral lookup does not write a false status', async () => {
+    vi.mocked(perpReferral).mockResolvedValue(null);
+    emitter.emit('typedDataSigned', {
+      typedData: hyperliquidTypedData,
+      address: '0x3333333333333333333333333333333333333333',
+      initiator: 'https://app.hyperliquid.xyz',
+      clientScope: 'External Dapp',
+    });
+    await flushTransaction();
+    expect(mixpanelSetUserProperties).not.toHaveBeenCalled();
   });
 });
