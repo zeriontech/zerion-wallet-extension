@@ -10,6 +10,7 @@ import type {
 import type { NetworkFeeLevelChangedParams } from 'src/shared/types/network-fee-events';
 import type { LabelAddressCopiedParams } from 'src/shared/types/label-events';
 import type { HyperliquidReferralPromptParams } from 'src/shared/types/hyperliquid-events';
+import type { HyperliquidAccountCardParams } from 'src/shared/types/hyperliquid-events';
 
 type EthersSignMethod = 'sendTransaction' | '_signTypedData' | 'signMessage';
 
@@ -39,6 +40,7 @@ export const emitter = createNanoEvents<{
   perpsButtonPressed: (data: PerpsButtonPressedParams) => void;
   perpsPositionAction: (data: PerpsPositionActionParams) => void;
   hyperliquidReferralPrompt: (data: HyperliquidReferralPromptParams) => void;
+  hyperliquidAccountCard: (data: HyperliquidAccountCardParams) => void;
 }>();
 
 emitter.on('mutationError', (error, _variables, context) => {

@@ -5,7 +5,7 @@ import ReadonlyIcon from 'jsx:src/ui/assets/visible.svg';
 // import FireIcon from 'jsx:src/ui/assets/fire.svg';
 import React, { useEffect, useMemo, useRef } from 'react';
 import { RenderArea } from 'src/shared/react-area';
-import { Route, Routes, useLocation, useSearchParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { updateAddressDnaInfo } from 'src/modules/dna-service/dna.client';
 import { createChain } from 'src/modules/networks/Chain';
@@ -69,6 +69,8 @@ import { ConnectionBanner } from './ConnectionBanner';
 import { NonFungibleTokens } from './NonFungibleTokens';
 import { Positions } from './Positions';
 import { Pnl } from './PnL';
+import { HyperliquidAccountCard } from './HyperliquidAccountCard/HyperliquidAccountCard';
+import { isOfficialHyperliquidOrigin } from 'src/modules/hyperliquid/security/hyperliquidTypedData';
 import {
   TABS_OFFSET_METER_ID,
   TAB_SELECTOR_HEIGHT,
@@ -277,6 +279,7 @@ function OverviewComponent() {
   useBackgroundKind(whiteBackgroundKind);
   const { currency } = useCurrency();
   const location = useLocation();
+  const navigate = useNavigate();
   const { singleAddress: address, params, ready, singleAddressNormalized } = useAddressParams();
   useProfileName({ address, name: null });
   const { data: walletGroup } = useQuery({
@@ -490,6 +493,13 @@ function OverviewComponent() {
       <div style={{ paddingInline: 'var(--column-padding-inline)' }}>
         {isReadonlyGroup ? <ReadonlyMode /> : <ActionButtonsRow />}
       </div>
+      {addressType === 'evm' && !isReadonlyGroup && singleAddressNormalized ? (
+        <HyperliquidAccountCard
+          address={singleAddressNormalized}
+          isActiveTabHyperliquid={isOfficialHyperliquidOrigin(activeTabOrigin)}
+          onManage={() => navigate('/overview/perps')}
+        />
+      ) : null}
       <DevelopmentOnly>
         <RenderTimeMeasure />
       </DevelopmentOnly>

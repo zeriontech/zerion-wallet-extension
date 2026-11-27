@@ -444,4 +444,24 @@ describe('hyperliquid referral prompt analytics', () => {
       reason: 'already_referred',
     });
   });
+
+  test('reports account-card attribution without the wallet address', async () => {
+    emitter.emit('hyperliquidAccountCard', {
+      action: 'clicked_manage',
+      equity_usd: 12480.22,
+      unrealized_pnl_usd: 312.4,
+      positions_count: 2,
+      source: 'active_tab',
+    });
+    await flushTransaction();
+    const params = lastMixpanelParams();
+    expect(params).toMatchObject({
+      action: 'clicked_manage',
+      equity_usd: 12480.22,
+      unrealized_pnl_usd: 312.4,
+      positions_count: 2,
+      source: 'active_tab',
+    });
+    expect(params).not.toHaveProperty('wallet_address');
+  });
 });

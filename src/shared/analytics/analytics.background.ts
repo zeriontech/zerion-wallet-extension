@@ -364,6 +364,24 @@ function trackAppEvents({ account }: { account: Account }) {
   );
 
   emitter.on(
+    'hyperliquidAccountCard',
+    gated(async (data) => {
+      const params = createParams({
+        request_name: 'hyperliquid_account_card',
+        action: data.action,
+        equity_usd: data.equity_usd,
+        unrealized_pnl_usd: data.unrealized_pnl_usd,
+        positions_count: data.positions_count,
+        source: data.source,
+      });
+      sendToMetabase('hyperliquid_account_card', params);
+      // The wallet address never goes to Mixpanel for this feature.
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('Hyperliquid: Account Card', mixpanelParams);
+    }),
+  );
+
+  emitter.on(
     'confidentialAnalyticsEvent',
     gated(async (data) => {
       // the wallet address never goes to Mixpanel for this feature
