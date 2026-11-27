@@ -15,3 +15,14 @@ export interface HyperliquidReferralPromptParams {
   /** Where the code came from; currently only `remote_config`. */
   code_source?: 'remote_config';
 }
+
+export type HyperliquidAccountCardAction = 'shown' | 'clicked_manage' | 'dismissed';
+
+export interface HyperliquidAccountCardParams {
+  action: HyperliquidAccountCardAction;
+  equity_usd: number;
+  unrealized_pnl_usd: number;
+  positions_count: number;
+  /** `active_tab` when app.hyperliquid.xyz is the active tab. */
+  source: 'active_tab' | 'account';
+}
