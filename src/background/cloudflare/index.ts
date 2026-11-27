@@ -15,6 +15,7 @@ import { emitter } from 'src/background/events';
 import type { CookieLike } from './cookies';
 import { domainCoversHost } from './cookies';
 import { ClearanceCookieMirror } from './ClearanceCookieMirror';
+import { OffscreenSolver } from './OffscreenSolver';
 import type { ChallengeContextInfo } from './ChallengeCoordinator';
 import { ChallengeCoordinator } from './ChallengeCoordinator';
 import { getBackgroundChallengeCoordinator, setBackgroundChallengeCoordinator } from './registry';
@@ -141,6 +142,17 @@ export function initializeCloudflareChallengeHandling(): void {
     listCookies: listCookiesForHost,
     updateSessionRules: (options) => chrome.declarativeNetRequest.updateSessionRules(options),
   });
+  const offscreenSolver = new OffscreenSolver({
+    isAvailable: () => chrome.offscreen != null,
+    hasDocument: () => chrome.offscreen.hasDocument(),
+    createDocument: () =>
+      chrome.offscreen.createDocument({
+        url: 'ui/offscreen.html',
+        reasons: [chrome.offscreen.Reason.IFRAME_SCRIPTING],
+        justification: 'Solve a Cloudflare Turnstile challenge without interrupting the user.',
+      }),
+    closeDocument: () => chrome.offscreen.closeDocument(),
+  });
 
   const coordinator = new ChallengeCoordinator({
     getContexts: async () => {
@@ -183,6 +195,7 @@ export function initializeCloudflareChallengeHandling(): void {
     getPending: async () => Boolean(await readSessionValue<boolean>(STORAGE_KEYS.pending)),
     setPending: (pending) => writeSessionValue(STORAGE_KEYS.pending, pending),
     refreshClearance: () => mirror.refresh(),
+    attemptOffscreenSolve: () => offscreenSolver.attempt(),
     trackIssued: (surface) =>
       emitter.emit('cloudflareChallengeIssued', { source: 'background', surface }),
     trackSolved: (surface) => emitter.emit('cloudflareChallengeSolved', { surface }),
@@ -225,6 +238,17 @@ export function initializeCloudflareChallengeHandling(): void {
 
     if (message.action === 'get-state') {
       void activeCoordinator.getState().then(sendResponse);
+      return true;
+    }
+    if (message.action === 'offscreen-failed') {
+      offscreenSolver.markFailed();
+      sendResponse({ ok: true });
+      return true;
+    }
+    if (message.action === 'solved' && message.surface === 'offscreen') {
+      // The coordinator resolves the silent attempt and then calls markSolved.
+      offscreenSolver.markSolved();
+      sendResponse({ ok: true });
       return true;
     }
     const result =

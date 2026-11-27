@@ -81,7 +81,7 @@ export function TurnstileTokenHandler() {
     if (isSecurityCheckUrl(window.location.href)) return;
     void getChallengeState().then((state) => {
       const pageAlreadyShowsIt = state?.surface === 'page' && !state.dismissed;
-      if (state?.pending && !pageAlreadyShowsIt) {
+      if (state?.pending && !state.silent && !pageAlreadyShowsIt) {
         setShowDialog(true);
       }
     });

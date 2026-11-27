@@ -1,5 +1,10 @@
-import type { ChallengeSurface, CloudflareChallengeState } from 'src/shared/cloudflareChallenge';
+import type {
+  ChallengeSurface,
+  CloudflareChallengeState,
+  SolveSurface,
+} from 'src/shared/cloudflareChallenge';
 import { isSecurityCheckUrl } from 'src/shared/cloudflareChallenge';
+import { createDeferred } from './deferred';
 
 export interface ChallengeContextInfo {
   contextType: 'TAB' | 'POPUP' | 'SIDE_PANEL' | 'BACKGROUND' | 'OFFSCREEN_DOCUMENT';
@@ -26,8 +31,10 @@ export interface ChallengeCoordinatorDeps {
   getPending(): Promise<boolean>;
   setPending(pending: boolean): Promise<void>;
   refreshClearance(): Promise<{ hasClearance: boolean }>;
+  /** Resolves true when the hidden offscreen page solved Turnstile. */
+  attemptOffscreenSolve(): Promise<boolean>;
   trackIssued(surface: ChallengeSurface): void;
-  trackSolved(surface: ChallengeSurface): void;
+  trackSolved(surface: SolveSurface): void;
   trackDismissed(surface: ChallengeSurface): void;
   logChallenge(entry: { timestamp: number; endpoint: string }): void;
   onError?(error: unknown): void;
@@ -38,14 +45,6 @@ export interface ChallengeCoordinatorOptions {
   criticalTimeoutMs?: number;
   nonCriticalTimeoutMs?: number;
   cooldownMs?: number;
-}
-
-function createDeferred<T>() {
-  let resolve!: (value: T) => void;
-  const promise = new Promise<T>((res) => {
-    resolve = res;
-  });
-  return { promise, resolve };
 }
 
 const DEFAULT_CRITICAL_TIMEOUT_MS = 60 * 1000;
@@ -90,6 +89,7 @@ interface ActiveChallenge {
   issuedSurface: ChallengeSurface | null;
   presentedSurface: ChallengeSurface | null;
   presenting: Promise<void> | null;
+  silentAttempt: Promise<void> | null;
   waiters: Set<(solved: boolean) => void>;
 }
 
@@ -142,17 +142,46 @@ export class ChallengeCoordinator {
   async handleChallenge({ endpoint }: { endpoint: string }): Promise<void> {
     this.deps.logChallenge({ timestamp: this.now(), endpoint });
     if (!this.active) {
-      this.active = {
+      const active: ActiveChallenge = {
         createdAt: this.now(),
         dismissedAt: null,
         issuedSurface: null,
         presentedSurface: null,
         presenting: null,
+        silentAttempt: null,
         waiters: new Set(),
       };
+      this.active = active;
       await this.deps.setPending(true);
+      active.silentAttempt = this.runSilentAttempt(active);
+    }
+    const active = this.active;
+    if (active?.silentAttempt) {
+      await active.silentAttempt;
+      if (this.active !== active) {
+        // A silent or visible solve won the race.
+        return;
+      }
     }
     await this.present();
+  }
+
+  private async runSilentAttempt(active: ActiveChallenge): Promise<void> {
+    try {
+      const solved = await this.deps.attemptOffscreenSolve();
+      if (this.active !== active) {
+        return;
+      }
+      if (solved) {
+        await this.markSolved('offscreen');
+      }
+    } catch (error) {
+      this.reportError(error);
+    } finally {
+      if (this.active === active) {
+        active.silentAttempt = null;
+      }
+    }
   }
 
   /** Waits for the clearance. Returns false when the waiter should return the challenge response. */
@@ -278,7 +307,7 @@ export class ChallengeCoordinator {
     await this.deps.setStoredTabId(null);
   }
 
-  async markSolved(surface: ChallengeSurface): Promise<void> {
+  async markSolved(surface: SolveSurface): Promise<void> {
     const active = this.active;
     this.active = null;
     this.awaitingFocus = false;
@@ -324,7 +353,7 @@ export class ChallengeCoordinator {
 
   async getState(): Promise<CloudflareChallengeState> {
     const pending = Boolean(this.active) || (await this.deps.getPending());
-    if (this.active && this.active.issuedSurface == null) {
+    if (this.active && this.active.issuedSurface == null && !this.active.silentAttempt) {
       // The popup is about to show the sheet, so this is the first surface.
       this.markIssued(this.active, 'sheet');
     } else if (!this.active && pending && !this.trackedPersistedPending) {
@@ -338,6 +367,7 @@ export class ChallengeCoordinator {
       pending,
       dismissed: dismissedAt != null,
       surface: this.active?.presentedSurface ?? null,
+      silent: Boolean(this.active?.silentAttempt),
     };
   }
 }
