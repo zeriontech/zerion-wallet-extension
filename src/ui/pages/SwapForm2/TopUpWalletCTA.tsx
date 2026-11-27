@@ -5,8 +5,17 @@ import { Button } from 'src/ui/ui-kit/Button';
 import { Dialog2, useDialog2 } from 'src/ui/ui-kit/ModalDialogs/Dialog2';
 import { emitter } from 'src/ui/shared/events';
 import { AddFundsOptionsContent } from '../Receive/AddFundsOptionsDialog';
+import type { DepositTarget } from '../SendForm2/resolveSendTopUpTarget';
 
-export function TopUpWalletCTA({ wallet }: { wallet: ExternallyOwnedAccount }) {
+export function TopUpWalletCTA({
+  wallet,
+  label,
+  depositTarget,
+}: {
+  wallet: ExternallyOwnedAccount;
+  label: string;
+  depositTarget: DepositTarget | null;
+}) {
   const { pathname } = useLocation();
   const { open, openDialog, closeDialog } = useDialog2();
 
@@ -30,7 +39,7 @@ export function TopUpWalletCTA({ wallet }: { wallet: ExternallyOwnedAccount }) {
           paddingInline: 24,
         }}
       >
-        Top Up Your Wallet
+        {label}
       </Button>
       <Dialog2 open={open} onClose={closeDialog} title="Add Funds" size="content">
         <div style={{ padding: 16 }}>
@@ -38,6 +47,7 @@ export function TopUpWalletCTA({ wallet }: { wallet: ExternallyOwnedAccount }) {
             <AddFundsOptionsContent
               wallet={wallet}
               analytics={{ pathname, address: wallet.address }}
+              depositTarget={depositTarget}
             />
           </Suspense>
         </div>

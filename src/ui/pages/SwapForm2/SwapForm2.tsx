@@ -102,6 +102,7 @@ import { UKDisclaimer } from './UKDisclaimer';
 import { USDisclaimer } from './USDisclaimer';
 import { SwapButton, type SimulationResult } from './SwapButton';
 import { TopUpWalletCTA } from './TopUpWalletCTA';
+import { resolveSwapTopUp } from './resolveSwapTopUp';
 import { ReadonlySignButton } from 'src/ui/components/HoldToSignButton';
 import { PriceImpactWarning } from './PriceImpactWarning';
 import { SwapOnboardingDialog } from './SwapOnboardingDialog/SwapOnboardingDialog';
@@ -358,10 +359,12 @@ function SwapFormComponent({
 
   const isCrossChain = formState.inputChain !== formState.outputChain;
 
-  const hasZeroInputBalance =
-    !inputPosition || new BigNumber(inputPosition.amount.quantity).isZero();
-  const shouldShowTopUpCTA =
-    quote?.error?.code === 2 || (quote?.error?.code === 1 && hasZeroInputBalance);
+  const topUp = resolveSwapTopUp({
+    quote,
+    formState,
+    inputSymbol: inputPosition?.fungible.symbol,
+    inputNetwork: inputNetworkConfig,
+  });
 
   const trackTransactionFormed = useEvent(() => {
     if (!quote) return;
@@ -911,8 +914,8 @@ function SwapFormComponent({
         ) : null}
         {wallet && isReadonlyAccount(wallet) && !readonlyWallDisabled ? (
           <ReadonlySignButton wallet={wallet} />
-        ) : wallet && shouldShowTopUpCTA ? (
-          <TopUpWalletCTA wallet={wallet} />
+        ) : wallet && topUp ? (
+          <TopUpWalletCTA wallet={wallet} label={topUp.label} depositTarget={topUp.depositTarget} />
         ) : (
           <SwapButton
             address={address}
