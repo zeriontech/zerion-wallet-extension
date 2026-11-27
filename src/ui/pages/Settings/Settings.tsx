@@ -60,6 +60,7 @@ import { Confetti, useTapStreak } from 'src/ui/components/Confetti/Confetti';
 import { Security } from '../Security';
 import { BackupFlowSettingsSection } from './BackupFlowSettingsSection';
 import { PreferencesPage } from './Preferences';
+import { HyperliquidSettings } from './HyperliquidSettings';
 import type { PopoverToastHandle } from './PopoverToast';
 import { PopoverToast } from './PopoverToast';
 import { ToggleSettingLine } from './ToggleSettingsLine';
@@ -286,6 +287,14 @@ function SettingsMain() {
                       {rawHiddenFungibleIds.length}
                     </UIText>
                   ) : null}
+                </HStack>
+              </AngleRightRow>
+            </FrameListItemLink>
+            <FrameListItemLink to="/settings/hyperliquid">
+              <AngleRightRow>
+                <HStack gap={8} alignItems="center">
+                  <SecurityIcon />
+                  <UIText kind="body/regular">Hyperliquid</UIText>
                 </HStack>
               </AngleRightRow>
             </FrameListItemLink>
@@ -717,6 +726,14 @@ export function Settings() {
         element={
           <ViewSuspense>
             <HiddenAssets />
+          </ViewSuspense>
+        }
+      />
+      <Route
+        path="/hyperliquid"
+        element={
+          <ViewSuspense>
+            <HyperliquidSettings />
           </ViewSuspense>
         }
       />

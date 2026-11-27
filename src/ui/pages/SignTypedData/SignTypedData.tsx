@@ -68,6 +68,16 @@ import { TypedDataAdvancedView } from './TypedDataAdvancedView';
 import { getPreviewAccount, PreviewAccountLine } from './PreviewAccountLine';
 import { resolvePreviewChain } from './resolvePreviewChain';
 import { SafeTxDetails } from './SafeTxDetails';
+import {
+  getExtraFeeProtectionDecision,
+  getHyperliquidSignatureSummary,
+} from 'src/modules/hyperliquid/security/hyperliquidTypedData';
+import {
+  getHyperliquidActionLabel,
+  HyperliquidFeeBlocked,
+  HyperliquidSignatureDetails,
+} from 'src/ui/components/HyperliquidSignature/HyperliquidSignatureDetails';
+import { usePerpsRemoteConfig } from 'src/modules/hyperliquid/hooks/usePerpsRemoteConfig';
 
 enum View {
   default = 'default',
@@ -132,6 +142,26 @@ function TypedDataDefaultView({
   const { preferences } = usePreferences();
   const { globalPreferences } = useGlobalPreferences();
 
+  const hyperliquidSummary = useMemo(() => getHyperliquidSignatureSummary(typedData), [typedData]);
+  const { data: perpsConfig } = usePerpsRemoteConfig({
+    enabled: Boolean(hyperliquidSummary),
+  });
+  const knownBuilders = useMemo(() => {
+    const builder = perpsConfig?.builderAddress;
+    return builder ? { [builder.toLowerCase()]: 'Zerion' } : undefined;
+  }, [perpsConfig?.builderAddress]);
+  const feeProtectionEnabled = globalPreferences?.hyperliquidFeeProtection !== false;
+  const extraFeeDecision = useMemo(
+    () =>
+      getExtraFeeProtectionDecision({
+        origin,
+        typedData,
+        protectionEnabled: feeProtectionEnabled,
+      }),
+    [origin, typedData, feeProtectionEnabled],
+  );
+  const isFeeBlocked = extraFeeDecision.blocked;
+
   const addressAction = interpretation?.data.action;
   // The backend attributes a Safe transaction to the Safe, so the previewed
   // balance changes and their asset links belong to the Safe, not to the
@@ -141,8 +171,11 @@ function TypedDataDefaultView({
     actionAddress: addressAction?.address,
   });
 
-  const title =
-    addressAction?.type.displayValue || (isPermit(typedData) ? 'Permit' : 'Sign Message');
+  const title = isFeeBlocked
+    ? 'Extra fee blocked'
+    : hyperliquidSummary
+      ? getHyperliquidActionLabel(hyperliquidSummary)
+      : addressAction?.type.displayValue || (isPermit(typedData) ? 'Permit' : 'Sign Message');
 
   const typedDataFormatted = useMemo(
     () => JSON.stringify(JSON.parse(typedDataRaw), null, 2),
@@ -195,6 +228,57 @@ function TypedDataDefaultView({
     text: typedDataFormatted,
     onSuccess: () => toastRef.current?.showToast(),
   });
+
+  const rawDataButton = showRawTypedData ? (
+    <UnstyledButton
+      onClick={() => dialogRef.current?.showModal()}
+      className="parent-hover"
+      style={{
+        textAlign: 'start',
+        padding: '12px 12px 0',
+        backgroundColor: 'var(--neutral-100)',
+        borderRadius: 12,
+        ['--parent-content-color' as string]: 'var(--neutral-500)',
+        ['--parent-hovered-content-color' as string]: 'var(--black)',
+      }}
+    >
+      <HStack gap={16} justifyContent="space-between">
+        <HStack gap={8}>
+          <ScrollIcon />
+          <VStack gap={0} style={{ position: 'relative' }}>
+            <UIText kind="small/regular" color="var(--neutral-600)">
+              Data
+            </UIText>
+            <UIText
+              kind="body/accent"
+              style={{
+                position: 'relative',
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                minHeight: 72,
+              }}
+            >
+              {typedDataFormatted}
+            </UIText>
+            <div
+              style={{
+                position: 'absolute',
+                inset: '0 0 0 0',
+                pointerEvents: 'none',
+                background: 'linear-gradient(180deg, transparent 50%, var(--neutral-100) 100%)',
+              }}
+            />
+          </VStack>
+        </HStack>
+        <ArrowDownIcon
+          className="content-hover"
+          style={{ width: 24, height: 24, alignSelf: 'center' }}
+        />
+      </HStack>
+    </UnstyledButton>
+  ) : null;
 
   return (
     <>
@@ -276,186 +360,155 @@ function TypedDataDefaultView({
               <UIText kind="small/regular">{network.name}</UIText>
             </HStack>
           ) : null}
-          {addressAction ? (
-            <VStack gap={4}>
-              <PreviewAccountLine
-                signerAddress={wallet.address}
-                actionAddress={addressAction.address}
-              />
-              <AddressActionDetails
-                address={previewAccount.address}
-                addressAction={addressAction}
-                network={network}
-                allowanceQuantityCommon={allowanceQuantityCommon || null}
-                customAllowanceQuantityBase={customAllowanceQuantityBase || null}
-                showApplicationLine={true}
-                singleAssetElementEnd={
-                  allowanceQuantityCommon && addressAction.type.value === 'approve' ? (
-                    <UIText
-                      as={TextLink}
-                      kind="small/accent"
-                      style={{ color: 'var(--primary)' }}
-                      to={allowanceViewHref}
-                    >
-                      Edit
-                    </UIText>
-                  ) : null
-                }
-              />
-            </VStack>
-          ) : null}
-          <SafeTxDetails
-            origin={origin}
-            wallet={wallet}
-            typedData={typedData}
-            network={network}
-            showNetwork={showNetwork}
-          />
-          {showRawTypedData ? (
-            <UnstyledButton
-              onClick={() => dialogRef.current?.showModal()}
-              className="parent-hover"
-              style={{
-                textAlign: 'start',
-                padding: '12px 12px 0',
-                backgroundColor: 'var(--neutral-100)',
-                borderRadius: 12,
-                ['--parent-content-color' as string]: 'var(--neutral-500)',
-                ['--parent-hovered-content-color' as string]: 'var(--black)',
-              }}
-            >
-              <HStack gap={16} justifyContent="space-between">
-                <HStack gap={8}>
-                  <ScrollIcon />
-                  <VStack gap={0} style={{ position: 'relative' }}>
-                    <UIText kind="small/regular" color="var(--neutral-600)">
-                      Data
-                    </UIText>
-                    <UIText
-                      kind="body/accent"
-                      style={{
-                        position: 'relative',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        minHeight: 72,
-                      }}
-                    >
-                      {typedDataFormatted}
-                    </UIText>
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: '0 0 0 0',
-                        pointerEvents: 'none',
-                        background:
-                          'linear-gradient(180deg, transparent 50%, var(--neutral-100) 100%)',
-                      }}
-                    />
-                  </VStack>
-                </HStack>
-                <ArrowDownIcon
-                  className="content-hover"
-                  style={{ width: 24, height: 24, alignSelf: 'center' }}
-                />
-              </HStack>
-            </UnstyledButton>
-          ) : null}
-          <HStack
-            gap={8}
-            style={{
-              gridTemplateColumns: showRawTypedData ? '1fr' : '1fr 1fr',
-            }}
-          >
-            <InterpretationSecurityCheck
-              interpretation={interpretation}
-              interpretQuery={interpretQuery}
+          {isFeeBlocked && extraFeeDecision.summary ? (
+            <HyperliquidFeeBlocked
+              summary={extraFeeDecision.summary}
+              knownBuilders={knownBuilders}
+              settingsHref="/settings/hyperliquid"
+              onReject={onReject}
             />
-            {showRawTypedData ? null : (
-              <Button
-                kind="regular"
-                onClick={onOpenAdvancedView}
-                size={44}
-                className="parent-hover"
+          ) : (
+            <>
+              {addressAction ? (
+                <VStack gap={4}>
+                  <PreviewAccountLine
+                    signerAddress={wallet.address}
+                    actionAddress={addressAction.address}
+                  />
+                  <AddressActionDetails
+                    address={previewAccount.address}
+                    addressAction={addressAction}
+                    network={network}
+                    allowanceQuantityCommon={allowanceQuantityCommon || null}
+                    customAllowanceQuantityBase={customAllowanceQuantityBase || null}
+                    showApplicationLine={true}
+                    singleAssetElementEnd={
+                      allowanceQuantityCommon && addressAction.type.value === 'approve' ? (
+                        <UIText
+                          as={TextLink}
+                          kind="small/accent"
+                          style={{ color: 'var(--primary)' }}
+                          to={allowanceViewHref}
+                        >
+                          Edit
+                        </UIText>
+                      ) : null
+                    }
+                  />
+                </VStack>
+              ) : null}
+              <SafeTxDetails
+                origin={origin}
+                wallet={wallet}
+                typedData={typedData}
+                network={network}
+                showNetwork={showNetwork}
+              />
+              {hyperliquidSummary ? (
+                <HyperliquidSignatureDetails
+                  summary={hyperliquidSummary}
+                  knownBuilders={knownBuilders}
+                />
+              ) : null}
+              <HStack
+                gap={8}
                 style={{
-                  textAlign: 'start',
-                  borderRadius: 100,
-                  ['--parent-content-color' as string]: 'var(--neutral-500)',
-                  ['--parent-hovered-content-color' as string]: 'var(--black)',
+                  gridTemplateColumns: showRawTypedData ? '1fr' : '1fr 1fr',
                 }}
               >
-                <HStack gap={0} alignItems="center" justifyContent="center">
-                  <ScrollIcon />
-                  <span>Details</span>
-                  <ArrowDownIcon className="content-hover" style={{ width: 24, height: 24 }} />
-                </HStack>
-              </Button>
-            )}
-          </HStack>
+                <InterpretationSecurityCheck
+                  interpretation={interpretation}
+                  interpretQuery={interpretQuery}
+                />
+                {showRawTypedData ? null : (
+                  <Button
+                    kind="regular"
+                    onClick={onOpenAdvancedView}
+                    size={44}
+                    className="parent-hover"
+                    style={{
+                      textAlign: 'start',
+                      borderRadius: 100,
+                      ['--parent-content-color' as string]: 'var(--neutral-500)',
+                      ['--parent-hovered-content-color' as string]: 'var(--black)',
+                    }}
+                  >
+                    <HStack gap={0} alignItems="center" justifyContent="center">
+                      <ScrollIcon />
+                      <span>Details</span>
+                      <ArrowDownIcon className="content-hover" style={{ width: 24, height: 24 }} />
+                    </HStack>
+                  </Button>
+                )}
+              </HStack>
+            </>
+          )}
+          {rawDataButton}
         </VStack>
       </VStack>
       <Spacer height={16} />
-      <Content name="sign-transaction-footer">
-        <div>
-          <VStack
-            style={{
-              textAlign: 'center',
-              marginTop: 'auto',
-            }}
-            gap={8}
-          >
-            {interpretation?.data.action?.fee ? (
-              <div style={{ marginBottom: 8 }}>
-                <AddressActionNetworkFee
-                  fee={interpretation.data.action.fee}
-                  isLoading={interpretQuery.isInitialLoading}
-                />
-              </div>
-            ) : null}
-            {signTypedData_v4Mutation.isError ? (
-              <ErrorMessage
-                error={getError(signTypedData_v4Mutation.error)}
-                hardwareError={getHardwareError(signTypedData_v4Mutation.error)}
-              />
-            ) : null}
-            <div
+      {isFeeBlocked ? null : (
+        <Content name="sign-transaction-footer">
+          <div>
+            <VStack
               style={{
-                display: 'grid',
-                gridTemplateColumns: interpretationHasCriticalWarning
-                  ? '1fr'
-                  : preferences?.enableKeyboardShortcutToSign
-                    ? '1fr 2fr'
-                    : '1fr 1fr',
-                gap: 8,
+                textAlign: 'center',
+                marginTop: 'auto',
               }}
+              gap={8}
             >
-              <Button
-                kind={interpretationHasCriticalWarning ? 'primary' : 'regular'}
-                type="button"
-                onClick={onReject}
-                ref={focusNode}
-              >
-                Cancel
-              </Button>
-              {preferences && globalPreferences ? (
-                <SignMessageButton
-                  wallet={wallet}
-                  ref={signMsgBtnRef}
-                  onClick={() => {
-                    signTypedData_v4();
-                  }}
-                  buttonKind={interpretationHasCriticalWarning ? 'danger' : 'primary'}
-                  buttonTitle={interpretationHasCriticalWarning ? 'Proceed Anyway' : undefined}
-                  holdToSign={preferences.enableHoldToSignButton}
-                  bluetoothSupportEnabled={globalPreferences.bluetoothSupportEnabled}
-                  keyboardShortcutEnabled={preferences.enableKeyboardShortcutToSign}
+              {interpretation?.data.action?.fee ? (
+                <div style={{ marginBottom: 8 }}>
+                  <AddressActionNetworkFee
+                    fee={interpretation.data.action.fee}
+                    isLoading={interpretQuery.isInitialLoading}
+                  />
+                </div>
+              ) : null}
+              {signTypedData_v4Mutation.isError ? (
+                <ErrorMessage
+                  error={getError(signTypedData_v4Mutation.error)}
+                  hardwareError={getHardwareError(signTypedData_v4Mutation.error)}
                 />
               ) : null}
-            </div>
-          </VStack>
-        </div>
-      </Content>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: interpretationHasCriticalWarning
+                    ? '1fr'
+                    : preferences?.enableKeyboardShortcutToSign
+                      ? '1fr 2fr'
+                      : '1fr 1fr',
+                  gap: 8,
+                }}
+              >
+                <Button
+                  kind={interpretationHasCriticalWarning ? 'primary' : 'regular'}
+                  type="button"
+                  onClick={onReject}
+                  ref={focusNode}
+                >
+                  Cancel
+                </Button>
+                {preferences && globalPreferences ? (
+                  <SignMessageButton
+                    wallet={wallet}
+                    ref={signMsgBtnRef}
+                    onClick={() => {
+                      signTypedData_v4();
+                    }}
+                    buttonKind={interpretationHasCriticalWarning ? 'danger' : 'primary'}
+                    buttonTitle={interpretationHasCriticalWarning ? 'Proceed Anyway' : undefined}
+                    holdToSign={preferences.enableHoldToSignButton}
+                    bluetoothSupportEnabled={globalPreferences.bluetoothSupportEnabled}
+                    keyboardShortcutEnabled={preferences.enableKeyboardShortcutToSign}
+                  />
+                ) : null}
+              </div>
+            </VStack>
+          </div>
+        </Content>
+      )}
     </>
   );
 }

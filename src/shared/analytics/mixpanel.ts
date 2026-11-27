@@ -217,3 +217,9 @@ export async function mixpanelIdentify(account: Account) {
     console.warn('Failed to identify (mixpanel)', e);
   }
 }
+
+/** Sets Mixpanel profile properties for the current analytics user. */
+export async function mixpanelSetUserProperties(values: Record<string, unknown>) {
+  const userId = await getAnalyticsId();
+  return mixpanelApi.engage(userId, values);
+}

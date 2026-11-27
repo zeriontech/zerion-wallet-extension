@@ -43,6 +43,11 @@ export interface State {
    * asset page. Device-wide, like the hidden list itself.
    */
   hasSeenHideTokenHint?: boolean;
+  /**
+   * Block non-zero Hyperliquid builder-fee approvals requested by the official
+   * Hyperliquid frontend. On by default; the user can turn it off in Settings.
+   */
+  hyperliquidFeeProtection?: boolean;
 }
 
 export function getWalletNameFlagsChange(state: State, prevState: State) {
@@ -82,6 +87,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     networkFeeByChain: {},
     hiddenFungibleIds: [],
     hasSeenHideTokenHint: false,
+    hyperliquidFeeProtection: true,
   };
 
   private async fetchDefaultWalletNameFlags() {

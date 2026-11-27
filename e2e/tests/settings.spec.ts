@@ -35,4 +35,17 @@ describe('Settings', () => {
     await loginPage.unlock(password);
     await expect(page).toHaveURL(/.*\/overview/);
   });
+
+  test('Extra Fee Protection is on by default and can be turned off', async ({ page }) => {
+    // Keep the approvals list off the live Hyperliquid API.
+    await page.route('https://api.hyperliquid.xyz/info', (route) => route.fulfill({ json: [] }));
+    await page.getByRole('link', { name: /Hyperliquid/i }).click();
+    await expect(page).toHaveURL(/.*\/settings\/hyperliquid/);
+    const toggle = page.getByRole('checkbox').first();
+    await expect(toggle).toBeChecked();
+    await toggle.click({ force: true });
+    await expect(toggle).not.toBeChecked();
+    await page.reload();
+    await expect(page.getByRole('checkbox').first()).not.toBeChecked();
+  });
 });

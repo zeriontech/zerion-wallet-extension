@@ -30,12 +30,13 @@ async function fetchHyperliquidPerpsConfig(): Promise<HyperliquidPerpsConfig | u
   return response.hyperliquid_perps_config;
 }
 
-export function usePerpsRemoteConfig() {
+export function usePerpsRemoteConfig({ enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ['perps/remote-config/hyperliquid_perps_config'],
     queryFn: fetchHyperliquidPerpsConfig,
     retry: 0,
     refetchOnWindowFocus: false,
     staleTime: 20_000,
+    enabled,
   });
 }
