@@ -63,14 +63,15 @@ export function PendingActionItem({
     <HStack
       className={styles.actionItem}
       gap={24}
-      justifyContent="space-between"
       style={{
         cursor: 'pointer',
         position: 'relative',
         height: 42,
-        gridTemplateColumns: actions
-          ? 'minmax(min-content, max-content) minmax(60px, max-content) auto'
-          : 'minmax(min-content, max-content) minmax(100px, max-content)',
+        // The value column takes the row's free space so it ends at the same
+        // edge as the mined rows. Actions share that column instead of getting
+        // their own one: `actions` is an element that renders nothing for rows
+        // without a Sign button, and an empty column would push the value left.
+        gridTemplateColumns: 'minmax(min-content, max-content) minmax(0, 1fr)',
       }}
       alignItems="center"
       onClick={(event) => {
@@ -107,12 +108,22 @@ export function PendingActionItem({
           </HStack>
         }
       />
-      <ActionItemValue
-        actionType={item.type.value}
-        content={item.content}
-        testnetMode={testnetMode}
-      />
-      {actions ? <div style={{ display: 'flex' }}>{actions}</div> : null}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          gap: 24,
+          minWidth: 0,
+        }}
+      >
+        <ActionItemValue
+          actionType={item.type.value}
+          content={item.content}
+          testnetMode={testnetMode}
+        />
+        {actions}
+      </div>
     </HStack>
   );
 }
