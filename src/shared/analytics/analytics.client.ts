@@ -130,6 +130,10 @@ function trackAppEvents({
     walletPort.request('trackUiEvent', { name: 'perpsPositionAction', data });
   });
 
+  emitter.on('hyperliquidReferralPrompt', async (data) => {
+    walletPort.request('trackUiEvent', { name: 'hyperliquidReferralPrompt', data });
+  });
+
   emitter.on('errorScreenView', async (data) => {
     const preferences = await fetchGlobalPreferences();
     if (!preferences.analyticsEnabled) {

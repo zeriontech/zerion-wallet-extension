@@ -400,3 +400,48 @@ describe('hyperliquid signed-message analytics', () => {
     expect(mixpanelSetUserProperties).not.toHaveBeenCalled();
   });
 });
+
+describe('hyperliquid referral prompt analytics', () => {
+  beforeEach(() => {
+    vi.mocked(mixpanelTrack).mockClear();
+    preferences.state = { analyticsEnabled: true };
+    preferences.listeners.length = 0;
+    emitter.events = {};
+    Object.defineProperty(globalThis, 'location', {
+      value: new URL('https://extension.test'),
+      configurable: true,
+    });
+    initialize({ account: createAccount() as unknown as Account });
+  });
+
+  test('keeps wallet addresses out of the Mixpanel event', async () => {
+    emitter.emit('hyperliquidReferralPrompt', {
+      action: 'failed',
+      error_message: 'exchange rejected 0x1234567890123456789012345678901234567890',
+      code_source: 'remote_config',
+    });
+    await flushTransaction();
+
+    const params = lastMixpanelParams();
+    expect(params).toMatchObject({
+      action: 'failed',
+      code_source: 'remote_config',
+      error_message: 'exchange rejected 0x…',
+    });
+    expect(params).not.toHaveProperty('wallet_address');
+    expect(params).not.toHaveProperty('address');
+  });
+
+  test('reports not_shown reasons for the denominator', async () => {
+    emitter.emit('hyperliquidReferralPrompt', {
+      action: 'not_shown',
+      reason: 'already_referred',
+      code_source: 'remote_config',
+    });
+    await flushTransaction();
+    expect(lastMixpanelParams()).toMatchObject({
+      action: 'not_shown',
+      reason: 'already_referred',
+    });
+  });
+});

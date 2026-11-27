@@ -48,6 +48,11 @@ export interface State {
    * Hyperliquid frontend. On by default; the user can turn it off in Settings.
    */
   hyperliquidFeeProtection?: boolean;
+  /**
+   * Last time the Hyperliquid referral prompt was shown, keyed by normalized
+   * address. Used to keep the prompt to once per address per week.
+   */
+  hyperliquidReferralPromptedAt?: Record<string, number>;
 }
 
 export function getWalletNameFlagsChange(state: State, prevState: State) {
@@ -88,6 +93,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     hiddenFungibleIds: [],
     hasSeenHideTokenHint: false,
     hyperliquidFeeProtection: true,
+    hyperliquidReferralPromptedAt: {},
   };
 
   private async fetchDefaultWalletNameFlags() {
