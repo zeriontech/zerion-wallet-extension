@@ -68,6 +68,10 @@ function PendingSignNetworkFee({
     networkFeeConfiguration: null,
     chainGasPrices,
   });
+  const simulatedFee = interpretation?.data.action?.fee;
+  if (simulatedFee?.amount.value != null && !transactionFee.costs?.totalValueExceedsBalance) {
+    return <AddressActionNetworkFee fee={simulatedFee} isLoading={false} />;
+  }
   return (
     <NetworkFee
       transaction={transaction}
@@ -77,7 +81,6 @@ function PendingSignNetworkFee({
       networkFeeConfiguration={DEFAULT_CONFIGURATION.networkFee}
       label={<UIText kind="small/regular">Network Fee</UIText>}
       onChange={null}
-      interpretation={interpretation}
     />
   );
 }
