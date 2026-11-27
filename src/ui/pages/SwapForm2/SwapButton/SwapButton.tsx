@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMutation } from '@tanstack/react-query';
 import type { Quote2 } from 'src/shared/types/Quote';
-import { isIntentQuote, toMultichainTransaction } from 'src/shared/types/Quote';
+import { isIntentQuote } from 'src/shared/types/Quote';
 import type { MultichainTransaction } from 'src/shared/types/MultichainTransaction';
 import type { CustomConfiguration } from 'src/shared/types/TransactionConfiguration';
 import type { ChainGasPrice } from 'src/modules/ethereum/transactions/gasPrices/types';
@@ -12,7 +12,6 @@ import { applySimulationPatch } from 'src/ui/features/dev-menu/applySimulationPa
 import { devMenuStore } from 'src/ui/features/dev-menu/store';
 import type { QuotesData } from 'src/ui/shared/requests/useQuotes';
 import { useReadonlyReceiverGate } from 'src/ui/components/ReadonlyReceiverDialog';
-import { applyTransactionConfiguration } from '../applyTransactionConfiguration';
 import { useSwapButtonOnboardingGate } from '../SwapButtonOnboardingDialog/useSwapButtonOnboardingGate';
 import type { SwapFormState2 } from '../types';
 import { isDisabled, resolveLabel, resolveLinkTarget } from './resolveSwapButtonState';
@@ -22,6 +21,7 @@ import {
   type ButtonState,
 } from 'src/ui/components/HoldToSignButton';
 import { simulateSwapQuote, type SimulationResult } from './simulateSwapQuote';
+import { buildSimulationTransactions } from './buildSimulationTransactions';
 import { Button } from 'src/ui/ui-kit/Button';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
 
@@ -57,20 +57,10 @@ function useSimulation({
 }) {
   const { currency } = useCurrency();
 
-  const transactions = useMemo<MultichainTransaction[]>(() => {
-    if (!quote) return [];
-    // Apply the local network-fee override so the simulation reflects what
-    // will actually be signed.
-    const configuredQuote = applyTransactionConfiguration(quote, configuration, gasPrices);
-    const list: MultichainTransaction[] = [];
-    if (configuredQuote.transactionApprove) {
-      list.push(toMultichainTransaction(configuredQuote.transactionApprove));
-    }
-    if (configuredQuote.transactionSwap && !isIntentQuote(configuredQuote)) {
-      list.push(toMultichainTransaction(configuredQuote.transactionSwap));
-    }
-    return list;
-  }, [quote, configuration, gasPrices]);
+  const transactions = useMemo<MultichainTransaction[]>(
+    () => buildSimulationTransactions(quote, configuration, gasPrices),
+    [quote, configuration, gasPrices],
+  );
 
   const simulationMutation = useMutation({
     mutationFn: async ({ txs, quote }: { txs: MultichainTransaction[]; quote: Quote2 }) => {

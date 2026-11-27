@@ -4,6 +4,7 @@ import type { MultichainTransaction } from 'src/shared/types/MultichainTransacti
 import type {
   AddressAction,
   ActionChain,
+  ActionLabel,
   Amount,
   NFTPreview,
 } from 'src/modules/zerion-api/requests/wallet-get-actions';
@@ -298,6 +299,14 @@ const TRADE_ACTION_LABELS: Record<TradeActionType, string> = {
   withdraw: 'Withdraw',
 };
 
+export type ActionApplication = NonNullable<ActionLabel['contract']>;
+
+function toApplicationLabel(application: ActionApplication | null): ActionLabel | null {
+  return application
+    ? { title: 'application', displayTitle: 'Application', wallet: null, contract: application }
+    : null;
+}
+
 export function createTradeAddressAction({
   address,
   transaction,
@@ -310,6 +319,7 @@ export function createTradeAddressAction({
   rate,
   explorerUrl,
   type = 'trade',
+  application = null,
 }: {
   transaction: MultichainTransaction | null;
   hash: string | null;
@@ -322,6 +332,7 @@ export function createTradeAddressAction({
   rate: Quote2['rate'] | null;
   explorerUrl: string | null;
   type?: TradeActionType;
+  application?: ActionApplication | null;
 }): LocalAddressAction {
   const actionType = { value: type, displayValue: TRADE_ACTION_LABELS[type] };
   const content = {
@@ -366,7 +377,7 @@ export function createTradeAddressAction({
     ],
     status: 'pending',
     type: actionType,
-    label: null,
+    label: toApplicationLabel(application),
     fee: null,
     refund: null,
     local: true,
@@ -388,6 +399,7 @@ export function createBridgeAddressAction({
   outputNetwork,
   explorerUrl,
   receiverAddress,
+  application = null,
 }: {
   address: string;
   transaction: MultichainTransaction | null;
@@ -400,6 +412,7 @@ export function createBridgeAddressAction({
   outputNetwork: NetworkInfo;
   explorerUrl: string | null;
   receiverAddress: string | null;
+  application?: ActionApplication | null;
 }): LocalAddressAction {
   const content = {
     approvals: null,
@@ -514,7 +527,7 @@ export function createBridgeAddressAction({
             iconUrl: null,
           },
         }
-      : null,
+      : toApplicationLabel(application),
     fee: null,
     refund: null,
     local: true,

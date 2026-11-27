@@ -81,6 +81,8 @@ import {
   type QuotePriceMemo,
 } from './shared/quotePrice';
 import { applyTransactionConfiguration } from './applyTransactionConfiguration';
+import { getBridgeReceiverAddress } from './shared/getBridgeReceiverAddress';
+import { getQuoteApplication } from './shared/getQuoteApplication';
 import {
   getBaseFee,
   getConfigurationEffectiveGasPrice,
@@ -615,6 +617,10 @@ function SwapFormComponent({
       const swapTx = intentQuote ? null : configuredQuote.transactionSwap;
       invariant(intentQuote || swapTx, 'Configured quote must have a swap transaction');
       const swapMultichain = swapTx ? toMultichainTransaction(swapTx) : null;
+      const application = getQuoteApplication({
+        contractMetadata: quote.contractMetadata,
+        contractAddress: swapTx?.evm?.to,
+      });
       const fallbackSwapAction = isCrossChain
         ? createBridgeAddressAction({
             address,
@@ -627,7 +633,8 @@ function SwapFormComponent({
             receiveAmount: quote.outputAmount,
             inputNetwork,
             outputNetwork,
-            receiverAddress: formState.to ?? address,
+            receiverAddress: getBridgeReceiverAddress({ address, to: formState.to }),
+            application,
           })
         : createTradeAddressAction({
             address,
@@ -640,6 +647,7 @@ function SwapFormComponent({
             receiveAmount: quote.outputAmount,
             network: inputNetwork,
             rate: quote.rate,
+            application,
             type:
               getZamaSwapKind({
                 inputChain: formState.inputChain,
