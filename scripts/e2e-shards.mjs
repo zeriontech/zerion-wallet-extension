@@ -174,6 +174,12 @@ const TESTS = [
     'Hyperliquid referral prompt › does not offer the prompt to an unfunded account',
     4.0,
   ],
+  [
+    'hyperliquid-account-card.spec.ts',
+    'Hyperliquid account card › shows equity, positions and PnL, then opens Zerion Perps',
+    5.0,
+  ],
+  ['hyperliquid-account-card.spec.ts', 'Hyperliquid account card › Stay here hides the card', 4.0],
 
   // Dapp suite. These run against the hosted zerion-test-dapp deployment by
   // default; DAPP_URL overrides it for a local dapp.
