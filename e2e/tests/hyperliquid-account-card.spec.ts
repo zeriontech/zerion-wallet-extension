@@ -110,16 +110,15 @@ describe('Hyperliquid account card', () => {
       await mockHyperliquid(page);
       await page.goto(`${extensionPopupUrl}#/overview`);
 
-      await expect(page.getByText('YOUR HYPERLIQUID ACCOUNT')).toBeVisible({
-        timeout: 30_000,
-      });
-      await expect(page.getByText('$12,480.22')).toBeVisible();
-      await expect(page.getByText('+$312.40 unrealized PnL')).toBeVisible();
-      await expect(page.getByText('Long 5x')).toBeVisible();
-      await expect(page.getByText('Short 3x')).toBeVisible();
-      await expect(page.getByText('0.04% Zerion fee', { exact: false })).toBeVisible();
+      const card = page.getByTestId('hyperliquid-account-card');
+      await expect(card).toBeVisible({ timeout: 30_000 });
+      await expect(card.getByText('$12,480.22')).toBeVisible();
+      await expect(card.getByText('+$312.40 unrealized PnL')).toBeVisible();
+      await expect(card.getByText('Long 5x')).toBeVisible();
+      await expect(card.getByText('Short 3x')).toBeVisible();
+      await expect(card.getByText('0.04% Zerion fee', { exact: false })).toBeVisible();
 
-      await page.getByRole('button', { name: 'Manage in Zerion' }).click();
+      await card.getByRole('button', { name: 'Manage in Zerion' }).click();
       await expect(page).toHaveURL(/.*\/overview\/perps/);
     },
   );
@@ -128,10 +127,9 @@ describe('Hyperliquid account card', () => {
     await mockHyperliquid(page);
     await page.goto(`${extensionPopupUrl}#/overview`);
 
-    await expect(page.getByText('YOUR HYPERLIQUID ACCOUNT')).toBeVisible({
-      timeout: 30_000,
-    });
-    await page.getByRole('button', { name: 'Stay here' }).click();
-    await expect(page.getByText('YOUR HYPERLIQUID ACCOUNT')).toHaveCount(0);
+    const card = page.getByTestId('hyperliquid-account-card');
+    await expect(card).toBeVisible({ timeout: 30_000 });
+    await card.getByRole('button', { name: 'Stay here' }).click();
+    await expect(card).toHaveCount(0);
   });
 });

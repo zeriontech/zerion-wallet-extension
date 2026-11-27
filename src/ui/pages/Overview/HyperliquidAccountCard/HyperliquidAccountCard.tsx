@@ -136,7 +136,10 @@ export function HyperliquidAccountCard({
       : null;
 
   return (
-    <div style={{ paddingInline: 'var(--column-padding-inline)', paddingTop: 16 }}>
+    <div
+      data-testid="hyperliquid-account-card"
+      style={{ paddingInline: 'var(--column-padding-inline)', paddingTop: 16 }}
+    >
       <Frame style={{ padding: 16 }}>
         <VStack gap={12}>
           <HStack gap={8} alignItems="center" justifyContent="space-between">
