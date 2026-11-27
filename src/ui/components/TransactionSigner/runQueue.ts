@@ -6,7 +6,6 @@ import { postLedgerSignParams } from 'src/ui/hardware-wallet/useLedgerIframeCont
 import { QueueAbortError, QueueError, ReadonlyWalletError } from './errors';
 import { isReadonlyWallet } from './signTransactions';
 import { emitQueueEvent, removeQueue, updateQueueRun, type QueueRecord } from './store';
-import { isStepStale, refreshStaleGasForStep } from './refreshStaleGas';
 import type { SignStep, StepResult } from './types';
 
 export type RunStep = (args: {
@@ -81,14 +80,6 @@ export async function runQueue(queue: QueueRecord, runStep: RunStep): Promise<vo
 
     updateQueueRun(queueId, { state: 'running', currentStep: index });
     emitQueueEvent(queueId, { type: 'step-start', index });
-
-    // If the queue sat long enough that the original gas estimate may be
-    // stale (e.g. hardware-wallet confirmation took >1min), re-estimate
-    // gasLimit before sending. Mutate in place so later iterations see the
-    // updated step.
-    if (isStepStale(queue.enqueuedAt)) {
-      steps[index] = await refreshStaleGasForStep(steps[index]);
-    }
 
     try {
       const result = await runStep({ queue, step: steps[index], index });

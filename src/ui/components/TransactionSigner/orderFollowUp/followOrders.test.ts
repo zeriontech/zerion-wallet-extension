@@ -39,10 +39,6 @@ vi.doMock('src/ui/features/appearance', () => ({
 vi.doMock('src/ui/hardware-wallet/useLedgerIframeController', () => ({
   postLedgerSignParams: () => undefined,
 }));
-vi.doMock('../refreshStaleGas', () => ({
-  isStepStale: () => false,
-  refreshStaleGasForStep: async (step: SignStep) => step,
-}));
 
 const { appendQueue, emitQueueEvent, getQueue, removeQueue } = await import('../store');
 const { runQueue } = await import('../runQueue');
