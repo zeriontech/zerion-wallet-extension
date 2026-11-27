@@ -138,6 +138,10 @@ function trackAppEvents({
     walletPort.request('trackUiEvent', { name: 'hyperliquidAccountCard', data });
   });
 
+  emitter.on('hyperliquidFundingPrompt', async (data) => {
+    walletPort.request('trackUiEvent', { name: 'hyperliquidFundingPrompt', data });
+  });
+
   emitter.on('errorScreenView', async (data) => {
     const preferences = await fetchGlobalPreferences();
     if (!preferences.analyticsEnabled) {

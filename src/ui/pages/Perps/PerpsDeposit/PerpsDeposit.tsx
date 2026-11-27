@@ -37,6 +37,8 @@ import { PageBottom } from 'src/ui/components/PageBottom';
 import { useBackgroundKind } from 'src/ui/components/Background';
 import { VStack } from 'src/ui/ui-kit/VStack';
 import { UIText } from 'src/ui/ui-kit/UIText';
+import { Frame } from 'src/ui/ui-kit/Frame';
+import { HStack } from 'src/ui/ui-kit/HStack';
 import { Spacer } from 'src/ui/ui-kit/Spacer';
 import { TokenIcon } from 'src/ui/ui-kit/TokenIcon';
 import { UnstyledLink } from 'src/ui/ui-kit/UnstyledLink';
@@ -54,6 +56,8 @@ import { RiskDisclosureBlock } from '../Blocks/RiskDisclosureBlock';
 import { DepositFormSkeleton } from './DepositFormSkeleton';
 import * as s from './styles.module.css';
 import { pickPerpsDepositQuote } from './pickPerpsDepositQuote';
+import { getFundingFeeSummary } from 'src/modules/hyperliquid/funding/fundingFees';
+import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 
 const HYPERCORE_CHAIN_ID = 'hypercore';
 const HYPERCORE_USDC_FUNGIBLE_ID = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
@@ -61,6 +65,21 @@ const PERPS_DEPOSIT_SLIPPAGE = '0.5';
 
 const ARBITRUM_CHAIN_ID = 'arbitrum';
 const ETHEREUM_CHAIN_ID = 'ethereum';
+
+function FundingDepositFeeRow({ label, value }: { label: string; value: string }) {
+  return (
+    <HStack
+      gap={8}
+      justifyContent="space-between"
+      style={{ padding: '10px 16px', borderTop: '1px solid var(--neutral-200)' }}
+    >
+      <UIText kind="small/regular" color="var(--neutral-600)">
+        {label}
+      </UIText>
+      <UIText kind="small/accent">{value}</UIText>
+    </HStack>
+  );
+}
 
 function useUserFormState() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -206,6 +225,7 @@ function DepositFormBody({
   });
 
   const quote = pickPerpsDepositQuote(quotesQuery.quotes);
+  const feeSummary = quote ? getFundingFeeSummary(quote) : null;
 
   const { data: wallet } = useQuery({
     queryKey: ['wallet/uiGetCurrentWallet'],
@@ -465,6 +485,40 @@ function DepositFormBody({
             </div>
           </div>
         </div>
+
+        {feeSummary ? (
+          <Frame style={{ padding: 0 }}>
+            <VStack gap={0}>
+              {feeSummary.provider ? (
+                <FundingDepositFeeRow label="Route" value={feeSummary.provider} />
+              ) : null}
+              {feeSummary.networkFeeUsd != null ? (
+                <FundingDepositFeeRow
+                  label="Network fee"
+                  value={formatCurrencyValue(feeSummary.networkFeeUsd, 'en', currency)}
+                />
+              ) : null}
+              {feeSummary.bridgeFeeUsd != null ? (
+                <FundingDepositFeeRow
+                  label="Bridge fee"
+                  value={formatCurrencyValue(feeSummary.bridgeFeeUsd, 'en', currency)}
+                />
+              ) : null}
+              {feeSummary.protocolFeeUsd != null && feeSummary.protocolFeeUsd > 0 ? (
+                <FundingDepositFeeRow
+                  label="Swap fee"
+                  value={formatCurrencyValue(feeSummary.protocolFeeUsd, 'en', currency)}
+                />
+              ) : null}
+              {feeSummary.totalFeeUsd != null ? (
+                <FundingDepositFeeRow
+                  label="Total fees"
+                  value={formatCurrencyValue(feeSummary.totalFeeUsd, 'en', currency)}
+                />
+              ) : null}
+            </VStack>
+          </Frame>
+        ) : null}
 
         <UIText kind="caption/regular" color="var(--neutral-600)" className={s.disclosure}>
           Funds may take a few minutes to settle on Hyperliquid.

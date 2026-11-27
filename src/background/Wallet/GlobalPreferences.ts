@@ -53,6 +53,11 @@ export interface State {
    * address. Used to keep the prompt to once per address per week.
    */
   hyperliquidReferralPromptedAt?: Record<string, number>;
+  /**
+   * Last time the "fund Hyperliquid from any chain" sheet was offered, keyed
+   * by normalized address.
+   */
+  hyperliquidFundingPromptedAt?: Record<string, number>;
 }
 
 export function getWalletNameFlagsChange(state: State, prevState: State) {
@@ -94,6 +99,7 @@ export class GlobalPreferences extends PersistentStore<State> {
     hasSeenHideTokenHint: false,
     hyperliquidFeeProtection: true,
     hyperliquidReferralPromptedAt: {},
+    hyperliquidFundingPromptedAt: {},
   };
 
   private async fetchDefaultWalletNameFlags() {

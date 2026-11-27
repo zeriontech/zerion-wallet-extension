@@ -40,6 +40,10 @@ import { prepareTypedData } from 'src/modules/ethereum/message-signing/prepareTy
 import { toUtf8String } from 'src/modules/ethereum/message-signing/toUtf8String';
 import { removeSignature } from 'src/modules/ethereum/transactions/removeSignature';
 import { normalizeAddress } from 'src/shared/normalizeAddress';
+import { isOfficialHyperliquidOrigin } from 'src/modules/hyperliquid/security/hyperliquidTypedData';
+import type { HyperliquidSignatureSummary } from 'src/modules/hyperliquid/security/hyperliquidTypedData';
+import { perpClearinghouseState } from 'src/modules/hyperliquid/api/requests/perp-clearinghouse-state.client';
+import { getFundingEligibility } from 'src/modules/hyperliquid/funding/fundingEligibility';
 import type { PartiallyRequired } from 'src/shared/type-utils/PartiallyRequired';
 import type { AddEthereumChainParameter } from 'src/modules/ethereum/types/AddEthereumChainParameter';
 import { chainConfigStore } from 'src/modules/ethereum/chains/ChainConfigStore';
@@ -998,6 +1002,57 @@ export class Wallet {
     this.verifyInternalOrigin(context);
     await globalPreferences.ready();
     return globalPreferences.setPreferences(preferences);
+  }
+
+  /**
+   * Called after an ApproveAgent signature on app.hyperliquid.xyz. Opens the
+   * funding sheet only when the account has nothing withdrawable and the
+   * prompt has not been shown to this address in the last week.
+   */
+  async maybeOfferHyperliquidFunding({
+    context,
+    params: { origin, signatureType },
+  }: WalletMethodParams<{
+    origin: string;
+    signatureType: HyperliquidSignatureSummary['kind'];
+  }>) {
+    this.verifyInternalOrigin(context);
+    if (!isOfficialHyperliquidOrigin(origin)) return;
+    const address = this.ensureCurrentAddress();
+    const preferences = await globalPreferences.getPreferences();
+    const state = await perpClearinghouseState({ address });
+    const rawWithdrawable = state?.withdrawable;
+    const withdrawable =
+      rawWithdrawable == null || rawWithdrawable === '' ? null : Number(rawWithdrawable);
+    const normalizedAddress = normalizeAddress(address);
+    const eligibility = getFundingEligibility({
+      origin,
+      signatureType,
+      withdrawable: withdrawable != null && Number.isFinite(withdrawable) ? withdrawable : null,
+      lastPromptedAt: preferences.hyperliquidFundingPromptedAt?.[normalizedAddress] ?? null,
+      now: Date.now(),
+    });
+    if (!eligibility.eligible) return;
+    await globalPreferences.setPreferences({
+      hyperliquidFundingPromptedAt: {
+        ...(preferences.hyperliquidFundingPromptedAt ?? {}),
+        [normalizedAddress]: Date.now(),
+      },
+    });
+    // Let the signing window close before opening the sheet.
+    setTimeout(() => {
+      this.notificationWindow
+        .open({
+          route: '/hyperliquid/fund',
+          requestId: `${INTERNAL_ORIGIN}:${nanoid()}`,
+          tabId: null,
+          onResolve: () => {},
+          onDismiss: () => {},
+        })
+        .catch(() => {
+          // A failed prompt must never surface as a signing failure.
+        });
+    }, 400);
   }
 
   async getRemoteConfigValue({
