@@ -320,15 +320,14 @@ describe('same-shape approve fees equal the swap fees', () => {
       const kind = KINDS[i % KINDS.length];
       const baseFee = int(1, 4e11);
       const configured = fees();
-      const presetClassic = kind !== 'custom1559' && (kind === 'customClassic' || random() < 0.5);
+      const classicShape = kind === 'customClassic' || (kind !== 'custom1559' && random() < 0.5);
       const speed = {
-        classic: presetClassic ? int(1, 5e11) : null,
-        eip1559: presetClassic ? null : { ...configured, baseFee },
+        classic: classicShape ? int(1, 5e11) : null,
+        eip1559: classicShape ? null : { ...configured, baseFee },
         optimistic: null,
         eta: null,
       };
       const gasPrices: ChainGasPrice = { fast: speed, average: speed };
-      const classicShape = presetClassic || kind === 'customClassic';
 
       const quotedLeg = (gas: number) => {
         if (classicShape) {

@@ -5,7 +5,7 @@ export function getQuoteApplication({
   contractMetadata,
   contractAddress,
 }: {
-  contractMetadata: Quote2['contractMetadata'];
+  contractMetadata: Pick<Quote2['contractMetadata'], 'id' | 'name' | 'iconUrl'>;
   contractAddress: string | null | undefined;
 }): ActionApplication {
   return {

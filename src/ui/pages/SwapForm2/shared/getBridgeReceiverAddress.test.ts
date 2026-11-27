@@ -11,9 +11,7 @@ describe('getBridgeReceiverAddress', () => {
 
   test('the signing address in another letter case is not a recipient', () => {
     expect(getBridgeReceiverAddress({ address, to: address.toLowerCase() })).toBeNull();
-    expect(
-      getBridgeReceiverAddress({ address: address.toLowerCase(), to: address }),
-    ).toBeNull();
+    expect(getBridgeReceiverAddress({ address: address.toLowerCase(), to: address })).toBeNull();
   });
 
   test('a different address is the recipient', () => {
