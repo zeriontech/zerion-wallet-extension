@@ -27,6 +27,7 @@ import { canSignIntent } from 'src/shared/wallet/canSignIntent';
 import { useWalletGroups } from 'src/ui/shared/requests/useWalletGroups';
 import { buildExpectedIntentSigning } from 'src/ui/shared/forms/trading/intentTypedData';
 import { getAddressType } from 'src/shared/wallet/classifiers';
+import type { Quote2 } from 'src/shared/types/Quote';
 import { equal } from 'src/modules/fast-deep-equal';
 import {
   signUntilFirstBroadcast,
@@ -72,7 +73,13 @@ import {
 import { useNetworkFeePreference } from 'src/ui/shared/useNetworkFeePreference';
 import type { PopoverToastHandle } from '../Settings/PopoverToast';
 import { PopoverToast } from '../Settings/PopoverToast';
-import { calculatePriceImpactFromPositions } from './shared/price-impact';
+import {
+  EMPTY_QUOTE_PRICE_MEMO,
+  nextQuotePriceMemo,
+  selectEffectivePrice,
+  selectSwapFormFiat,
+  type QuotePriceMemo,
+} from './shared/quotePrice';
 import { applyTransactionConfiguration } from './applyTransactionConfiguration';
 import {
   getBaseFee,
@@ -142,10 +149,12 @@ const SWAP_FORM_SEARCH_PARAM_KEYS: (keyof SwapFormState2)[] = [
 function SwapFormComponent({
   address,
   positions,
+  positionsUpdatedAt,
   networks,
 }: {
   address: string;
   positions: FungiblePosition[];
+  positionsUpdatedAt: number;
   networks: Networks;
 }) {
   const [
@@ -184,11 +193,13 @@ function SwapFormComponent({
     setUserFormState((state) => ({ ...state, ...partial }));
   });
 
-  const { inputPosition, outputPosition } = useFormPositions({
-    formState,
-    positions,
-    networks,
-  });
+  const { inputPosition, inputPriceUpdatedAt, outputPosition, outputPriceUpdatedAt } =
+    useFormPositions({
+      formState,
+      positions,
+      positionsUpdatedAt,
+      networks,
+    });
 
   const inputNetworkConfig = useMemo(
     () =>
@@ -277,16 +288,47 @@ function SwapFormComponent({
     }
   }, [formState.inputKind, inputPosition, setUserFormState]);
 
-  const priceImpact = useMemo(
-    () =>
-      calculatePriceImpactFromPositions({
-        inputValue: resolvedInputAmount || null,
-        outputValue: quote?.outputAmount?.quantity ?? null,
-        inputPosition,
-        outputPosition,
+  const { currency } = useCurrency();
+  const inputKey = {
+    chainId: formState.inputChain,
+    fungibleId: formState.inputFungibleId,
+    currency,
+  };
+  const outputKey = {
+    chainId: formState.outputChain,
+    fungibleId: formState.outputFungibleId ?? '',
+    currency,
+  };
+
+  const [quotePrices, setQuotePrices] = useState<{ quote: Quote2 | null; memo: QuotePriceMemo }>({
+    quote: null,
+    memo: EMPTY_QUOTE_PRICE_MEMO,
+  });
+  if (quote && quote !== quotePrices.quote) {
+    setQuotePrices({
+      quote,
+      memo: nextQuotePriceMemo(quotePrices.memo, {
+        quote,
+        input: inputKey,
+        output: outputKey,
+        currency,
+        now: Date.now(),
       }),
-    [resolvedInputAmount, quote?.outputAmount?.quantity, inputPosition, outputPosition],
-  );
+    });
+  }
+
+  const { payFiat, receiveFiat, priceImpact } = selectSwapFormFiat({
+    quote,
+    resolvedInputAmount: resolvedInputAmount || null,
+    inputPrice: selectEffectivePrice(quotePrices.memo.input, inputKey, {
+      price: inputPosition?.fungible.meta.price ?? null,
+      updatedAt: inputPriceUpdatedAt,
+    }),
+    outputPrice: selectEffectivePrice(quotePrices.memo.output, outputKey, {
+      price: outputPosition?.fungible.meta.price ?? null,
+      updatedAt: outputPriceUpdatedAt,
+    }),
+  });
 
   // "Price unknown" should be derived purely from the input position so it
   // doesn't flicker as quotes refetch in the background.
@@ -356,7 +398,6 @@ function SwapFormComponent({
 
   const settingsDialog = useDialog2();
 
-  const { currency } = useCurrency();
   const { preferences, setPreferences } = usePreferences();
   const { globalPreferences } = useGlobalPreferences();
   const devForceShowOnboarding = useStore(swapOnboardingDevForceShowStore);
@@ -805,6 +846,7 @@ function SwapFormComponent({
               position={inputPosition}
               positions={positions}
               resolvedInputAmount={resolvedInputAmount}
+              payFiat={payFiat}
             />
             <MiddleLine />
             <ReverseButton onClick={reverseTokens} />
@@ -812,6 +854,7 @@ function SwapFormComponent({
               onSelectFungible={selectOutput}
               position={outputPosition}
               outputAmount={quote?.outputAmount?.quantity ?? null}
+              receiveFiat={receiveFiat}
               positions={positions}
               receiverPositions={receivePositions}
               networks={networks}
@@ -911,7 +954,7 @@ function SwapFormWrapper({ address, ready }: { address: string; ready: boolean }
   });
 
   const refetchInterval = usePositionsRefetchInterval(20000);
-  const { data, isError, refetch } = useWalletSimplePositions(
+  const { data, dataUpdatedAt, isError, refetch } = useWalletSimplePositions(
     { address, currency },
     { source: useHttpClientSource() },
     { enabled: ready, refetchInterval },
@@ -939,7 +982,12 @@ function SwapFormWrapper({ address, ready }: { address: string; ready: boolean }
   return isError ? (
     <SwapFormError onReload={() => refetch()} />
   ) : prepared && positions && networks && !isFetching ? (
-    <SwapFormComponent address={address} positions={positions} networks={networks} />
+    <SwapFormComponent
+      address={address}
+      positions={positions}
+      positionsUpdatedAt={dataUpdatedAt}
+      networks={networks}
+    />
   ) : (
     <SwapFormSkeleton />
   );

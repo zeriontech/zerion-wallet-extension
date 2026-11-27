@@ -439,6 +439,11 @@ function DepositFormBody({
               position={inputPosition}
               positions={positions}
               resolvedInputAmount={resolvedInputAmount}
+              payFiat={
+                inputPrice != null
+                  ? new BigNumber(formState.inputAmount || '0').times(inputPrice)
+                  : null
+              }
             />
           </div>
           <div className={s.outputCard}>
