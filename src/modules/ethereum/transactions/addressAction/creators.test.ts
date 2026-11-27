@@ -2,6 +2,12 @@ import { createSeedTransactions } from 'src/background/transactions/devSeedLocal
 import { Networks } from 'src/modules/networks/Networks';
 import type { NetworkInfo } from 'src/modules/networks/NetworkInfo';
 import type { TransactionObject } from '../types';
+import {
+  BRIDGE_HASH,
+  MAYAN_FORWARDER,
+  createBroadcastTransaction,
+  interpretedBridgeWithApprove,
+} from './approveBridge.fixtures';
 
 // The real client transitively imports the extension runtime, and the http
 // client reads package.json, which ESM tests cannot import by name
@@ -132,4 +138,28 @@ test('resolved content fills both the action and its locally built act', async (
   const resolved = applyLocalActionContent(addressAction, contentRequest, content);
   expect(resolved.content?.transfers?.[0].fungible?.symbol).toBe('USDC');
   expect(resolved.acts?.[0].content).toBe(resolved.content);
+});
+
+test('a stored bridge interpretation is shown unchanged', async () => {
+  const { addressAction } = await pendingTransactionToAddressAction(
+    createBroadcastTransaction({
+      hash: BRIDGE_HASH,
+      nonce: 8,
+      to: MAYAN_FORWARDER,
+      timestamp: 1759752000000,
+      addressAction: interpretedBridgeWithApprove,
+    }),
+    loadNetworkByChainId,
+    'usd',
+  );
+  const shownFields = ['label', 'type', 'acts', 'content', 'fee', 'refund'] as const;
+  for (const field of shownFields) {
+    expect(addressAction[field]).toEqual(interpretedBridgeWithApprove[field]);
+  }
+  const { id, transaction, status, timestamp, rawTransaction } = addressAction;
+  expect(id).toBe(BRIDGE_HASH);
+  expect(transaction?.hash).toBe(BRIDGE_HASH);
+  expect(status).toBe('pending');
+  expect(timestamp).toBe(1759752000000);
+  expect(rawTransaction?.nonce).toBe(8);
 });

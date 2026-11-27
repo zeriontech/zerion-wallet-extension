@@ -10,6 +10,7 @@ import {
   createBridgeAddressAction,
   createTradeAddressAction,
 } from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
+import type { AnyAddressAction } from 'src/modules/ethereum/transactions/addressAction/addressActionMain';
 import { useCurrency } from 'src/modules/currency/useCurrency';
 import { useAssetListFungibles } from 'src/modules/zerion-api/hooks/useAssetListFungibles';
 import { useHttpClientSource } from 'src/modules/zerion-api/hooks/useHttpClientSource';
@@ -113,6 +114,7 @@ import {
 import { SwapFormError, SwapFormSkeleton } from './SwapFormSkeleton';
 import { getCrossEcosystemState } from './shared/getCrossEcosystemState';
 import { getZamaSwapKind } from './shared/zamaSwapKind';
+import { getStepAddressActions } from './shared/getStepAddressActions';
 import { SwapSettingsDialog } from './SwapSettingsDialog';
 import type { SwapFormState2 } from './types';
 import * as styles from './styles.module.css';
@@ -563,55 +565,21 @@ function SwapFormComponent({
         receivedChain: { iconUrl: outputNetwork.iconUrl ?? null },
       };
 
-      if (configuredQuote.transactionApprove) {
-        const approveTx = configuredQuote.transactionApprove;
-        invariant(approveTx.evm, 'Approve transaction must be EVM (Solana has no allowance step)');
-        const fallbackApproveAction = createApproveAddressAction({
-          transaction: toIncomingTransaction(approveTx.evm),
-          hash: null,
-          explorerUrl: null,
-          fungible: inputPosition.fungible,
-          amount: spendAmount,
-          network: inputNetwork,
-        });
-        const approveMultichain = toMultichainTransaction(approveTx);
-        steps.push({
-          kind: 'send',
-          params: {
-            transaction:
-              userNonce != null
-                ? withNonce(approveMultichain, userNonce)
-                : withoutNonce(approveMultichain),
-            chain: formState.inputChain,
-            initiator: INTERNAL_ORIGIN,
-            clientScope: 'Swap',
-            actionType: 'Approve',
-            feeValueCommon,
-            feeSpeed,
-            feeGasPriceWei,
-            networkFeeUsd,
-            feeBlock: feeProvenance?.block ?? null,
-            feeSource: feeProvenance?.source ?? null,
-            feeFormulaVersion: feeProvenance?.formulaVersion ?? null,
-            addressAction: interpretationAction ?? fallbackApproveAction,
-            warningWasShown: Boolean(showPriceImpactCallout),
-            outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
-            orderReport:
-              quote.quoteId && !intentQuote
-                ? { quoteId: quote.quoteId, role: 'approve' }
-                : undefined,
-          },
-          toaster: {
-            ...(isDeviceAccount(wallet) || formState.inputChain === NetworkId.Ethereum
-              ? approveToasterView
-              : swapToasterView),
-            // An approval is a plain transaction on the input chain — the
-            // provider's explorer wouldn't know its hash.
-            explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
-          },
-        });
-      }
-
+      const approveTx = configuredQuote.transactionApprove ?? null;
+      invariant(
+        !approveTx || approveTx.evm,
+        'Approve transaction must be EVM (Solana has no allowance step)',
+      );
+      const fallbackApproveAction = approveTx?.evm
+        ? createApproveAddressAction({
+            transaction: toIncomingTransaction(approveTx.evm),
+            hash: null,
+            explorerUrl: null,
+            fungible: inputPosition.fungible,
+            amount: spendAmount,
+            network: inputNetwork,
+          })
+        : null;
       const swapTx = intentQuote ? null : configuredQuote.transactionSwap;
       invariant(intentQuote || swapTx, 'Configured quote must have a swap transaction');
       const swapMultichain = swapTx ? toMultichainTransaction(swapTx) : null;
@@ -653,6 +621,51 @@ function SwapFormComponent({
               }) ?? 'trade',
           });
 
+      const stepAddressActions = getStepAddressActions<AnyAddressAction>({
+        interpretationAction,
+        fallbackApproveAction,
+        fallbackSwapAction,
+      });
+
+      if (approveTx) {
+        const approveMultichain = toMultichainTransaction(approveTx);
+        steps.push({
+          kind: 'send',
+          params: {
+            transaction:
+              userNonce != null
+                ? withNonce(approveMultichain, userNonce)
+                : withoutNonce(approveMultichain),
+            chain: formState.inputChain,
+            initiator: INTERNAL_ORIGIN,
+            clientScope: 'Swap',
+            actionType: 'Approve',
+            feeValueCommon,
+            feeSpeed,
+            feeGasPriceWei,
+            networkFeeUsd,
+            feeBlock: feeProvenance?.block ?? null,
+            feeSource: feeProvenance?.source ?? null,
+            feeFormulaVersion: feeProvenance?.formulaVersion ?? null,
+            addressAction: stepAddressActions.approve,
+            warningWasShown: Boolean(showPriceImpactCallout),
+            outputAmountColor: showPriceImpactWarning ? 'red' : 'grey',
+            orderReport:
+              quote.quoteId && !intentQuote
+                ? { quoteId: quote.quoteId, role: 'approve' }
+                : undefined,
+          },
+          toaster: {
+            ...(isDeviceAccount(wallet) || formState.inputChain === NetworkId.Ethereum
+              ? approveToasterView
+              : swapToasterView),
+            // An approval is a plain transaction on the input chain — the
+            // provider's explorer wouldn't know its hash.
+            explorerUrlTemplate: inputNetwork.explorer?.txUrl ?? null,
+          },
+        });
+      }
+
       const swapContext = {
         chain: formState.inputChain,
         initiator: INTERNAL_ORIGIN,
@@ -665,7 +678,7 @@ function SwapFormComponent({
         feeBlock: feeProvenance?.block ?? null,
         feeSource: feeProvenance?.source ?? null,
         feeFormulaVersion: feeProvenance?.formulaVersion ?? null,
-        addressAction: interpretationAction ?? fallbackSwapAction,
+        addressAction: stepAddressActions.swap,
         quote,
         outputChain: formState.outputChain,
         warningWasShown: Boolean(showPriceImpactCallout),
