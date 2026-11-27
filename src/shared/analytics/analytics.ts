@@ -40,6 +40,7 @@ type MetabaseEvent =
   | 'perps_screen_viewed'
   | 'perps_button_pressed'
   | 'perps_position_action'
+  | 'hyperliquid_referral_prompt'
   | 'confidential_balances';
 
 type BaseParams<E = MetabaseEvent> = { request_name: E };

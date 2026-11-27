@@ -347,6 +347,23 @@ function trackAppEvents({ account }: { account: Account }) {
   );
 
   emitter.on(
+    'hyperliquidReferralPrompt',
+    gated(async (data) => {
+      const params = createParams({
+        request_name: 'hyperliquid_referral_prompt',
+        action: data.action,
+        reason: data.reason ?? null,
+        error_message: data.error_message ? redactAddresses(data.error_message) : null,
+        code_source: data.code_source ?? null,
+      });
+      sendToMetabase('hyperliquid_referral_prompt', params);
+      // The wallet address never goes to Mixpanel for this feature.
+      const mixpanelParams = omit(params, ['request_name', 'wallet_address']);
+      mixpanelTrack('Hyperliquid: Referral Prompt', mixpanelParams);
+    }),
+  );
+
+  emitter.on(
     'confidentialAnalyticsEvent',
     gated(async (data) => {
       // the wallet address never goes to Mixpanel for this feature

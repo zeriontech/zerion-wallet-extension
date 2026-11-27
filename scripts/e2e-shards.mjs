@@ -159,6 +159,21 @@ const TESTS = [
     'Hyperliquid signatures › renders Enable trading in plain words and keeps the payload',
     4.0,
   ],
+  [
+    'hyperliquid-referral.spec.ts',
+    'Hyperliquid referral prompt › offers the runtime code with disclosure and applies it',
+    5.5,
+  ],
+  [
+    'hyperliquid-referral.spec.ts',
+    'Hyperliquid referral prompt › does not offer the prompt to an account with a referrer',
+    4.0,
+  ],
+  [
+    'hyperliquid-referral.spec.ts',
+    'Hyperliquid referral prompt › does not offer the prompt to an unfunded account',
+    4.0,
+  ],
 
   // Dapp suite. These run against the hosted zerion-test-dapp deployment by
   // default; DAPP_URL overrides it for a local dapp.

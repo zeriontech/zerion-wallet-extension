@@ -1,0 +1,17 @@
+export type HyperliquidReferralPromptAction =
+  | 'shown'
+  | 'clicked_apply'
+  | 'applied'
+  | 'failed'
+  | 'dismissed'
+  | 'not_shown';
+
+export interface HyperliquidReferralPromptParams {
+  action: HyperliquidReferralPromptAction;
+  /** Set for `not_shown`: why the prompt was not offered. */
+  reason?: string;
+  /** Redacted exchange/provider error for `failed`. */
+  error_message?: string | null;
+  /** Where the code came from; currently only `remote_config`. */
+  code_source?: 'remote_config';
+}

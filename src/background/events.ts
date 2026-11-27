@@ -17,6 +17,7 @@ import type {
 } from 'src/shared/types/perps-events';
 import type { NetworkFeeLevelChangedParams } from 'src/shared/types/network-fee-events';
 import type { LabelAddressCopiedParams } from 'src/shared/types/label-events';
+import type { HyperliquidReferralPromptParams } from 'src/shared/types/hyperliquid-events';
 import type { WindowType } from 'src/shared/types/UrlContext';
 import type { SignTransactionResult } from 'src/shared/types/SignTransactionResult';
 import type { OrderPlaced } from 'src/shared/types/OrderPlaced';
@@ -110,6 +111,7 @@ export type BackgroundEvents = {
   perpsScreenViewed: (data: PerpsScreenViewedParams) => void;
   perpsButtonPressed: (data: PerpsButtonPressedParams) => void;
   perpsPositionAction: (data: PerpsPositionActionParams) => void;
+  hyperliquidReferralPrompt: (data: HyperliquidReferralPromptParams) => void;
   confidentialAnalyticsEvent: (data: ConfidentialAnalyticsEvent) => void;
 };
 
@@ -130,6 +132,7 @@ export const UI_ANALYTICS_EVENTS = [
   'confidentialAnalyticsEvent',
   'perpsButtonPressed',
   'perpsPositionAction',
+  'hyperliquidReferralPrompt',
   'assetClicked',
   'cloudflareChallengeIssued',
   'passkeyLoginEnabled',

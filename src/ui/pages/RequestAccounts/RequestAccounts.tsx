@@ -38,6 +38,20 @@ import type { Permission } from 'src/shared/types/Permission';
 import { usePreferences } from 'src/ui/features/preferences';
 import { useWalletsMetaByChunks } from 'src/ui/shared/requests/useWalletsMetaByChunks';
 import { SearchInput } from 'src/ui/ui-kit/Input/SearchInput';
+import {
+  fetchGlobalPreferences,
+  GLOBAL_PREFERENCES_QUERY_KEY,
+} from 'src/ui/features/preferences/usePreferences';
+import { queryClient } from 'src/ui/shared/requests/queryClient';
+import { fetchHyperliquidPerpsConfig } from 'src/modules/hyperliquid/hooks/usePerpsRemoteConfig';
+import { perpReferral } from 'src/modules/hyperliquid/api/requests/perp-referral.client';
+import { perpClearinghouseState } from 'src/modules/hyperliquid/api/requests/perp-clearinghouse-state.client';
+import { getReferralEligibility } from 'src/modules/hyperliquid/referral/referralEligibility';
+import { isOfficialHyperliquidOrigin } from 'src/modules/hyperliquid/security/hyperliquidTypedData';
+import { HyperliquidReferralPrompt } from 'src/ui/components/HyperliquidReferralPrompt/HyperliquidReferralPrompt';
+import { emitter } from 'src/ui/shared/events';
+import { isReadonlyContainer } from 'src/shared/types/validators';
+import { wait } from 'src/shared/wait';
 import { DebouncedInput } from 'src/ui/ui-kit/Input/DebouncedInput';
 import { KeyboardShortcut, ShortcutHint } from 'src/ui/components/KeyboardShortcut';
 import { useWindowFocus } from 'src/ui/shared/useWindowFocus';
@@ -183,6 +197,7 @@ function RequestAccountsView({
   walletGroups,
   onConfirm,
   onReject,
+  isConfirming = false,
 }: {
   origin: string;
   ecosystem: BlockchainType;
@@ -190,6 +205,7 @@ function RequestAccountsView({
   walletGroups?: WalletGroup[] | null;
   onConfirm: (value: { address: string; origin: string }) => void;
   onReject: () => void;
+  isConfirming?: boolean;
 }) {
   useBackgroundKind(whiteBackgroundKind);
   const walletSelectDialogRef = useRef<HTMLDialogElement | null>(null);
@@ -316,18 +332,27 @@ function RequestAccountsView({
             paddingBottom: 32,
           }}
         >
-          <Button type="button" kind="regular" onClick={onReject} ref={focusNode}>
+          <Button
+            type="button"
+            kind="regular"
+            onClick={onReject}
+            ref={focusNode}
+            disabled={isConfirming}
+          >
             Cancel
           </Button>
           <KeyboardShortcut
             combination="mod+enter"
             onKeyDown={() => onConfirm({ address: selectedWallet.address, origin })}
-            disabled={!shortcutActive}
+            disabled={!shortcutActive || isConfirming}
           />
-          <Button onClick={() => onConfirm({ address: selectedWallet.address, origin })}>
+          <Button
+            onClick={() => onConfirm({ address: selectedWallet.address, origin })}
+            disabled={isConfirming}
+          >
             <HStack gap={4} alignItems="center" justifyContent="center">
-              Connect
-              {shortcutActive && windowFocused ? <ShortcutHint /> : null}
+              {isConfirming ? 'Checking…' : 'Connect'}
+              {shortcutActive && windowFocused && !isConfirming ? <ShortcutHint /> : null}
             </HStack>
           </Button>
         </div>
@@ -337,6 +362,27 @@ function RequestAccountsView({
 }
 
 class NoWalletForEcosystemError extends Error {}
+
+const REFERRAL_CHECK_TIMEOUT_MS = 5000;
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> {
+  return Promise.race([promise, wait(timeoutMs, null)]);
+}
+
+function canSignTypedDataForAddress({
+  address,
+  walletGroups,
+}: {
+  address: string;
+  walletGroups?: WalletGroup[] | null;
+}) {
+  const group = walletGroups?.find((item) =>
+    item.walletContainer.wallets.some(
+      (wallet) => normalizeAddress(wallet.address) === normalizeAddress(address),
+    ),
+  );
+  return group ? !isReadonlyContainer(group.walletContainer) : false;
+}
 
 export function RequestAccounts() {
   const [params] = useSearchParams();
@@ -382,11 +428,93 @@ export function RequestAccounts() {
   });
   const wallet = data?.wallet;
   const walletGroups = data?.walletGroups;
-  const handleConfirm = useCallback(
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [referralPrompt, setReferralPrompt] = useState<{ address: string; code: string } | null>(
+    null,
+  );
+  const confirmDirectly = useCallback(
     (result: { address: string; origin: string }) => {
       windowPort.confirm(windowId, result);
     },
     [windowId],
+  );
+  const handleConfirm = useCallback(
+    async (result: { address: string; origin: string }) => {
+      if (!isOfficialHyperliquidOrigin(origin) || isConfirming) {
+        confirmDirectly(result);
+        return;
+      }
+      setIsConfirming(true);
+      try {
+        const [preferences, config] = await Promise.all([
+          fetchGlobalPreferences(),
+          withTimeout(
+            queryClient.fetchQuery({
+              queryKey: ['perps/remote-config/hyperliquid_perps_config'],
+              queryFn: fetchHyperliquidPerpsConfig,
+              staleTime: 20_000,
+            }),
+            REFERRAL_CHECK_TIMEOUT_MS,
+          ),
+        ]);
+        const [referral, clearinghouseState] = await Promise.all([
+          withTimeout(perpReferral({ address: result.address }), REFERRAL_CHECK_TIMEOUT_MS),
+          withTimeout(
+            perpClearinghouseState({ address: result.address }),
+            REFERRAL_CHECK_TIMEOUT_MS,
+          ),
+        ]);
+        const normalizedAddress = normalizeAddress(result.address);
+        const eligibility = getReferralEligibility({
+          origin,
+          address: result.address,
+          canSignTypedData: canSignTypedDataForAddress({
+            address: result.address,
+            walletGroups,
+          }),
+          referralCode: config?.referralCode,
+          referral,
+          clearinghouseState,
+          lastPromptedAt: preferences.hyperliquidReferralPromptedAt?.[normalizedAddress] ?? null,
+          now: Date.now(),
+        });
+        if (!eligibility.eligible) {
+          emitter.emit('hyperliquidReferralPrompt', {
+            action: 'not_shown',
+            reason: eligibility.reason,
+            code_source: 'remote_config',
+          });
+          confirmDirectly(result);
+          return;
+        }
+        const nextPromptTimes = {
+          ...(preferences.hyperliquidReferralPromptedAt ?? {}),
+          [normalizedAddress]: Date.now(),
+        };
+        await walletPort
+          .request('setGlobalPreferences', {
+            preferences: { hyperliquidReferralPromptedAt: nextPromptTimes },
+          })
+          .catch(() => {
+            // The prompt is still useful if persisting the cooldown fails.
+          });
+        queryClient.setQueryData(GLOBAL_PREFERENCES_QUERY_KEY, {
+          ...preferences,
+          hyperliquidReferralPromptedAt: nextPromptTimes,
+        });
+        emitter.emit('hyperliquidReferralPrompt', {
+          action: 'shown',
+          code_source: 'remote_config',
+        });
+        setReferralPrompt({ address: result.address, code: eligibility.code });
+      } catch {
+        // Never block a connection because the referral offer failed.
+        confirmDirectly(result);
+      } finally {
+        setIsConfirming(false);
+      }
+    },
+    [origin, isConfirming, confirmDirectly, walletGroups],
   );
   const handleReject = () => windowPort.reject(windowId);
 
@@ -397,7 +525,7 @@ export function RequestAccounts() {
       if (!wallet) {
         throw new Error('Wallet must be defined');
       }
-      handleConfirm({ address: wallet.address, origin });
+      confirmDirectly({ address: wallet.address, origin });
     },
   });
 
@@ -416,6 +544,25 @@ export function RequestAccounts() {
   if (isLoading || !wallet) {
     return null;
   }
+  if (referralPrompt) {
+    const promptWallet =
+      walletGroups
+        ?.flatMap((group) => group.walletContainer.wallets)
+        .find(
+          (item) => normalizeAddress(item.address) === normalizeAddress(referralPrompt.address),
+        ) ?? wallet;
+    const finishConnect = () =>
+      windowPort.confirm(windowId, { address: referralPrompt.address, origin });
+    return (
+      <HyperliquidReferralPrompt
+        origin={origin}
+        wallet={promptWallet}
+        code={referralPrompt.code}
+        onContinue={finishConnect}
+        onDismiss={finishConnect}
+      />
+    );
+  }
   return (
     <>
       <RequestAccountsView
@@ -425,6 +572,7 @@ export function RequestAccounts() {
         ecosystem={ecosystem}
         onConfirm={handleConfirm}
         onReject={handleReject}
+        isConfirming={isConfirming}
       />
     </>
   );
