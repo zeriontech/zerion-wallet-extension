@@ -116,7 +116,7 @@ describe('Hyperliquid account card', () => {
       await expect(card.getByText('+$312.40 unrealized PnL')).toBeVisible();
       await expect(card.getByText('Long 5x')).toBeVisible();
       await expect(card.getByText('Short 3x')).toBeVisible();
-      await expect(card.getByText('0.04% Zerion fee', { exact: false })).toBeVisible();
+      await expect(card.getByText(/Zerion fee|on top of Hyperliquid/i)).toHaveCount(0);
 
       await card.getByRole('button', { name: 'Manage in Zerion' }).click();
       await expect(page).toHaveURL(/.*\/overview\/perps/);

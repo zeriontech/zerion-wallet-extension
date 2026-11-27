@@ -1,7 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useHyperliquidAccountSummary } from 'src/modules/hyperliquid/hooks/useHyperliquidAccountSummary';
-import { usePerpsRemoteConfig } from 'src/modules/hyperliquid/hooks/usePerpsRemoteConfig';
-import { builderFeeUnitToMaxFeeRateString } from 'src/modules/hyperliquid/fees/calculateFeeRate';
 import { getPerpIconUrl } from 'src/modules/hyperliquid/getPerpIconUrl';
 import { formatCurrencyValue } from 'src/shared/units/formatCurrencyValue';
 import { useCurrency } from 'src/modules/currency/useCurrency';
@@ -84,7 +82,6 @@ export function HyperliquidAccountCard({
 }) {
   const { currency } = useCurrency();
   const summary = useHyperliquidAccountSummary({ address });
-  const { data: config } = usePerpsRemoteConfig();
   const [dismissed, setDismissed] = useState(false);
   const hasEmittedShown = useRef(false);
 
@@ -125,15 +122,6 @@ export function HyperliquidAccountCard({
   if (dismissed || !shouldRender) {
     return null;
   }
-
-  const standardFee =
-    config?.builderFee != null && config.builderFee > 0
-      ? builderFeeUnitToMaxFeeRateString(config.builderFee)
-      : null;
-  const premiumFee =
-    config?.builderFeePremium != null && config.builderFeePremium > 0
-      ? builderFeeUnitToMaxFeeRateString(config.builderFeePremium)
-      : null;
 
   return (
     <div
@@ -187,12 +175,6 @@ export function HyperliquidAccountCard({
             <ChecklistLine>Positions next to your whole portfolio</ChecklistLine>
             <ChecklistLine>Same Hyperliquid order book and account</ChecklistLine>
           </VStack>
-          {standardFee ? (
-            <UIText kind="small/regular" color="var(--neutral-500)">
-              Orders placed in Zerion carry a {standardFee} Zerion fee
-              {premiumFee ? ` (${premiumFee} with Premium)` : ''} on top of Hyperliquid&apos;s fee.
-            </UIText>
-          ) : null}
           <HStack gap={8} style={{ gridTemplateColumns: '1fr 1fr' }}>
             <Button
               kind="regular"
