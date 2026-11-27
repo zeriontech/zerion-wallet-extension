@@ -163,6 +163,35 @@ function DepositFormBody({
     [inputChain, inputFungibleId, userFormState.inputAmount, userFormState.inputKind, address],
   );
 
+  const { savedNetworkFee, saveNetworkFee } = useNetworkFeePreference(formState.inputChain || null);
+  const [configurationOverride, setConfigurationOverride] = useState<CustomConfiguration | null>(
+    null,
+  );
+  const [selectedQuoteId, setSelectedQuoteId] = useState<string | null>(null);
+  const defaultConfiguration = useMemo(
+    () => toConfiguration(formState, savedNetworkFee),
+    [formState, savedNetworkFee],
+  );
+  const configuration = configurationOverride ?? defaultConfiguration;
+  const quoteSlippage = configuration.slippage != null ? String(configuration.slippage) : 'auto';
+  const quoteFormState = useMemo<SwapFormState2>(
+    () => ({ ...formState, slippage: quoteSlippage }),
+    [formState, quoteSlippage],
+  );
+  const inputChainForGas = useMemo(
+    () => (formState.inputChain ? createChain(formState.inputChain) : null),
+    [formState.inputChain],
+  );
+  const { data: gasPrices } = useGasPrices(inputChainForGas, {
+    refetchInterval: 20000,
+    keepPreviousData: true,
+  });
+
+  useEffect(() => {
+    setConfigurationOverride(null);
+    setSelectedQuoteId(null);
+  }, [formState.inputChain]);
+
   const inputPosition = useMemo(() => {
     return (
       positions.find(
