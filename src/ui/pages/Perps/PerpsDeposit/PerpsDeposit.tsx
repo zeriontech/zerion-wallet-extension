@@ -225,7 +225,7 @@ function DepositFormBody({
   const quotesFormState = useMemo(() => {
     const { inputKind: _ik, ...rest } = quoteFormState;
     return { ...rest, inputAmount: resolvedInputAmount ?? '' };
-  }, [resolvedInputAmount]);
+  }, [quoteFormState, resolvedInputAmount]);
 
   const inputFiatValue = useMemo(() => {
     if (!resolvedInputAmount || inputPrice == null) return null;
