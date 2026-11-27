@@ -1,15 +1,21 @@
 name: Beta build
 
-# Every push to main produces the beta build and uploads it to the two beta
-# store items. The upload is skipped (not failed) when the beta item ids are not
-# configured, so the workflow is safe before the store items exist.
+# Nightly beta channel: the scheduled run at HEAD of the default branch builds
+# the beta bundle and uploads it to the two beta store items. A manual dispatch
+# does the same on demand (it builds the selected ref, `main` by default). The
+# upload is skipped (not failed) when the beta item ids are not configured, so
+# the workflow is safe before the store items exist.
+#
+# The store review queue is not inspected: a Chrome item still in review rejects
+# the upload, and the next nightly run after it is approved goes through.
 on:
-  push:
-    branches: [main]
+  schedule:
+    # 03:00 UTC; testers get a fresh build every morning.
+    - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Validate store credentials without uploading'
+        description: 'Validate store credentials without submitting'
         type: boolean
         default: false
 
@@ -23,8 +29,8 @@ concurrency:
 jobs:
   quality:
     name: Quality
-    # Post-merge gate: a red `main` never uploads a beta build. Runs in parallel
-    # with `build`; `publish` waits for both.
+    # Post-merge gate: a red default branch never uploads a beta build. Runs in
+    # parallel with `build`; `publish` waits for both.
     uses: ./.github/workflows/_quality.yml
     secrets: inherit
 

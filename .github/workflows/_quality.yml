@@ -1,9 +1,9 @@
 name: Quality
 
 # The quality gate, defined once and called from every flow that needs it:
-# `ci.yml` for pull requests, `beta.yml` for every push to `main` (in parallel
-# with the beta build, so a merged commit is gated again before its beta build is
-# uploaded). Mirrors `zerion-web-app`'s `_quality.yml`.
+# `ci.yml` for pull requests, `beta.yml` for the nightly beta run (in parallel
+# with the beta build, so the commit about to be uploaded is gated again in the
+# same run). Mirrors `zerion-web-app`'s `_quality.yml`.
 on:
   workflow_call:
     # Optional: the e2e job skips when the bypass secret is absent.

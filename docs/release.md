@@ -4,18 +4,18 @@ Everything that cuts a release lives in `.github/workflows/`. Every action is pi
 
 ## Gate matrix
 
-| Event        | Workflow               | What runs                                                                                                                                                                                               |
-| ------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pull request | `ci.yml`               | `changeset-check` (or the `skip-changeset` label), `quality` (`_quality.yml`: lint, format, typecheck, unit tests, e2e — same-repo PRs only, 5 shards), `build` (same-repo PRs; zip attached to the PR) |
-| Push `main`  | `beta.yml`             | `quality` and the beta build (coral icons, own Firefox id, fourth version part) in parallel, then, when both pass and the item ids are configured, the beta store upload                                |
-| Push `main`  | `version-packages.yml` | opens/updates the **Version Packages** PR; tags the merged version bump                                                                                                                                 |
-| Tag `vX.Y.Z` | `release.yml`          | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack, and (when configured) upload to the production store items                                                                                 |
-| Manual       | `publish-stores.yml`   | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO                                                                                                                                        |
+| Event            | Workflow               | What runs                                                                                                                                                                                               |
+| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pull request     | `ci.yml`               | `changeset-check` (or the `skip-changeset` label), `quality` (`_quality.yml`: lint, format, typecheck, unit tests, e2e — same-repo PRs only, 5 shards), `build` (same-repo PRs; zip attached to the PR) |
+| Push `main`      | `version-packages.yml` | opens/updates the **Version Packages** PR; tags the merged version bump                                                                                                                                 |
+| Nightly / manual | `beta.yml`             | `quality` and the beta build (coral icons, own Firefox id, fourth version part) in parallel, then, when both pass and the item ids are configured, the beta store upload                                |
+| Tag `vX.Y.Z`     | `release.yml`          | build Chrome + Firefox, zip + tar.gz, GitHub Release, Slack, and (when configured) upload to the production store items                                                                                 |
+| Manual           | `publish-stores.yml`   | rebuild a tag, submit to the Chrome Web Store and/or Firefox AMO                                                                                                                                        |
 
 `_quality.yml` is the single definition of the quality gate (static checks, unit
 tests and the e2e matrix) and is called by `ci.yml` for pull requests and by
-`beta.yml` for every push to `main`, in parallel with the beta build, so a merged
-commit is gated again in the same run that produces the beta upload. Callers use
+`beta.yml` for the nightly beta run, in parallel with the beta build, so the
+commit that is about to be uploaded is gated in the same run. Callers use
 `secrets: inherit`; the e2e job declares the bypass secret as optional, so the
 gate works without it. `release.yml` deliberately does not call it.
 
@@ -47,21 +47,40 @@ There is a second listing of the extension in both stores, used as the beta chan
 - the Firefox build gets the add-on id `beta@zerion.io`, because AMO keys an add-on by that id and the beta listing is a separate item (Chrome items are keyed by the store item, so the same ZIP can be uploaded to both);
 - the manifest version gets a fourth part, `<major>.<minor>.<patch>.<run>`, so every upload is a new version (manifests allow at most four parts).
 
-`beta.yml` runs on every push to `main`: it builds both targets with `npm run build:beta` in parallel with the quality gate, writes store-shaped ZIPs with the same packaging script as production and submits them to the beta items once both jobs pass. A red `main` therefore still never uploads a beta build, but the build no longer waits for the quality gate. Because beta reuses the production build, packaging and submission path, a green beta run is also the check that the production path works; the two differ only in their trigger and in the store item ids. **The upload is skipped, not failed, when the beta item ids are not configured** – the build and its artifacts are still produced. The same rule applies to production in `release.yml`: a tag publishes the release, and the store submission runs only if `CHROME_EXTENSION_ID` / `FIREFOX_EXTENSION_ID` are configured.
+`beta.yml` runs **nightly** (03:00 UTC) against the default branch and can be
+started by hand from the Actions tab (`workflow_dispatch`, `dry_run` off by
+default). The schedule exists because the Chrome Web Store refuses an upload
+while an earlier submission is still in review: a run per merged PR would queue
+runs that cannot upload, so the beta channel moves at most once a day instead.
+It builds both targets with `npm run build:beta` in parallel with the quality
+gate, writes store-shaped ZIPs with the same packaging script as production and
+submits them to the beta items once both jobs pass. A red default branch
+therefore still never uploads a beta build, but the build does not wait for the
+quality gate. Because beta reuses the production build, packaging and submission
+path, a green beta run is also the check that the production path works; the two
+differ only in their trigger and in the store item ids. **The upload is skipped,
+not failed, when the beta item ids are not configured** – the build and its
+artifacts are still produced. The same rule applies to production in
+`release.yml`: a tag publishes the release, and the store submission runs only if
+`CHROME_EXTENSION_ID` / `FIREFOX_EXTENSION_ID` are configured.
+
+The workflow does not inspect the review state. A manual dispatch is the way to
+ship a beta as soon as a review clears, and it is also the way to avoid waiting
+for the next night.
 
 What "submit" means differs by channel:
 
-|                          | Chrome Web Store                                                                                                           | Firefox AMO               |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| Beta (every `main` push) | upload, submit and publish immediately                                                                                     | upload, submit for review |
-| Production (tag)         | **upload only** (`CHROME_SKIP_SUBMIT_REVIEW`); publish from the dashboard so the canary / staged rollout is chosen by hand | upload, submit for review |
+|                         | Chrome Web Store                                                                                                           | Firefox AMO               |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| Beta (nightly / manual) | upload, submit and publish immediately                                                                                     | upload, submit for review |
+| Production (tag)        | **upload only** (`CHROME_SKIP_SUBMIT_REVIEW`); publish from the dashboard so the canary / staged rollout is chosen by hand | upload, submit for review |
 
 Store visibility is a dashboard setting, not something the API can set:
 
 - **Chrome Web Store**: create the second item and set visibility to _Private_ with the organisation's domain in the trusted testers list.
 - **Firefox AMO**: publish the beta add-on as _Unlisted_ (installs are possible with the link only) or listed with restricted access, depending on what the reviewer flow allows for the account.
 
-A Chrome item that is in review cannot be uploaded to at all, so the beta `publish` job fails with `400 FAILED_PRECONDITION / NOT_UPDATEABLE: "You may not edit or publish an item that is in review."` This is a valid failure, not a CI defect: the review queued by an earlier submission is still open, and the next `main` push after it is approved goes through. The pipeline deliberately does not cancel the review to make room for the new build (`cancelSubmission` exists, `publish-browser-extension` exposes it as `cancelPending`), because dropping a review of a build testers may already be running is worse than a red run. `Build beta` and all quality jobs are still produced, so the artifacts are available while the store upload waits.
+A Chrome item that is in review cannot be uploaded to at all, so the beta `publish` job fails with `400 FAILED_PRECONDITION / NOT_UPDATEABLE: "You may not edit or publish an item that is in review."` This is a valid failure, not a CI defect: the review queued by an earlier submission is still open, and the first nightly run (or manual dispatch) after it is approved goes through. That is why beta is not released per merged PR. The pipeline deliberately does not cancel the review to make room for the new build (`cancelSubmission` exists, `publish-browser-extension` exposes it as `cancelPending`), because dropping a review of a build testers may already be running is worse than a red run. `Build beta` and all quality jobs are still produced, so the artifacts are available while the store upload waits.
 
 The same rule applies to production uploads: an item in review rejects the upload, and `release.yml` fails instead of cancelling the pending review.
 
@@ -123,9 +142,9 @@ so the build jobs never see them:
 | `publish-stores.yml` | `publish`                                |
 
 Adding required reviewers to that environment therefore gates the upload only:
-a beta build still runs on every `main` push, and a tag still produces the
-GitHub Release, while the submission waits for approval. Without reviewers the
-uploads stay automatic and are skipped when the item ids are unset.
+a beta build still runs nightly and on manual dispatch, and a tag still produces
+the GitHub Release, while the submission waits for approval. Without reviewers
+the uploads stay automatic and are skipped when the item ids are unset.
 
 One consequence worth knowing: a job only sees environment secrets of the
 environment it declares. If the ids were added as repository secrets instead,
